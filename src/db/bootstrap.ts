@@ -2,11 +2,19 @@ import "server-only";
 import path from "node:path";
 import fs from "node:fs";
 import { sql } from "drizzle-orm";
-import { db } from "./index";
+import { db, resetDbHard } from "./index";
 import { seedIfEmpty } from "./seed";
 
 declare global {
   var __barkenciagaBootstrap: Promise<void> | undefined;
+}
+
+function isPgliteAbort(err: unknown): boolean {
+  const msg = String((err as { message?: string })?.message ?? err ?? "");
+  const causeMsg = String(
+    (err as { cause?: { message?: string } })?.cause?.message ?? "",
+  );
+  return /Aborted\(\)/i.test(msg) || /Aborted\(\)/i.test(causeMsg);
 }
 
 async function runMigrations() {
@@ -46,8 +54,21 @@ async function runMigrations() {
 export async function ensureDbReady(): Promise<void> {
   if (!globalThis.__barkenciagaBootstrap) {
     globalThis.__barkenciagaBootstrap = (async () => {
-      await runMigrations();
-      await seedIfEmpty();
+      try {
+        await runMigrations();
+        await seedIfEmpty();
+      } catch (err) {
+        if (!isPgliteAbort(err)) throw err;
+        // PGlite WASM aborted - the on-disk dir is almost always corrupt from
+        // an uncleanly-killed previous process. Wipe and retry once so dev
+        // startup self-heals instead of serving 500s.
+        console.warn(
+          "[barkenciaga] PGlite aborted during bootstrap; resetting .data and retrying",
+        );
+        resetDbHard();
+        await runMigrations();
+        await seedIfEmpty();
+      }
     })();
   }
   return globalThis.__barkenciagaBootstrap;
