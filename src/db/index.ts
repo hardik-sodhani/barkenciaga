@@ -37,7 +37,12 @@ declare global {
 // killed mid-write (SIGKILL, hard crash, some escalated SIGTERMs), the WASM
 // refuses to reopen the dir and aborts with RuntimeError: Aborted() on the
 // very first query. Flushing on normal exit prevents that.
-function registerShutdownHooks(client: PGlite) {
+//
+// The hooks are registered once per process and always close whichever client
+// is currently stored on globalThis. This keeps `resetDbHard()` correct: it
+// can swap the client out from under us without having to tear down and
+// re-register listeners (which would risk leaking hooks on repeated resets).
+function registerShutdownHooks() {
   if (globalThis.__barkenciagaShutdownHooked) return;
   globalThis.__barkenciagaShutdownHooked = true;
 
@@ -46,7 +51,7 @@ function registerShutdownHooks(client: PGlite) {
     if (closing) return;
     closing = true;
     try {
-      await client.close();
+      await globalThis.__barkenciagaPg?.close();
     } catch {
       // best-effort; we're shutting down anyway
     }
@@ -73,7 +78,7 @@ function initDb(): { db: DbType; client: PGlite } {
 
   globalThis.__barkenciagaPg = client;
   globalThis.__barkenciagaDb = realDb;
-  registerShutdownHooks(client);
+  registerShutdownHooks();
   return { db: realDb, client };
 }
 
