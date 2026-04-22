@@ -17,8 +17,8 @@ import * as schema from "./schema";
 
 type DbType = ReturnType<typeof drizzle<typeof schema>>;
 
-const DATA_DIR = path.join(process.cwd(), ".data");
-const DB_DIR = path.join(DATA_DIR, "pglite");
+export const DATA_DIR = path.join(process.cwd(), ".data");
+export const DB_DIR = path.join(DATA_DIR, "pglite");
 
 function ensureDir(dir: string) {
   if (!fs.existsSync(dir)) {
@@ -30,6 +30,42 @@ declare global {
   var __barkenciagaDb: DbType | undefined;
   var __barkenciagaPg: PGlite | undefined;
   var __barkenciagaDbReady: Promise<void> | undefined;
+  var __barkenciagaShutdownHooked: boolean | undefined;
+}
+
+// PGlite persists a WAL-style journal under .data/pglite. If the process is
+// killed mid-write (SIGKILL, hard crash, some escalated SIGTERMs), the WASM
+// refuses to reopen the dir and aborts with RuntimeError: Aborted() on the
+// very first query. Flushing on normal exit prevents that.
+//
+// The hooks are registered once per process and always close whichever client
+// is currently stored on globalThis. This keeps `resetDbHard()` correct: it
+// can swap the client out from under us without having to tear down and
+// re-register listeners (which would risk leaking hooks on repeated resets).
+function registerShutdownHooks() {
+  if (globalThis.__barkenciagaShutdownHooked) return;
+  globalThis.__barkenciagaShutdownHooked = true;
+
+  let closing = false;
+  const close = async (signal?: NodeJS.Signals) => {
+    if (closing) return;
+    closing = true;
+    try {
+      await globalThis.__barkenciagaPg?.close();
+    } catch {
+      // best-effort; we're shutting down anyway
+    }
+    if (signal) process.exit(0);
+  };
+
+  process.once("SIGINT", () => void close("SIGINT"));
+  process.once("SIGTERM", () => void close("SIGTERM"));
+  process.once("beforeExit", () => void close());
+}
+
+function openClient(): PGlite {
+  ensureDir(DB_DIR);
+  return new PGlite(DB_DIR);
 }
 
 function initDb(): { db: DbType; client: PGlite } {
@@ -37,14 +73,54 @@ function initDb(): { db: DbType; client: PGlite } {
     return { db: globalThis.__barkenciagaDb, client: globalThis.__barkenciagaPg };
   }
 
-  ensureDir(DB_DIR);
-  const client = new PGlite(DB_DIR);
-  const db = drizzle(client, { schema });
+  const client = openClient();
+  const realDb = drizzle(client, { schema });
 
   globalThis.__barkenciagaPg = client;
-  globalThis.__barkenciagaDb = db;
-  return { db, client };
+  globalThis.__barkenciagaDb = realDb;
+  registerShutdownHooks();
+  return { db: realDb, client };
 }
 
-export const { db, client: pgClient } = initDb();
+/**
+ * Nuke the on-disk PGlite directory and reopen a fresh client. Used by the
+ * bootstrap self-heal path when the previous run left a corrupt WAL behind.
+ * Callers should also re-run migrations + seed.
+ */
+export async function resetDbHard(): Promise<void> {
+  // PGlite.close() is async; awaiting (and swallowing rejections) prevents an
+  // unhandled rejection from terminating the dev server on Node 15+, and also
+  // ensures the WASM runtime has released its file handles before we rmSync.
+  try {
+    await globalThis.__barkenciagaPg?.close();
+  } catch {
+    // ignore; we're about to delete the files anyway
+  }
+  fs.rmSync(DATA_DIR, { recursive: true, force: true });
+  globalThis.__barkenciagaDb = undefined;
+  globalThis.__barkenciagaPg = undefined;
+  globalThis.__barkenciagaBootstrap = undefined;
+  initDb();
+}
+
+initDb();
+
+// Exported as a Proxy so `resetDbHard()` can swap the underlying client
+// without invalidating `import { db } from "./index"` bindings elsewhere.
+export const db = new Proxy({} as DbType, {
+  get(_target, prop, receiver) {
+    const current = globalThis.__barkenciagaDb;
+    if (!current) throw new Error("Barkenciaga db not initialized");
+    return Reflect.get(current as object, prop, receiver);
+  },
+}) as DbType;
+
+export const pgClient = new Proxy({} as PGlite, {
+  get(_target, prop, receiver) {
+    const current = globalThis.__barkenciagaPg;
+    if (!current) throw new Error("Barkenciaga PGlite client not initialized");
+    return Reflect.get(current as object, prop, receiver);
+  },
+}) as PGlite;
+
 export { schema };
