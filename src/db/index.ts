@@ -87,9 +87,12 @@ function initDb(): { db: DbType; client: PGlite } {
  * bootstrap self-heal path when the previous run left a corrupt WAL behind.
  * Callers should also re-run migrations + seed.
  */
-export function resetDbHard(): void {
+export async function resetDbHard(): Promise<void> {
+  // PGlite.close() is async; awaiting (and swallowing rejections) prevents an
+  // unhandled rejection from terminating the dev server on Node 15+, and also
+  // ensures the WASM runtime has released its file handles before we rmSync.
   try {
-    globalThis.__barkenciagaPg?.close();
+    await globalThis.__barkenciagaPg?.close();
   } catch {
     // ignore; we're about to delete the files anyway
   }

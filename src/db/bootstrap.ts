@@ -65,7 +65,7 @@ export async function ensureDbReady(): Promise<void> {
         console.warn(
           "[barkenciaga] PGlite aborted during bootstrap; resetting .data and retrying",
         );
-        resetDbHard();
+        await resetDbHard();
         await runMigrations();
         await seedIfEmpty();
       }
