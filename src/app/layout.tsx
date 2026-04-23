@@ -7,6 +7,7 @@ import { getSession } from "@/lib/session";
 import { getCartSummary } from "@/lib/cart";
 import { getActiveDog } from "@/lib/dogs";
 import { SessionContextProvider } from "@/components/session-context";
+import { ThemeScript } from "@/components/theme/theme-script";
 
 const sans = Inter({
   subsets: ["latin"],
@@ -45,8 +46,13 @@ export default async function RootLayout({
   const activeDog = await getActiveDog();
 
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${sans.variable} ${display.variable} ${mono.variable}`}
+    >
       <head>
+        <ThemeScript />
         {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === "1" && (
           <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async />
         )}
