@@ -1,0 +1,17 @@
+---
+description: ADA and web accessibility standards for UI changes
+alwaysApply: true
+---
+
+# UI Accessibility
+
+For any UI-related change or implementation, follow ADA web compliance and WCAG accessibility standards.
+
+- Use semantic HTML before custom ARIA. Prefer native controls like `button`, `a`, `label`, `input`, `fieldset`, and headings with a logical order.
+- Ensure every interactive element is keyboard reachable, has a visible focus state, and supports expected keyboard actions.
+- Provide accessible names for controls and meaningful alternative text for informative images. Use empty `alt=""` only for decorative images.
+- Keep text, icons, borders, and focus indicators readable against their backgrounds with WCAG-compliant contrast.
+- Do not rely on color alone to communicate state, errors, or status. Pair color with text, icons, or structure.
+- Associate form fields with labels, expose validation errors to assistive technology, and keep error messaging close to the field.
+- Preserve accessibility when editing React UI in `**/*.tsx`, including component props, state changes, dialogs, menus, and loading states.
+

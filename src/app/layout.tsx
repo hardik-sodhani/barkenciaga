@@ -7,6 +7,8 @@ import { getSession } from "@/lib/session";
 import { getCartSummary } from "@/lib/cart";
 import { getActiveDog } from "@/lib/dogs";
 import { SessionContextProvider } from "@/components/session-context";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { themeInitScript } from "@/components/theme/theme-config";
 
 const sans = Inter({
   subsets: ["latin"],
@@ -45,22 +47,29 @@ export default async function RootLayout({
   const activeDog = await getActiveDog();
 
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${sans.variable} ${display.variable} ${mono.variable}`}
+    >
       <head>
         {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === "1" && (
           <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async />
         )}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <SessionContextProvider value={{ session, activeDog }}>
-          <SiteHeader
-            session={session}
-            cartCount={cart.itemCount}
-            activeDog={activeDog}
-          />
-          <main>{children}</main>
-          <SiteFooter />
-        </SessionContextProvider>
+        <ThemeProvider>
+          <SessionContextProvider value={{ session, activeDog }}>
+            <SiteHeader
+              session={session}
+              cartCount={cart.itemCount}
+              activeDog={activeDog}
+            />
+            <main>{children}</main>
+            <SiteFooter />
+          </SessionContextProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

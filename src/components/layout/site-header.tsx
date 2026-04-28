@@ -3,6 +3,7 @@ import type { BarkenciagaSession } from "@/lib/session";
 import type { Dog } from "@/db/schema";
 import { signOutAction } from "@/server/actions/auth";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const CATEGORIES = [
   { slug: "couture", name: "Couture" },
@@ -52,6 +53,7 @@ export function SiteHeader({
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
+          <ThemeToggle />
           <Link
             href="/search"
             className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"

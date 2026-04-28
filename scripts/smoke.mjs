@@ -10,7 +10,7 @@
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 
 const routes = [
-  { path: "/", contains: "Barkenciaga", expectsImage: true },
+  { path: "/", contains: "Barkenciaga", expectsImage: true, expectsThemeToggle: true },
   { path: "/c/couture", contains: "Couture", expectsImage: true },
   { path: "/c/accessories", contains: "Accessories", expectsImage: true },
   { path: "/c/eyewear", contains: "Eyewear", expectsImage: true },
@@ -46,6 +46,11 @@ for (const r of routes) {
     }
     if (r.expectsImage && !/\/_next\/image\?[^"]*\/products\//.test(body) && !body.includes("/products/")) {
       console.error(`  FAIL  expected product image reference in HTML  ${r.path}`);
+      failures++;
+      continue;
+    }
+    if (r.expectsThemeToggle && !body.includes("data-theme-toggle")) {
+      console.error(`  FAIL  expected theme toggle in rendered HTML  ${r.path}`);
       failures++;
       continue;
     }
