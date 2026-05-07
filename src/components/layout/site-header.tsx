@@ -21,7 +21,7 @@ export function SiteHeader({
   activeDog: Dog | null;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-20 bg-bone/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-ink-20 bg-bone/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex h-[var(--header-h)] max-w-[1400px] items-center gap-6 px-6">
         <Link href="/" className="font-display text-2xl tracking-tight">
           Barkenciaga
