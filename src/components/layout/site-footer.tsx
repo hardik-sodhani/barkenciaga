@@ -6,7 +6,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-[1400px] grid gap-10 px-6 py-16 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="font-display text-5xl leading-none">Barkenciaga</div>
-          <p className="mt-4 max-w-sm text-sm text-ink-60">
+          <p className="mt-4 max-w-sm text-sm text-ink-65">
             High fashion. For dogs. Designed in Milan, engineered for the daily
             walk, and judged by a rotating panel of studio canines.
           </p>

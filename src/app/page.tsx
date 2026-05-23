@@ -24,7 +24,7 @@ export default async function HomePage() {
               <br />
               <span className="italic">For dogs.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-sm text-ink-60">
+            <p className="mt-6 max-w-xl text-sm text-ink-65">
               Couture, accessories, eyewear, and footwear - engineered for the
               discerning dog and the humans who walk them. Hand-finished in
               Milan. Approved by a panel of six studio canines.
@@ -63,7 +63,7 @@ export default async function HomePage() {
             >
               <div className="eyebrow mb-2">Shop</div>
               <div className="font-display text-4xl">{c.name}</div>
-              <div className="mt-2 text-xs text-ink-60">{c.tagline}</div>
+              <div className="mt-2 text-xs text-ink-65">{c.tagline}</div>
             </Link>
           ))}
         </div>
@@ -76,7 +76,7 @@ export default async function HomePage() {
             <div>
               <div className="eyebrow mb-2">The season</div>
               <h2 className="display-lg">{hero.name}</h2>
-              <p className="mt-3 max-w-lg text-sm text-ink-60">{hero.tagline}</p>
+              <p className="mt-3 max-w-lg text-sm text-ink-65">{hero.tagline}</p>
             </div>
             <Link
               href={`/collections/${hero.slug}`}
@@ -100,10 +100,14 @@ export default async function HomePage() {
             <div key={col.id} className="border border-ink-20 bg-bone-50 p-8">
               <div className="eyebrow mb-2">{col.season}</div>
               <h3 className="font-display text-4xl">{col.name}</h3>
-              <p className="mt-3 max-w-md text-sm text-ink-60">{col.tagline}</p>
+              <p className="mt-3 max-w-md text-sm text-ink-65">{col.tagline}</p>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {col.products.slice(0, 4).map((p) => (
-                  <ProductTile key={p.id} product={p} />
+                  <ProductTile
+                    key={p.id}
+                    product={p}
+                    sizes="(min-width: 768px) 22vw, 45vw"
+                  />
                 ))}
               </div>
               <Link

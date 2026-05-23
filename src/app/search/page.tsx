@@ -31,7 +31,7 @@ export default async function SearchPage({
       </form>
 
       {query && (
-        <div className="mt-4 text-xs text-ink-60">
+        <div className="mt-4 text-xs text-ink-65">
           {results.length} result{results.length === 1 ? "" : "s"} for &ldquo;
           {query}&rdquo;
         </div>
@@ -39,14 +39,18 @@ export default async function SearchPage({
 
       <div className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-4">
         {results.map((p) => (
-          <ProductTile key={p.id} product={p} />
+          <ProductTile
+            key={p.id}
+            product={p}
+            sizes="(min-width: 768px) 25vw, 50vw"
+          />
         ))}
       </div>
 
       {query && results.length === 0 && (
         <div className="mt-12 border border-dashed border-ink-20 p-12 text-center">
           <p className="font-display text-3xl">No match.</p>
-          <p className="mt-3 text-sm text-ink-60">
+          <p className="mt-3 text-sm text-ink-65">
             Try a shorter, simpler term.
           </p>
         </div>

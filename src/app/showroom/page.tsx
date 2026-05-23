@@ -75,7 +75,7 @@ export default async function ShowroomPage() {
     <section className="mx-auto max-w-[1200px] px-6 py-16">
       <div className="eyebrow mb-2">Internal · Presenters only</div>
       <h1 className="display-xl">Showroom.</h1>
-      <p className="mt-4 max-w-2xl text-sm text-ink-60">
+      <p className="mt-4 max-w-2xl text-sm text-ink-65">
         Barkenciaga is a demo surface for Cursor enablement sessions. This page
         gives presenters a single index of canned flows, sample tickets, and
         known good demo starting points.
@@ -89,7 +89,7 @@ export default async function ShowroomPage() {
               <div className="eyebrow mb-2">{f.id}</div>
               <h3 className="font-display text-xl">{f.title}</h3>
               <p className="mt-3 text-sm text-ink-80">{f.summary}</p>
-              <p className="mt-3 text-xs text-ink-60 italic">{f.highlight}</p>
+              <p className="mt-3 text-xs text-ink-65 italic">{f.highlight}</p>
             </div>
           ))}
         </div>
@@ -97,17 +97,17 @@ export default async function ShowroomPage() {
 
       <section className="mt-16">
         <h2 className="font-display text-3xl mb-6">Sample tickets</h2>
-        <p className="mb-6 max-w-2xl text-sm text-ink-60">
+        <p className="mb-6 max-w-2xl text-sm text-ink-65">
           Drop these into a Linear/Jira integration, or paste directly into
           Cursor as a task. Each ticket is sized for a 5-15 minute live demo.
         </p>
         <ul className="divide-y divide-ink-20 border-y border-ink-20">
           {SAMPLE_TICKETS.map((t) => (
             <li key={t.id} className="grid gap-4 py-5 md:grid-cols-[120px_1fr]">
-              <div className="font-mono text-xs text-ink-60">{t.id}</div>
+              <div className="font-mono text-xs text-ink-65">{t.id}</div>
               <div>
                 <div className="font-medium">{t.title}</div>
-                <div className="mt-1 text-sm text-ink-60">{t.body}</div>
+                <div className="mt-1 text-sm text-ink-65">{t.body}</div>
               </div>
             </li>
           ))}

@@ -72,7 +72,7 @@ export default async function CheckoutPage() {
 
           <section>
             <h2 className="eyebrow mb-4">03 — Payment</h2>
-            <p className="mb-4 text-xs text-ink-60">
+            <p className="mb-4 text-xs text-ink-65">
               Demo checkout only. No charge is made. Any card number with 12+
               digits is accepted.
             </p>
@@ -128,7 +128,7 @@ export default async function CheckoutPage() {
                 <div className="flex flex-1 justify-between">
                   <div>
                     <div className="text-sm font-medium">{line.product.name}</div>
-                    <div className="text-xs text-ink-60">
+                    <div className="text-xs text-ink-65">
                       {line.variant.color} / {line.variant.size.toUpperCase()} · Qty {line.quantity}
                     </div>
                   </div>

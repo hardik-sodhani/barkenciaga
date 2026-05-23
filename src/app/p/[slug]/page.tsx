@@ -32,7 +32,7 @@ export default async function ProductPage({
       {/* DEMO-TODO: surface collection membership here as chips.
           Pull from collection_products and link to /collections/<slug>.
           See TECH_DEBT.md item 4. */}
-      <div className="mx-auto max-w-[1400px] px-6 py-6 text-xs text-ink-60">
+      <div className="mx-auto max-w-[1400px] px-6 py-6 text-xs text-ink-65">
         <Link href="/">Home</Link> /{" "}
         {product.category && (
           <>
@@ -91,7 +91,7 @@ export default async function ProductPage({
             <div className="eyebrow mb-2">{product.brandLine}</div>
             <h1 className="display-lg leading-tight">{product.name}</h1>
             {product.subtitle && (
-              <p className="mt-2 text-sm text-ink-60">{product.subtitle}</p>
+              <p className="mt-2 text-sm text-ink-65">{product.subtitle}</p>
             )}
             <div className="mt-6 text-2xl font-display tabular-nums">
               {formatPrice(product.priceCents)}
@@ -103,7 +103,7 @@ export default async function ProductPage({
           {dog && recommended && (
             <div className="flex items-center gap-2">
               <Badge tone="chartreuse">Fit finder</Badge>
-              <span className="text-xs text-ink-60">
+              <span className="text-xs text-ink-65">
                 Based on {dog.name}&apos;s measurements ({dog.breed}, size{" "}
                 {dog.sizeBucket.toUpperCase()}), we recommend{" "}
                 <strong>{recommended.toUpperCase()}</strong>.
@@ -128,7 +128,7 @@ export default async function ProductPage({
           {product.careCopy && (
             <div className="border-t border-ink-20 pt-6">
               <div className="eyebrow mb-2">Care</div>
-              <p className="text-sm text-ink-60">{product.careCopy}</p>
+              <p className="text-sm text-ink-65">{product.careCopy}</p>
             </div>
           )}
         </div>

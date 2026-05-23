@@ -13,7 +13,7 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
       <div className="border border-dashed border-ink-20 p-12 text-center">
         <div className="eyebrow mb-3">The bag</div>
         <p className="font-display text-3xl">Empty and waiting.</p>
-        <p className="mt-3 text-sm text-ink-60">
+        <p className="mt-3 text-sm text-ink-65">
           Start with the{" "}
           <Link className="underline underline-offset-4" href="/collections/autumn-woofer-26">
             Autumn/Woofer &apos;26
@@ -67,7 +67,7 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
                 </Link>
                 <div className="tabular-nums">{formatPrice(line.lineTotalCents)}</div>
               </div>
-              <div className="mt-1 text-xs text-ink-60">
+              <div className="mt-1 text-xs text-ink-65">
                 {line.variant.color} / Size {line.variant.size.toUpperCase()}
               </div>
               <div className="mt-1 text-[11px] tracking-[0.18em] uppercase text-ink-65">

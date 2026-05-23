@@ -32,14 +32,14 @@ export function SiteHeader({
             <Link
               key={c.slug}
               href={`/c/${c.slug}`}
-              className="text-[13px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+              className="text-[13px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
             >
               {c.name}
             </Link>
           ))}
           <Link
             href="/collections/autumn-woofer-26"
-            className="text-[13px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+            className="text-[13px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
           >
             AW26
           </Link>
@@ -54,7 +54,7 @@ export function SiteHeader({
         <div className="ml-auto flex items-center gap-3">
           <Link
             href="/search"
-            className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+            className="text-[11px] tracking-[0.24em] uppercase text-ink-65 hover:text-ink"
           >
             Search
           </Link>
@@ -73,7 +73,7 @@ export function SiteHeader({
             <>
               <Link
                 href="/account"
-                className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+                className="text-[11px] tracking-[0.24em] uppercase text-ink-65 hover:text-ink"
               >
                 {session.userName ?? "Account"}
               </Link>
@@ -97,7 +97,7 @@ export function SiteHeader({
           ) : (
             <Link
               href="/sign-in"
-              className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+              className="text-[11px] tracking-[0.24em] uppercase text-ink-65 hover:text-ink"
             >
               Sign in
             </Link>

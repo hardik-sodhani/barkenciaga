@@ -53,7 +53,7 @@ export function ProductTile({
             src={product.imagePath!}
             alt={alt}
             fill
-            sizes={large ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
+            sizes={sizes ?? (large ? LARGE_SIZES : DEFAULT_SIZES)}
             priority={priority}
             className="object-cover"
           />

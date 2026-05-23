@@ -115,7 +115,7 @@ export function VariantSelector({
         <div className="eyebrow mb-2 flex items-center gap-2">
           <span>Size</span>
           {recommendedSize && (
-            <span className="normal-case tracking-normal text-ink-60">
+            <span className="normal-case tracking-normal text-ink-65">
               {activeDogName ? (
                 <>
                   <span className="text-burgundy">{SIZE_LABEL[recommendedSize]}</span> recommended for{" "}

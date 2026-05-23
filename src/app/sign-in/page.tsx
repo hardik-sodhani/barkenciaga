@@ -13,7 +13,7 @@ export default async function SignInPage() {
       <div>
         <div className="eyebrow mb-3">Client portal</div>
         <h1 className="display-lg">Sign in.</h1>
-        <p className="mt-4 max-w-md text-sm text-ink-60">
+        <p className="mt-4 max-w-md text-sm text-ink-65">
           Barkenciaga accounts store dog profiles, past orders, and
           measurement-based size recommendations. No passwords for the demo -
           use one of the two seeded accounts.
@@ -22,12 +22,12 @@ export default async function SignInPage() {
           <div className="border border-ink-20 bg-bone-50 p-4">
             <div className="eyebrow mb-1">Customer</div>
             <code className="font-mono text-xs">hello@barkenciaga.test</code>
-            <div className="mt-1 text-xs text-ink-60">Has 2 dogs: Luna, Atlas</div>
+            <div className="mt-1 text-xs text-ink-65">Has 2 dogs: Luna, Atlas</div>
           </div>
           <div className="border border-ink-20 bg-bone-50 p-4">
             <div className="eyebrow mb-1">Studio / admin</div>
             <code className="font-mono text-xs">studio@barkenciaga.test</code>
-            <div className="mt-1 text-xs text-ink-60">Access to /admin</div>
+            <div className="mt-1 text-xs text-ink-65">Access to /admin</div>
           </div>
         </div>
       </div>

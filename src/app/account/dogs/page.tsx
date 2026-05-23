@@ -19,7 +19,7 @@ export default async function DogsPage() {
         <div>
           <div className="eyebrow mb-2">Account</div>
           <h1 className="display-lg">Dog profiles</h1>
-          <p className="mt-3 max-w-lg text-sm text-ink-60">
+          <p className="mt-3 max-w-lg text-sm text-ink-65">
             Dog profiles drive size recommendations on every product page. Add
             measurements for a precise fit.
           </p>
@@ -43,7 +43,7 @@ export default async function DogsPage() {
                     <Badge tone="chartreuse">Active</Badge>
                   )}
                 </div>
-                <div className="mt-1 text-xs text-ink-60">
+                <div className="mt-1 text-xs text-ink-65">
                   {d.breed} · {d.gender}
                 </div>
               </div>
@@ -99,7 +99,7 @@ export default async function DogsPage() {
       {dogs.length === 0 && (
         <div className="mt-12 border border-dashed border-ink-20 p-12 text-center">
           <p className="font-display text-3xl">No profiles yet.</p>
-          <p className="mt-3 text-sm text-ink-60">
+          <p className="mt-3 text-sm text-ink-65">
             Create one to unlock size recommendations.
           </p>
           <Link

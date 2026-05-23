@@ -22,7 +22,7 @@ export default async function OrderConfirmation({
       <div className="text-center">
         <div className="eyebrow mb-3">Order confirmed</div>
         <h1 className="display-lg">Thank you.</h1>
-        <p className="mt-3 text-sm text-ink-60">
+        <p className="mt-3 text-sm text-ink-65">
           A confirmation has been sent to <strong>{order.email}</strong>.
           {order.dogName && (
             <>
@@ -43,7 +43,7 @@ export default async function OrderConfirmation({
             <li key={it.id} className="flex justify-between py-3 text-sm">
               <div>
                 <div className="font-medium">{it.productName}</div>
-                <div className="text-xs text-ink-60">
+                <div className="text-xs text-ink-65">
                   {it.variantLabel} · Qty {it.quantity}
                 </div>
               </div>

@@ -18,7 +18,7 @@ export default async function CollectionPage({
           <div className="eyebrow mb-3">{collection.season}</div>
           <h1 className="display-xl">{collection.name}</h1>
           {collection.tagline && (
-            <p className="mt-4 max-w-xl text-sm text-ink-60">
+            <p className="mt-4 max-w-xl text-sm text-ink-65">
               {collection.tagline}
             </p>
           )}
@@ -34,6 +34,11 @@ export default async function CollectionPage({
               large={i === 0}
               eyebrow={i === 0 ? "Editor's pick" : undefined}
               className={i === 0 ? "col-span-2 row-span-2" : undefined}
+              sizes={
+                i === 0
+                  ? "(min-width: 1024px) 50vw, 100vw"
+                  : "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+              }
             />
           ))}
         </div>

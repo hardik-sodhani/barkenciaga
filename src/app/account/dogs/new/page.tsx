@@ -21,7 +21,7 @@ export default async function NewDogPage() {
     <section className="mx-auto max-w-2xl px-6 py-16">
       <div className="eyebrow mb-2">Onboarding</div>
       <h1 className="display-lg">Tell us about the dog.</h1>
-      <p className="mt-3 text-sm text-ink-60">
+      <p className="mt-3 text-sm text-ink-65">
         Measurements are optional but unlock fit-finder recommendations on every
         product. We recommend measuring with a soft tape in centimeters.
       </p>

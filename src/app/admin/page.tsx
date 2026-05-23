@@ -43,7 +43,7 @@ export default async function AdminPage() {
           <div className="eyebrow mb-2">Studio · admin</div>
           <h1 className="display-lg">Ops</h1>
         </div>
-        <div className="text-xs text-ink-60">
+        <div className="text-xs text-ink-65">
           {prods.length} products · {variants.length} variants · {recentOrders.length} recent orders
         </div>
       </div>
@@ -51,7 +51,7 @@ export default async function AdminPage() {
       <section className="mt-12">
         <h2 className="font-display text-3xl mb-6">Recent orders</h2>
         {recentOrders.length === 0 ? (
-          <div className="border border-dashed border-ink-20 p-8 text-sm text-ink-60">
+          <div className="border border-dashed border-ink-20 p-8 text-sm text-ink-65">
             No orders yet. Place one via /checkout.
           </div>
         ) : (
@@ -60,18 +60,18 @@ export default async function AdminPage() {
               <li key={o.id} className="grid grid-cols-[1fr_120px_80px_100px_auto] gap-4 py-3 text-sm items-center">
                 <div>
                   <div className="font-medium">{o.email}</div>
-                  <div className="text-xs text-ink-60">
+                  <div className="text-xs text-ink-65">
                     {o.id} · {new Date(o.createdAt).toLocaleString()}
                   </div>
                 </div>
-                <div className="text-xs text-ink-60">
+                <div className="text-xs text-ink-65">
                   {o.dogName ? `for ${o.dogName}` : "—"}
                 </div>
                 <div className="eyebrow">{o.status}</div>
                 <div className="tabular-nums">{formatPrice(o.totalCents)}</div>
                 <Link
                   href={`/orders/${o.id}`}
-                  className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                  className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
                 >
                   View
                 </Link>
@@ -91,14 +91,14 @@ export default async function AdminPage() {
                 <summary className="flex cursor-pointer items-center justify-between">
                   <div>
                     <div className="font-display text-xl">{p.name}</div>
-                    <div className="text-xs text-ink-60">
+                    <div className="text-xs text-ink-65">
                       {categoriesById.get(p.categoryId)?.name} · {vs.length} variants ·{" "}
                       {formatPrice(p.priceCents)}
                     </div>
                   </div>
                   <Link
                     href={`/p/${p.slug}`}
-                    className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                    className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
                   >
                     View PDP →
                   </Link>
@@ -166,7 +166,7 @@ export default async function AdminPage() {
                             />
                             <button
                               type="submit"
-                              className="text-[10px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                              className="text-[10px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
                             >
                               Save
                             </button>

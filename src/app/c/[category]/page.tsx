@@ -49,9 +49,9 @@ export default async function CategoryPage({
           <div>
             <div className="eyebrow mb-2">Category</div>
             <h1 className="display-lg">{category.name}</h1>
-            <p className="mt-3 max-w-xl text-sm text-ink-60">{category.heroCopy}</p>
+            <p className="mt-3 max-w-xl text-sm text-ink-65">{category.heroCopy}</p>
           </div>
-          <div className="text-xs text-ink-60">
+          <div className="text-xs text-ink-65">
             {products.length} pieces available
           </div>
         </div>
@@ -63,7 +63,7 @@ export default async function CategoryPage({
           <div className="space-y-2 text-sm">
             <Link
               href={`/c/${slug}${qs({ size: undefined })}`}
-              className={!size ? "font-medium" : "text-ink-60 hover:text-ink"}
+              className={!size ? "font-medium" : "text-ink-65 hover:text-ink"}
             >
               All sizes
             </Link>
@@ -72,7 +72,7 @@ export default async function CategoryPage({
                 <Link
                   href={`/c/${slug}${qs({ size: s })}`}
                   className={
-                    size === s ? "font-medium" : "text-ink-60 hover:text-ink"
+                    size === s ? "font-medium" : "text-ink-65 hover:text-ink"
                   }
                 >
                   {s.toUpperCase()}
@@ -88,7 +88,7 @@ export default async function CategoryPage({
                 <Link
                   href={`/c/${slug}${qs({ sort: s.id })}`}
                   className={
-                    sort === s.id ? "font-medium" : "text-ink-60 hover:text-ink"
+                    sort === s.id ? "font-medium" : "text-ink-65 hover:text-ink"
                   }
                 >
                   {s.label}
@@ -102,7 +102,7 @@ export default async function CategoryPage({
           {products.length === 0 ? (
             <div className="border border-dashed border-ink-20 p-16 text-center">
               <p className="font-display text-3xl">Nothing in this size.</p>
-              <p className="mt-3 text-sm text-ink-60">
+              <p className="mt-3 text-sm text-ink-65">
                 Try a different size or{" "}
                 <Link className="underline" href={`/c/${slug}`}>
                   clear filters
@@ -113,7 +113,11 @@ export default async function CategoryPage({
           ) : (
             <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
               {products.map((p) => (
-                <ProductTile key={p.id} product={p} />
+                <ProductTile
+                  key={p.id}
+                  product={p}
+                  sizes="(min-width: 768px) 33vw, 50vw"
+                />
               ))}
             </div>
           )}

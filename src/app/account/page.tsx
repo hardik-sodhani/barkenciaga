@@ -34,7 +34,7 @@ export default async function AccountPage() {
           <div className="eyebrow mb-2">Account</div>
           <h1 className="display-lg">Hello, {session.userName}.</h1>
         </div>
-        <div className="text-xs text-ink-60">{session.userEmail}</div>
+        <div className="text-xs text-ink-65">{session.userEmail}</div>
       </div>
 
       <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -53,7 +53,7 @@ export default async function AccountPage() {
           </div>
 
           {dogs.length === 0 ? (
-            <div className="border border-dashed border-ink-20 p-8 text-center text-sm text-ink-60">
+            <div className="border border-dashed border-ink-20 p-8 text-center text-sm text-ink-65">
               No dog profiles yet.{" "}
               <Link href="/account/dogs/new" className="underline">
                 Add one
@@ -74,7 +74,7 @@ export default async function AccountPage() {
                         <Badge tone="chartreuse">Active</Badge>
                       )}
                     </div>
-                    <div className="mt-1 text-xs text-ink-60">
+                    <div className="mt-1 text-xs text-ink-65">
                       {d.breed} · {d.gender} · Size {d.sizeBucket.toUpperCase()}
                     </div>
                   </div>
@@ -94,7 +94,7 @@ export default async function AccountPage() {
           <div className="mt-4">
             <Link
               href="/account/dogs"
-              className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+              className="text-[11px] tracking-[0.24em] uppercase text-ink-65 hover:text-ink"
             >
               Manage all dogs →
             </Link>
@@ -126,7 +126,7 @@ export default async function AccountPage() {
       <section className="mt-12 border border-ink-20 bg-bone-50 p-6">
         <div className="eyebrow mb-6">Order history</div>
         {orderRows.length === 0 ? (
-          <div className="border border-dashed border-ink-20 p-8 text-center text-sm text-ink-60">
+          <div className="border border-dashed border-ink-20 p-8 text-center text-sm text-ink-65">
             No past orders.
           </div>
         ) : (
@@ -135,7 +135,7 @@ export default async function AccountPage() {
               <li key={o.id} className="flex items-center justify-between py-4 text-sm">
                 <div>
                   <div className="font-medium">{o.id}</div>
-                  <div className="text-xs text-ink-60">
+                  <div className="text-xs text-ink-65">
                     {new Date(o.createdAt).toLocaleDateString()} · {o.status}
                     {o.dogName && ` · for ${o.dogName}`}
                   </div>
@@ -144,7 +144,7 @@ export default async function AccountPage() {
                   <div className="tabular-nums">{formatPrice(o.totalCents)}</div>
                   <Link
                     href={`/orders/${o.id}`}
-                    className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                    className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
                   >
                     View
                   </Link>
