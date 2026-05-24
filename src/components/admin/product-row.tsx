@@ -1,51 +1,26 @@
 "use client";
 
-import { useCallback, useId, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useId, type ReactNode } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
 
-const STORAGE_KEY = "barkenciaga:admin:open-products";
-const STORAGE_EVENT = "barkenciaga:admin:open-products:changed";
+const PARAM = "open";
 
-function readOpenSet(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set();
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? new Set(parsed) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-function writeOpenSet(set: Set<string>) {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
-    window.dispatchEvent(new Event(STORAGE_EVENT));
-  } catch {
-    // sessionStorage may be unavailable (private mode, storage quota) — degrade gracefully.
-  }
-}
-
-function subscribe(cb: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener(STORAGE_EVENT, cb);
-  return () => window.removeEventListener(STORAGE_EVENT, cb);
+function parseOpen(value: string | null): Set<string> {
+  if (!value) return new Set();
+  return new Set(value.split(",").filter(Boolean));
 }
 
 /**
- * Stateful product accordion for /admin. Open state is mirrored to
- * sessionStorage so it survives the route refresh that follows a successful
- * server action. (The native `<details>` element, and even a plain React
- * useState, both reset to "closed" when the action's revalidation re-renders
- * the row after Save.)
+ * Stateful product accordion for /admin.
  *
- * useSyncExternalStore lets us read from sessionStorage without setState-
- * in-effect, and the SSR snapshot is always `false` to avoid hydration
- * mismatches.
+ * Open state is stored in the `?open=id1,id2` search param instead of local
+ * React state. The Next 16 server action that runs on Save triggers a router
+ * refresh that re-renders this client subtree, which resets useState; the
+ * URL, by contrast, is preserved across the refresh. As a bonus, the
+ * expanded state survives a hard refresh and is shareable / bookmarkable.
  */
 export function AdminProductRow({
   id,
@@ -64,19 +39,23 @@ export function AdminProductRow({
   priceCents: number;
   children: ReactNode;
 }) {
-  const open = useSyncExternalStore(
-    subscribe,
-    useCallback(() => readOpenSet().has(id), [id]),
-    () => false,
-  );
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const panelId = useId();
 
+  const open = parseOpen(searchParams.get(PARAM)).has(id);
+
   const toggle = useCallback(() => {
-    const set = readOpenSet();
-    if (set.has(id)) set.delete(id);
-    else set.add(id);
-    writeOpenSet(set);
-  }, [id]);
+    const current = parseOpen(searchParams.get(PARAM));
+    if (current.has(id)) current.delete(id);
+    else current.add(id);
+    const params = new URLSearchParams(searchParams.toString());
+    if (current.size === 0) params.delete(PARAM);
+    else params.set(PARAM, [...current].join(","));
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [id, searchParams, router, pathname]);
 
   return (
     <div className="border border-ink-20 bg-bone-50">
