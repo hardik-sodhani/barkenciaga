@@ -17,14 +17,12 @@
    *   --ink         12.3 : 1  AAA
    *   --ink-80       9.8 : 1  AAA
    *   --ink-65       9.6 : 1  AAA  (use this for body-secondary)
-   *   --ink-60       6.1 : 1  AA   (deprecated alias; prefer --ink-65)
    *   --ink-40       3.0 : 1  FAIL body / AA Large only - borders + dividers ONLY
    *   --ink-20       1.5 : 1  FAIL - hairlines only, never as text
    */
   --ink: #121110;
   --ink-80: #26231f;
   --ink-65: #3f3c36;
-  --ink-60: #3f3c36; /* deprecated alias, kept in sync with --ink-65 for one release */
   --ink-40: #8d8a83; /* borders / dividers only - never as text */
   --ink-20: #c9c5bc;
 
