@@ -9,18 +9,27 @@ type TileProduct = Pick<
   "slug" | "name" | "subtitle" | "priceCents" | "basePalette" | "brandLine" | "imagePath"
 >;
 
+// `sizes` should match the actual rendered width at each breakpoint so
+// next/image picks the right srcSet entry. Default targets the most common
+// grid in this app (2 cols on mobile, 3-4 on >=md).
+const DEFAULT_SIZES =
+  "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw";
+const LARGE_SIZES = "(min-width: 1024px) 50vw, 100vw";
+
 export function ProductTile({
   product,
   eyebrow,
   className,
   large = false,
   priority = false,
+  sizes,
 }: {
   product: TileProduct;
   eyebrow?: string;
   className?: string;
   large?: boolean;
   priority?: boolean;
+  sizes?: string;
 }) {
   const { a, b } = product.basePalette;
   const hasImage = Boolean(product.imagePath);
