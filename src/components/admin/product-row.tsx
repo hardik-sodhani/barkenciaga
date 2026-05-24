@@ -1,14 +1,51 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useCallback, useId, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
 
+const STORAGE_KEY = "barkenciaga:admin:open-products";
+const STORAGE_EVENT = "barkenciaga:admin:open-products:changed";
+
+function readOpenSet(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? new Set(parsed) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function writeOpenSet(set: Set<string>) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+    window.dispatchEvent(new Event(STORAGE_EVENT));
+  } catch {
+    // sessionStorage may be unavailable (private mode, storage quota) — degrade gracefully.
+  }
+}
+
+function subscribe(cb: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(STORAGE_EVENT, cb);
+  return () => window.removeEventListener(STORAGE_EVENT, cb);
+}
+
 /**
- * Stateful product accordion for /admin. Using local state (instead of
- * <details>) means the expanded panel stays open across the re-renders
- * triggered by `revalidatePath` after each variant/product save.
+ * Stateful product accordion for /admin. Open state is mirrored to
+ * sessionStorage so it survives the route refresh that follows a successful
+ * server action. (The native `<details>` element, and even a plain React
+ * useState, both reset to "closed" when the action's revalidation re-renders
+ * the row after Save.)
+ *
+ * useSyncExternalStore lets us read from sessionStorage without setState-
+ * in-effect, and the SSR snapshot is always `false` to avoid hydration
+ * mismatches.
  */
 export function AdminProductRow({
   id,
@@ -27,15 +64,26 @@ export function AdminProductRow({
   priceCents: number;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const open = useSyncExternalStore(
+    subscribe,
+    useCallback(() => readOpenSet().has(id), [id]),
+    () => false,
+  );
   const panelId = useId();
+
+  const toggle = useCallback(() => {
+    const set = readOpenSet();
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
+    writeOpenSet(set);
+  }, [id]);
 
   return (
     <div className="border border-ink-20 bg-bone-50">
       <div className="flex items-center justify-between gap-4 p-5">
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={toggle}
           aria-expanded={open}
           aria-controls={panelId}
           className="flex flex-1 items-center justify-between gap-4 text-left"
@@ -63,15 +111,9 @@ export function AdminProductRow({
           View PDP →
         </Link>
       </div>
-      <div
-        id={panelId}
-        hidden={!open}
-        // Keep the panel mounted so per-row forms retain their own
-        // React state across collapses; we just hide it visually.
-      >
+      <div id={panelId} hidden={!open}>
         <div className="border-t border-ink-20 p-5">{children}</div>
       </div>
-      <span className="sr-only">Product id {id}</span>
     </div>
   );
 }
