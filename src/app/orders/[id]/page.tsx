@@ -5,6 +5,7 @@ import { orders, orderItems } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureDbReady } from "@/db/bootstrap";
 import { formatPrice } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default async function OrderConfirmation({
   params,
@@ -89,12 +90,9 @@ export default async function OrderConfirmation({
       )}
 
       <div className="mt-10 text-center">
-        <Link
-          href="/"
-          className="inline-block border border-ink px-6 py-3 text-[11px] tracking-[0.24em] uppercase hover:bg-ink hover:text-bone"
-        >
-          Continue shopping
-        </Link>
+        <Button asChild variant="outline">
+          <Link href="/">Continue shopping</Link>
+        </Button>
       </div>
     </section>
   );

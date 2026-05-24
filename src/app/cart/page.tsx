@@ -3,6 +3,7 @@ import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
 import { CartLines } from "@/components/commerce/cart-lines";
 import { formatPrice } from "@/lib/utils";
 import { clearCartAction } from "@/server/actions/cart";
+import { Button } from "@/components/ui/button";
 
 export default async function CartPage() {
   const cart = await getCart();
@@ -52,19 +53,13 @@ export default async function CartPage() {
             <span className="tabular-nums">{formatPrice(total)}</span>
           </div>
           {cart.lines.length > 0 ? (
-            <Link
-              href="/checkout"
-              className="mt-8 block w-full border border-ink bg-ink py-3 text-center text-[11px] tracking-[0.24em] uppercase text-bone hover:bg-ink-80"
-            >
-              Proceed to checkout
-            </Link>
+            <Button asChild size="lg" className="mt-8 w-full">
+              <Link href="/checkout">Proceed to checkout</Link>
+            </Button>
           ) : (
-            <Link
-              href="/collections/autumn-woofer-26"
-              className="mt-8 block w-full border border-ink-20 py-3 text-center text-[11px] tracking-[0.24em] uppercase hover:border-ink"
-            >
-              Start shopping
-            </Link>
+            <Button asChild size="lg" variant="outline" className="mt-8 w-full">
+              <Link href="/collections/autumn-woofer-26">Start shopping</Link>
+            </Button>
           )}
           <p className="mt-4 text-[11px] tracking-wider uppercase text-ink-65">
             Free ground over $250 · Returns within 30 days

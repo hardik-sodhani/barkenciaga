@@ -14,7 +14,9 @@ const SORTS = [
   { id: "price-desc", label: "Price ↓" },
 ] as const;
 
-export const dynamic = "force-dynamic";
+// `searchParams` already opts this route into dynamic rendering per-request;
+// `force-dynamic` was disabling Partial Prerendering of the static shell for
+// no benefit.
 
 export default async function CategoryPage({
   params,
@@ -113,11 +115,7 @@ export default async function CategoryPage({
           ) : (
             <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
               {products.map((p) => (
-                <ProductTile
-                  key={p.id}
-                  product={p}
-                  sizes="(min-width: 768px) 33vw, 50vw"
-                />
+                <ProductTile key={p.id} product={p} />
               ))}
             </div>
           )}

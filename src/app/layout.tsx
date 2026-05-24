@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Cormorant_Garamond, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -6,7 +7,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { getSession } from "@/lib/session";
 import { getCartSummary } from "@/lib/cart";
 import { getActiveDog } from "@/lib/dogs";
-import { SessionContextProvider } from "@/components/session-context";
+import { HeaderStateProvider } from "@/components/session-context";
 
 const sans = Inter({
   subsets: ["latin"],
@@ -40,27 +41,33 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-  const cart = await getCartSummary();
-  const activeDog = await getActiveDog();
+  // Cookie-backed session/active-dog reads are cheap (single cookie decrypt +
+  // at most one PK lookup for the active dog), so we keep them at the layout
+  // level. The heavier cart query streams via Suspense inside SiteHeader.
+  const [session, activeDog, cart] = await Promise.all([
+    getSession(),
+    getActiveDog(),
+    getCartSummary(),
+  ]);
 
   return (
     <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
-      <head>
-        {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === "1" && (
-          <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async />
-        )}
-      </head>
       <body>
-        <SessionContextProvider value={{ session, activeDog }}>
-          <SiteHeader
-            session={session}
-            cartCount={cart.itemCount}
-            activeDog={activeDog}
+        {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === "1" && (
+          <Script
+            src="https://mcp.figma.com/mcp/html-to-design/capture.js"
+            strategy="afterInteractive"
           />
+        )}
+        <HeaderStateProvider
+          session={session}
+          activeDog={activeDog}
+          cartCount={cart.itemCount}
+        >
+          <SiteHeader />
           <main>{children}</main>
           <SiteFooter />
-        </SessionContextProvider>
+        </HeaderStateProvider>
       </body>
     </html>
   );

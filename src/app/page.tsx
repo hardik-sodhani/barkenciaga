@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getFeaturedCollections, getAllCategories } from "@/lib/products";
 import { ProductTile } from "@/components/commerce/product-tile";
+import { Button } from "@/components/ui/button";
 
 export default async function HomePage() {
   const [collections, categories] = await Promise.all([
@@ -30,18 +31,14 @@ export default async function HomePage() {
               Milan. Approved by a panel of six studio canines.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/collections/autumn-woofer-26"
-                className="border border-ink bg-ink px-6 py-3 text-[11px] tracking-[0.24em] uppercase text-bone hover:bg-ink-80"
-              >
-                Shop Autumn/Woofer &apos;26
-              </Link>
-              <Link
-                href="/account/dogs/new"
-                className="border border-ink-20 px-6 py-3 text-[11px] tracking-[0.24em] uppercase text-ink hover:border-ink"
-              >
-                Build a dog profile
-              </Link>
+              <Button asChild size="lg">
+                <Link href="/collections/autumn-woofer-26">
+                  Shop Autumn/Woofer &apos;26
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/account/dogs/new">Build a dog profile</Link>
+              </Button>
             </div>
           </div>
           <div className="md:col-span-5 grid grid-cols-2 gap-4">
@@ -103,11 +100,7 @@ export default async function HomePage() {
               <p className="mt-3 max-w-md text-sm text-ink-65">{col.tagline}</p>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {col.products.slice(0, 4).map((p) => (
-                  <ProductTile
-                    key={p.id}
-                    product={p}
-                    sizes="(min-width: 768px) 22vw, 45vw"
-                  />
+                  <ProductTile key={p.id} product={p} />
                 ))}
               </div>
               <Link

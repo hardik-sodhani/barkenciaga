@@ -35,7 +35,11 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
             >
               <Image
                 src={line.product.imagePath}
-                alt={line.product.subtitle ? `${line.product.name}, ${line.product.subtitle}` : line.product.name}
+                alt={
+                  line.product.subtitle
+                    ? `${line.product.name}, ${line.product.subtitle}`
+                    : line.product.name
+                }
                 fill
                 sizes="96px"
                 className="object-cover"
@@ -75,24 +79,35 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
               </div>
             </div>
             <div className="mt-3 flex items-center justify-between">
-              <form action={updateCartItemAction} className="flex items-center border border-ink-20">
+              <form
+                action={updateCartItemAction}
+                className="flex items-center border border-ink-20"
+              >
                 <input type="hidden" name="itemId" value={line.id} />
                 <button
                   type="submit"
                   name="quantity"
                   value={line.quantity - 1}
-                  className="h-9 w-9 hover:bg-bone-200"
-                  aria-label="Decrease"
+                  disabled={line.quantity <= 1}
+                  className="h-9 w-9 hover:bg-bone-200 disabled:cursor-not-allowed disabled:text-ink-40 disabled:hover:bg-transparent"
+                  aria-label={`Decrease quantity of ${line.product.name}`}
                 >
                   -
                 </button>
-                <div className="w-8 text-center text-sm tabular-nums">{line.quantity}</div>
+                <div
+                  aria-live="polite"
+                  aria-label={`Quantity: ${line.quantity}`}
+                  className="w-8 text-center text-sm tabular-nums"
+                >
+                  {line.quantity}
+                </div>
                 <button
                   type="submit"
                   name="quantity"
                   value={line.quantity + 1}
-                  className="h-9 w-9 hover:bg-bone-200"
-                  aria-label="Increase"
+                  disabled={line.quantity >= 10}
+                  className="h-9 w-9 hover:bg-bone-200 disabled:cursor-not-allowed disabled:text-ink-40 disabled:hover:bg-transparent"
+                  aria-label={`Increase quantity of ${line.product.name}`}
                 >
                   +
                 </button>
@@ -101,6 +116,7 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
                 <input type="hidden" name="itemId" value={line.id} />
                 <button
                   type="submit"
+                  aria-label={`Remove ${line.product.name} from bag`}
                   className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-burgundy"
                 >
                   Remove

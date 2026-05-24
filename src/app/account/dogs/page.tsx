@@ -5,6 +5,7 @@ import { getDogsForUser } from "@/lib/dogs";
 import { deleteDogAction } from "@/server/actions/dogs";
 import { setActiveDogAction } from "@/server/actions/auth";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const SIZE_LABEL = { xs: "XS", s: "S", m: "M", l: "L", xl: "XL" } as const;
 
@@ -102,12 +103,9 @@ export default async function DogsPage() {
           <p className="mt-3 text-sm text-ink-65">
             Create one to unlock size recommendations.
           </p>
-          <Link
-            href="/account/dogs/new"
-            className="mt-6 inline-block border border-ink px-6 py-3 text-[11px] tracking-[0.24em] uppercase hover:bg-ink hover:text-bone"
-          >
-            + New profile
-          </Link>
+          <Button asChild variant="outline" className="mt-6">
+            <Link href="/account/dogs/new">+ New profile</Link>
+          </Button>
         </div>
       )}
     </section>

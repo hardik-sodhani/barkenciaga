@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, products, productVariants, categories } from "@/db/schema";
 import { ensureDbReady } from "@/db/bootstrap";
@@ -12,6 +12,7 @@ import {
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AdminProductRow } from "@/components/admin/product-row";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -87,23 +88,16 @@ export default async function AdminPage() {
           {prods.map((p) => {
             const vs = variantsByProduct.get(p.id) ?? [];
             return (
-              <details key={p.id} className="border border-ink-20 bg-bone-50 p-5">
-                <summary className="flex cursor-pointer items-center justify-between">
-                  <div>
-                    <div className="font-display text-xl">{p.name}</div>
-                    <div className="text-xs text-ink-65">
-                      {categoriesById.get(p.categoryId)?.name} · {vs.length} variants ·{" "}
-                      {formatPrice(p.priceCents)}
-                    </div>
-                  </div>
-                  <Link
-                    href={`/p/${p.slug}`}
-                    className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
-                  >
-                    View PDP →
-                  </Link>
-                </summary>
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <AdminProductRow
+                key={p.id}
+                id={p.id}
+                name={p.name}
+                slug={p.slug}
+                categoryName={categoriesById.get(p.categoryId)?.name}
+                variantCount={vs.length}
+                priceCents={p.priceCents}
+              >
+                <div className="grid gap-6 md:grid-cols-2">
                   <form action={updateProductAction} className="space-y-3">
                     <div className="eyebrow mb-2">Product details</div>
                     <input type="hidden" name="id" value={p.id} />
@@ -149,6 +143,7 @@ export default async function AdminPage() {
                       {vs.map((v) => (
                         <li key={v.id} className="flex items-center gap-3 p-3">
                           <span
+                            aria-hidden
                             className="inline-block h-4 w-4 border border-ink-20"
                             style={{ background: v.colorHex }}
                           />
@@ -156,11 +151,20 @@ export default async function AdminPage() {
                             {v.size.toUpperCase()} / {v.color}
                             <div className="text-[11px] text-ink-65">{v.sku}</div>
                           </div>
-                          <form action={updateVariantInventoryAction} className="flex items-center gap-2">
+                          <form
+                            action={updateVariantInventoryAction}
+                            className="flex items-center gap-2"
+                          >
                             <input type="hidden" name="id" value={v.id} />
+                            <label className="sr-only" htmlFor={`inv-${v.id}`}>
+                              Inventory for {v.color} {v.size.toUpperCase()}
+                            </label>
                             <input
+                              id={`inv-${v.id}`}
                               type="number"
                               name="inventory"
+                              min={0}
+                              max={9999}
                               defaultValue={v.inventory}
                               className="w-20 border border-ink-20 bg-transparent px-2 py-1 text-sm text-right"
                             />
@@ -176,7 +180,7 @@ export default async function AdminPage() {
                     </ul>
                   </div>
                 </div>
-              </details>
+              </AdminProductRow>
             );
           })}
         </div>

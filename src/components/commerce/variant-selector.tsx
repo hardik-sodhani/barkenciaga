@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import type { ProductVariant } from "@/db/schema";
 import { cn, formatPrice } from "@/lib/utils";
 import { addToCartAction } from "@/server/actions/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useHeaderState } from "@/components/session-context";
 
 type Variant = Pick<
   ProductVariant,
@@ -20,6 +21,8 @@ const SIZE_LABEL: Record<Variant["size"], string> = {
   xl: "XL",
 };
 
+const ALL_SIZES = ["xs", "s", "m", "l", "xl"] as const;
+
 export function VariantSelector({
   variants,
   priceCents,
@@ -31,26 +34,39 @@ export function VariantSelector({
   recommendedSize?: Variant["size"] | null;
   activeDogName?: string | null;
 }) {
+  const { bumpCart } = useHeaderState();
+
   const colors = useMemo(() => {
     const map = new Map<string, { color: string; colorHex: string }>();
     for (const v of variants) {
-      if (!map.has(v.color)) map.set(v.color, { color: v.color, colorHex: v.colorHex });
+      if (!map.has(v.color)) {
+        map.set(v.color, { color: v.color, colorHex: v.colorHex });
+      }
     }
     return Array.from(map.values());
   }, [variants]);
 
-  const sizesForColor = (color: string) =>
-    Array.from(new Set(variants.filter((v) => v.color === color).map((v) => v.size)));
+  const sizesByColor = useMemo(() => {
+    const map = new Map<string, Variant["size"][]>();
+    for (const v of variants) {
+      const existing = map.get(v.color);
+      if (existing) {
+        if (!existing.includes(v.size)) existing.push(v.size);
+      } else {
+        map.set(v.color, [v.size]);
+      }
+    }
+    return map;
+  }, [variants]);
 
   const [color, setColor] = useState(colors[0]?.color ?? "");
-  const availableSizes = useMemo(() => sizesForColor(color), [color, variants]);
+  const availableSizes = sizesByColor.get(color) ?? [];
   const [size, setSize] = useState<Variant["size"] | null>(
     recommendedSize && availableSizes.includes(recommendedSize)
       ? recommendedSize
-      : availableSizes[0] ?? null,
+      : (availableSizes[0] ?? null),
   );
   const [qty, setQty] = useState(1);
-  const [pending, setPending] = useState(false);
 
   const activeVariant = variants.find(
     (v) => v.color === color && v.size === size,
@@ -58,25 +74,38 @@ export function VariantSelector({
   const inventory = activeVariant?.inventory ?? 0;
   const isSoldOut = !activeVariant || inventory === 0;
 
-  // DEMO-TODO: wire React's useOptimistic() here so the header cart count
-  // increments immediately instead of waiting for the server action to
-  // complete. See TECH_DEBT.md item 1.
-  async function onAdd(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!activeVariant || isSoldOut) return;
-    const fd = new FormData();
-    fd.set("variantId", activeVariant.id);
-    fd.set("quantity", String(qty));
-    setPending(true);
-    try {
-      await addToCartAction(fd);
-    } finally {
-      setPending(false);
-    }
-  }
+  // useActionState wraps the server action in a transition so the optimistic
+  // cart bump survives until the revalidated layout payload arrives. The form
+  // also works without JS because we use the `action` prop with a server
+  // action and hidden inputs.
+  type State = { error: string | null };
+  const [state, formAction, pending] = useActionState<State, FormData>(
+    async (_prev, formData) => {
+      const variantId = String(formData.get("variantId") ?? "");
+      const quantity = Number(formData.get("quantity") ?? 1);
+      if (!variantId) return { error: "Pick a variant first." };
+      bumpCart(quantity);
+      try {
+        await addToCartAction(formData);
+        return { error: null };
+      } catch (err) {
+        return {
+          error: err instanceof Error ? err.message : "Couldn't add to bag.",
+        };
+      }
+    },
+    { error: null },
+  );
 
   return (
-    <form onSubmit={onAdd} className="space-y-6">
+    <form action={formAction} className="space-y-6">
+      <input
+        type="hidden"
+        name="variantId"
+        value={activeVariant?.id ?? ""}
+      />
+      <input type="hidden" name="quantity" value={qty} />
+
       <div>
         <div className="eyebrow mb-2">Color - {color}</div>
         <div className="flex flex-wrap gap-3">
@@ -86,13 +115,14 @@ export function VariantSelector({
               type="button"
               onClick={() => {
                 setColor(c.color);
-                const next = sizesForColor(c.color);
+                const next = sizesByColor.get(c.color) ?? [];
                 setSize(
                   recommendedSize && next.includes(recommendedSize)
                     ? recommendedSize
-                    : next[0] ?? null,
+                    : (next[0] ?? null),
                 );
               }}
+              aria-pressed={color === c.color}
               className={cn(
                 "flex items-center gap-2 border px-3 py-2 text-xs tracking-widest uppercase transition-colors",
                 color === c.color
@@ -118,8 +148,10 @@ export function VariantSelector({
             <span className="normal-case tracking-normal text-ink-65">
               {activeDogName ? (
                 <>
-                  <span className="text-burgundy">{SIZE_LABEL[recommendedSize]}</span> recommended for{" "}
-                  {activeDogName}
+                  <span className="text-burgundy">
+                    {SIZE_LABEL[recommendedSize]}
+                  </span>{" "}
+                  recommended for {activeDogName}
                 </>
               ) : (
                 <>recommended {SIZE_LABEL[recommendedSize]}</>
@@ -128,7 +160,7 @@ export function VariantSelector({
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          {(["xs", "s", "m", "l", "xl"] as const).map((s) => {
+          {ALL_SIZES.map((s) => {
             const available = availableSizes.includes(s);
             return (
               <button
@@ -136,6 +168,7 @@ export function VariantSelector({
                 type="button"
                 disabled={!available}
                 onClick={() => setSize(s)}
+                aria-pressed={size === s}
                 className={cn(
                   "w-14 py-3 text-xs tracking-widest uppercase border",
                   size === s
@@ -143,7 +176,9 @@ export function VariantSelector({
                     : available
                       ? "border-ink-20 text-ink hover:border-ink"
                       : "border-ink-20 text-ink-65 line-through",
-                  recommendedSize === s && size !== s && "outline outline-1 outline-burgundy",
+                  recommendedSize === s &&
+                    size !== s &&
+                    "outline outline-1 outline-burgundy",
                 )}
               >
                 {SIZE_LABEL[s]}
@@ -157,16 +192,26 @@ export function VariantSelector({
         <div className="flex items-center border border-ink-20">
           <button
             type="button"
-            className="h-11 w-11 text-lg text-ink hover:bg-bone-200"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
+            disabled={qty <= 1}
+            aria-label="Decrease quantity"
+            className="h-11 w-11 text-lg text-ink hover:bg-bone-200 disabled:cursor-not-allowed disabled:text-ink-40 disabled:hover:bg-transparent"
           >
             -
           </button>
-          <div className="w-10 text-center text-sm tabular-nums">{qty}</div>
+          <div
+            aria-live="polite"
+            aria-label={`Quantity: ${qty}`}
+            className="w-10 text-center text-sm tabular-nums"
+          >
+            {qty}
+          </div>
           <button
             type="button"
-            className="h-11 w-11 text-lg text-ink hover:bg-bone-200"
             onClick={() => setQty((q) => Math.min(10, q + 1))}
+            disabled={qty >= 10}
+            aria-label="Increase quantity"
+            className="h-11 w-11 text-lg text-ink hover:bg-bone-200 disabled:cursor-not-allowed disabled:text-ink-40 disabled:hover:bg-transparent"
           >
             +
           </button>
@@ -177,15 +222,33 @@ export function VariantSelector({
       </div>
 
       <div className="flex items-center gap-3">
-        <Button type="submit" size="lg" disabled={isSoldOut || pending} className="flex-1">
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isSoldOut || pending}
+          className="flex-1"
+        >
           {pending ? "Adding..." : isSoldOut ? "Sold out" : "Add to bag"}
         </Button>
         {activeVariant && (
           <Badge tone={inventory < 6 ? "burgundy" : "bone"}>
-            {inventory < 6 ? `Only ${inventory} left` : `${inventory} in stock`}
+            {inventory < 6
+              ? `Only ${inventory} left`
+              : `${inventory} in stock`}
           </Badge>
         )}
       </div>
+
+      {state.error && (
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="text-sm text-danger"
+        >
+          {state.error}
+        </p>
+      )}
+
       {activeVariant && (
         <div className="text-[11px] tracking-[0.18em] uppercase text-ink-65">
           SKU {activeVariant.sku}

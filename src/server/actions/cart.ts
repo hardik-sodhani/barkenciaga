@@ -47,9 +47,11 @@ export async function removeCartItemAction(formData: FormData) {
   if (!itemId) return;
   await removeCartItem(itemId);
   revalidatePath("/cart");
+  revalidatePath("/", "layout");
 }
 
 export async function clearCartAction() {
   await clearCartLib();
   revalidatePath("/cart");
+  revalidatePath("/", "layout");
 }
