@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { startTransition, useActionState, useMemo, useState } from "react";
 import type { ProductVariant } from "@/db/schema";
 import { cn, formatPrice } from "@/lib/utils";
-import { addToCartAction } from "@/server/actions/cart";
+import { addToCartAction, type AddToCartState } from "@/server/actions/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useHeaderState } from "@/components/session-context";
@@ -22,6 +22,7 @@ const SIZE_LABEL: Record<Variant["size"], string> = {
 };
 
 const ALL_SIZES = ["xs", "s", "m", "l", "xl"] as const;
+const INITIAL_STATE: AddToCartState = { error: null };
 
 export function VariantSelector({
   variants,
@@ -74,31 +75,23 @@ export function VariantSelector({
   const inventory = activeVariant?.inventory ?? 0;
   const isSoldOut = !activeVariant || inventory === 0;
 
-  // useActionState wraps the server action in a transition so the optimistic
-  // cart bump survives until the revalidated layout payload arrives. The form
-  // also works without JS because we use the `action` prop with a server
-  // action and hidden inputs.
-  type State = { error: string | null };
-  const [state, formAction, pending] = useActionState<State, FormData>(
-    async (_prev, formData) => {
-      const variantId = String(formData.get("variantId") ?? "");
-      const quantity = Number(formData.get("quantity") ?? 1);
-      if (!variantId) return { error: "Pick a variant first." };
-      bumpCart(quantity);
-      try {
-        await addToCartAction(formData);
-        return { error: null };
-      } catch (err) {
-        return {
-          error: err instanceof Error ? err.message : "Couldn't add to bag.",
-        };
-      }
-    },
-    { error: null },
+  // useActionState wraps the server action so the form's `action` prop stays
+  // bound to a server function reference. That means the form still submits
+  // without JS (Next maps server actions to their POST endpoint at build
+  // time). With JS, the optimistic cart bump fires in `onSubmit` before the
+  // server roundtrip lands.
+  const [state, formAction, pending] = useActionState<AddToCartState, FormData>(
+    addToCartAction,
+    INITIAL_STATE,
   );
 
+  const onSubmit = () => {
+    if (!activeVariant || isSoldOut) return;
+    startTransition(() => bumpCart(qty));
+  };
+
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} onSubmit={onSubmit} className="space-y-6">
       <input
         type="hidden"
         name="variantId"

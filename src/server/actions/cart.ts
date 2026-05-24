@@ -14,18 +14,34 @@ const addSchema = z.object({
   quantity: z.coerce.number().int().min(1).max(10).default(1),
 });
 
+export type AddToCartState = { error: string | null };
+
 // DEMO-TODO: inventory is not decremented or checked here. A race on the last
 // unit can leave inventory < 0. Wrap this in a transaction, lock the variant
 // row, and surface a friendly error when the variant is already gone. See
 // TECH_DEBT.md item 5.
-export async function addToCartAction(formData: FormData) {
-  const parsed = addSchema.parse({
-    variantId: formData.get("variantId"),
-    quantity: formData.get("quantity") ?? 1,
-  });
-  await addToCartLib(parsed.variantId, parsed.quantity);
-  revalidatePath("/cart");
-  revalidatePath("/");
+//
+// Signature is `(prevState, formData) => Promise<state>` so the form can be
+// driven directly by `useActionState`, which keeps the action a server
+// reference and lets `<form action={…}>` submit without JS.
+export async function addToCartAction(
+  _prevState: AddToCartState | undefined,
+  formData: FormData,
+): Promise<AddToCartState> {
+  try {
+    const parsed = addSchema.parse({
+      variantId: formData.get("variantId"),
+      quantity: formData.get("quantity") ?? 1,
+    });
+    await addToCartLib(parsed.variantId, parsed.quantity);
+    revalidatePath("/cart");
+    revalidatePath("/", "layout");
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Couldn't add to bag.",
+    };
+  }
 }
 
 const updateSchema = z.object({
@@ -47,11 +63,9 @@ export async function removeCartItemAction(formData: FormData) {
   if (!itemId) return;
   await removeCartItem(itemId);
   revalidatePath("/cart");
-  revalidatePath("/", "layout");
 }
 
 export async function clearCartAction() {
   await clearCartLib();
   revalidatePath("/cart");
-  revalidatePath("/", "layout");
 }
