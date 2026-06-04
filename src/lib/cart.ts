@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "@/db";
 import { carts, cartItems, productVariants, products } from "@/db/schema";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { ensureCartId, getSession, readCartId } from "./session";
 import { ensureDbReady } from "@/db/bootstrap";
@@ -63,25 +63,17 @@ export async function getCart() {
     return { cartId, lines: [] as CartLine[], subtotalCents: 0, itemCount: 0 };
   }
 
-  const variantIds = itemRows.map((i) => i.variantId);
-  const variantRows = await db
-    .select()
-    .from(productVariants)
-    .where(inArray(productVariants.id, variantIds));
-  const productIds = Array.from(new Set(variantRows.map((v) => v.productId)));
-  const productRows = await db
-    .select()
-    .from(products)
-    .where(inArray(products.id, productIds));
-
-  const variantMap = new Map(variantRows.map((v) => [v.id, v]));
-  const productMap = new Map(productRows.map((p) => [p.id, p]));
-
   const lines: CartLine[] = [];
   for (const it of itemRows) {
-    const variant = variantMap.get(it.variantId);
+    const [variant] = await db
+      .select()
+      .from(productVariants)
+      .where(eq(productVariants.id, it.variantId));
     if (!variant) continue;
-    const product = productMap.get(variant.productId);
+    const [product] = await db
+      .select()
+      .from(products)
+      .where(eq(products.id, variant.productId));
     if (!product) continue;
     lines.push({
       id: it.id,

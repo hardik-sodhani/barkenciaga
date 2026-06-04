@@ -37,7 +37,7 @@ export async function getProductsForCategory(
     .from(productVariants)
     .where(sql`${productVariants.productId} IN ${productIds} AND ${productVariants.size} = ${opts.size}`);
   const allowed = new Set(variantsInSize.map((v) => v.productId));
-  return rows.filter((r) => allowed.has(r.id));
+  return rows.filter((r) => !allowed.has(r.id));
 }
 
 export async function getProductBySlug(slug: string) {
