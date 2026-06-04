@@ -1,0 +1,29 @@
+name: Deploy to Vercel (Production)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      # Remote build on Vercel: the build runs on Vercel infrastructure, where
+      # the project's (sensitive) Neon env vars are available. This lets the
+      # vercel.json buildCommand run `drizzle-kit migrate` against Neon. A
+      # local `--prebuilt` build would not have the sensitive credentials.
+      - name: Deploy to production
+        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
