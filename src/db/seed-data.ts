@@ -691,3 +691,30 @@ export const demoDogs: Array<{
     weightKg: 26,
   },
 ];
+
+/** Enough rows to exercise /account order pagination (BRK-8). */
+export const demoOrderHistory: Array<{
+  id: string;
+  status: "paid" | "fulfilled";
+  subtotalCents: number;
+  shippingCents: number;
+  taxCents: number;
+  totalCents: number;
+  dogName: string | null;
+  daysAgo: number;
+}> = Array.from({ length: 24 }, (_, i) => {
+  const n = 24 - i;
+  const subtotalCents = 12_500 + n * 1_100;
+  const shippingCents = subtotalCents >= 15_000 ? 0 : 1_200;
+  const taxCents = Math.round(subtotalCents * 0.0875);
+  return {
+    id: `ord_seed_${String(n).padStart(2, "0")}`,
+    status: n % 5 === 0 ? ("fulfilled" as const) : ("paid" as const),
+    subtotalCents,
+    shippingCents,
+    taxCents,
+    totalCents: subtotalCents + shippingCents + taxCents,
+    dogName: n % 2 === 0 ? "Atlas" : "Luna",
+    daysAgo: n,
+  };
+});

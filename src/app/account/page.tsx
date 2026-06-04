@@ -1,31 +1,38 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { orders } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { getDogsForUser } from "@/lib/dogs";
+import { getOrdersPage } from "@/lib/orders";
 import { setActiveDogAction } from "@/server/actions/auth";
 import { ensureDbReady } from "@/db/bootstrap";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
-export default async function AccountPage() {
+function parsePageParam(raw: string | undefined): number {
+  const n = Number.parseInt(raw ?? "1", 10);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const session = await getSession();
   if (!session.userId) redirect("/sign-in");
   await ensureDbReady();
 
-  // DEMO-TODO: this selects every order the user has ever placed. Add
-  // pagination (?page= / cursor) once a demo account crosses ~20 orders.
-  // See TECH_DEBT.md item 8.
-  const [dogs, orderRows] = await Promise.all([
+  const { page: pageParam } = await searchParams;
+  const requestedPage = parsePageParam(pageParam);
+
+  const [dogs, ordersPage] = await Promise.all([
     getDogsForUser(session.userId),
-    db
-      .select()
-      .from(orders)
-      .where(eq(orders.userId, session.userId))
-      .orderBy(desc(orders.createdAt)),
+    getOrdersPage(session.userId, requestedPage),
   ]);
+
+  const { orders: orderRows, total, page, pageSize, totalPages } = ordersPage;
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, total);
 
   return (
     <section className="mx-auto max-w-[1200px] px-6 py-16">
@@ -124,34 +131,78 @@ export default async function AccountPage() {
       </div>
 
       <section className="mt-12 border border-ink-20 bg-bone-50 p-6">
-        <div className="eyebrow mb-6">Order history</div>
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+          <div className="eyebrow">Order history</div>
+          {total > 0 && (
+            <div className="text-xs text-ink-60">
+              Showing {rangeStart}–{rangeEnd} of {total} order
+              {total === 1 ? "" : "s"}
+            </div>
+          )}
+        </div>
         {orderRows.length === 0 ? (
           <div className="border border-dashed border-ink-20 p-8 text-center text-sm text-ink-60">
             No past orders.
           </div>
         ) : (
-          <ul className="divide-y divide-ink-20">
-            {orderRows.map((o) => (
-              <li key={o.id} className="flex items-center justify-between py-4 text-sm">
-                <div>
-                  <div className="font-medium">{o.id}</div>
-                  <div className="text-xs text-ink-60">
-                    {new Date(o.createdAt).toLocaleDateString()} · {o.status}
-                    {o.dogName && ` · for ${o.dogName}`}
+          <>
+            <ul className="divide-y divide-ink-20">
+              {orderRows.map((o) => (
+                <li key={o.id} className="flex items-center justify-between py-4 text-sm">
+                  <div>
+                    <div className="font-medium">{o.id}</div>
+                    <div className="text-xs text-ink-60">
+                      {new Date(o.createdAt).toLocaleDateString()} · {o.status}
+                      {o.dogName && ` · for ${o.dogName}`}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="tabular-nums">{formatPrice(o.totalCents)}</div>
+                  <div className="flex items-center gap-4">
+                    <div className="tabular-nums">{formatPrice(o.totalCents)}</div>
+                    <Link
+                      href={`/orders/${o.id}`}
+                      className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {totalPages > 1 && (
+              <nav
+                className="mt-6 flex items-center justify-between border-t border-ink-20 pt-4"
+                aria-label="Order history pages"
+              >
+                {page > 1 ? (
                   <Link
-                    href={`/orders/${o.id}`}
-                    className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                    href={page === 2 ? "/account" : `/account?page=${page - 1}`}
+                    className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
                   >
-                    View
+                    ← Previous
                   </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
+                ) : (
+                  <span className="text-[11px] tracking-[0.24em] uppercase text-ink-40">
+                    ← Previous
+                  </span>
+                )}
+                <span className="text-xs text-ink-60">
+                  Page {page} of {totalPages}
+                </span>
+                {page < totalPages ? (
+                  <Link
+                    href={`/account?page=${page + 1}`}
+                    className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+                  >
+                    Next →
+                  </Link>
+                ) : (
+                  <span className="text-[11px] tracking-[0.24em] uppercase text-ink-40">
+                    Next →
+                  </span>
+                )}
+              </nav>
+            )}
+          </>
         )}
       </section>
     </section>

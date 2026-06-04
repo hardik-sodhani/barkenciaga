@@ -7,6 +7,7 @@ import {
   productVariants,
   users as usersTable,
   dogs as dogsTable,
+  orders as ordersTable,
 } from "./schema";
 import {
   categories,
@@ -14,6 +15,7 @@ import {
   products,
   demoUsers,
   demoDogs,
+  demoOrderHistory,
 } from "./seed-data";
 import { nanoid } from "nanoid";
 
@@ -95,6 +97,24 @@ export async function seedIfEmpty() {
 
     await tx.insert(usersTable).values(demoUsers);
     await tx.insert(dogsTable).values(demoDogs);
+
+    const customer = demoUsers.find((u) => u.id === "usr_demo_customer");
+    if (!customer) throw new Error("Missing demo customer user");
+    const now = Date.now();
+    await tx.insert(ordersTable).values(
+      demoOrderHistory.map((o) => ({
+        id: o.id,
+        userId: customer.id,
+        status: o.status,
+        email: customer.email,
+        subtotalCents: o.subtotalCents,
+        shippingCents: o.shippingCents,
+        taxCents: o.taxCents,
+        totalCents: o.totalCents,
+        dogName: o.dogName,
+        createdAt: new Date(now - o.daysAgo * 86_400_000),
+      })),
+    );
   });
 
   console.log(

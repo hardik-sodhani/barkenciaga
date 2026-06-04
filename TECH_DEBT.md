@@ -22,8 +22,6 @@ Each item is also marked with a `DEMO-TODO:` comment in the source so it&rsquo;s
 
 7. **No `/c/couture` size filter for XS / XL when nothing matches.** The filter just shows an empty state. Disable or grey-out filter options that would produce zero results (consistent with best-in-class commerce).
 
-8. **Account orders page loads every order at once.** [`src/app/account/page.tsx`](src/app/account/page.tsx) selects all orders for the user. Paginate.
-
 9. **Admin has no bulk ops.** Inventory edits are per-row. Add a bulk-update server action that accepts an array of `{id, inventory}`.
 
 ## Architectural asks (15+ min)
@@ -33,6 +31,10 @@ Each item is also marked with a `DEMO-TODO:` comment in the source so it&rsquo;s
 11. **No real payments.** Wire the checkout page to Stripe Checkout or the Stripe Payment Element behind `STRIPE_SECRET_KEY`. Keep the mocked path for offline demos.
 
 12. **PGlite on every request.** Production should hit Neon. Write a `getDb()` factory that picks driver based on `DATABASE_URL` being set.
+
+## Account order pagination (closed Jun 2026, BRK-8)
+
+- ~~Account orders page loads every order at once.~~ `/account` now pages order history via `?page=` (10 per page) using [`getOrdersPage`](src/lib/orders.ts). The demo customer is seeded with 24 historical orders.
 
 ## Post Images + Accessibility v1 (closed Apr 2026)
 
