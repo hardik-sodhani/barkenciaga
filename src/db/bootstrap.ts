@@ -2,7 +2,7 @@ import "server-only";
 import path from "node:path";
 import fs from "node:fs";
 import { sql } from "drizzle-orm";
-import { db, resetDbHard } from "./index";
+import { db, resetDbHard, usingExternalPostgres } from "./index";
 import { seedIfEmpty } from "./seed";
 
 declare global {
@@ -54,6 +54,15 @@ async function runMigrations() {
 export async function ensureDbReady(): Promise<void> {
   if (!globalThis.__barkenciagaBootstrap) {
     globalThis.__barkenciagaBootstrap = (async () => {
+      // On external Postgres (Neon), schema migrations are applied ahead of
+      // deploy via `drizzle-kit migrate`; the file-replay path below is
+      // PGlite-only (it relies on the PGlite result `.rows` shape and on the
+      // self-heal/reset flow). We still seed-if-empty so a fresh database is
+      // populated on first boot.
+      if (usingExternalPostgres) {
+        await seedIfEmpty();
+        return;
+      }
       try {
         await runMigrations();
         await seedIfEmpty();

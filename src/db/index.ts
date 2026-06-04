@@ -1,21 +1,28 @@
 import { PGlite } from "@electric-sql/pglite";
-import { drizzle } from "drizzle-orm/pglite";
+import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import path from "node:path";
 import fs from "node:fs";
 import * as schema from "./schema";
 
 /**
- * Barkenciaga uses PGlite - real Postgres running in-process - so the demo site
- * works with zero external setup. For production, swap this file for a
- * Neon/postgres-js driver (the Drizzle schema is identical).
+ * Barkenciaga runs on two drivers:
  *
- *   import { drizzle } from "drizzle-orm/postgres-js";
- *   import postgres from "postgres";
- *   const client = postgres(process.env.DATABASE_URL!);
- *   export const db = drizzle(client, { schema });
+ *   - Local dev / zero-config: PGlite (real Postgres in-process, persisted to
+ *     .data/pglite). Used whenever DATABASE_URL is NOT set.
+ *   - Production (Vercel + Neon/Postgres): postgres-js over DATABASE_URL.
+ *     Serverless filesystems are ephemeral, so a shared external Postgres is
+ *     required for data to persist across instances and visitors.
+ *
+ * The Drizzle schema is identical for both, so the rest of the app is unaware
+ * of which driver is active.
  */
 
-type DbType = ReturnType<typeof drizzle<typeof schema>>;
+const databaseUrl = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
+export const usingExternalPostgres = Boolean(databaseUrl);
+
+type DbType = ReturnType<typeof drizzlePglite<typeof schema>>;
 
 export const DATA_DIR = path.join(process.cwd(), ".data");
 export const DB_DIR = path.join(DATA_DIR, "pglite");
@@ -29,6 +36,7 @@ function ensureDir(dir: string) {
 declare global {
   var __barkenciagaDb: DbType | undefined;
   var __barkenciagaPg: PGlite | undefined;
+  var __barkenciagaSql: ReturnType<typeof postgres> | undefined;
   var __barkenciagaDbReady: Promise<void> | undefined;
   var __barkenciagaShutdownHooked: boolean | undefined;
 }
@@ -68,26 +76,40 @@ function openClient(): PGlite {
   return new PGlite(DB_DIR);
 }
 
-function initDb(): { db: DbType; client: PGlite } {
-  if (globalThis.__barkenciagaDb && globalThis.__barkenciagaPg) {
-    return { db: globalThis.__barkenciagaDb, client: globalThis.__barkenciagaPg };
+function initDb(): DbType {
+  if (globalThis.__barkenciagaDb) {
+    return globalThis.__barkenciagaDb;
+  }
+
+  if (databaseUrl) {
+    // Neon's pooled endpoint runs PgBouncer in transaction mode, which does
+    // not support prepared statements. `prepare: false` keeps transactions
+    // (used by the seed) working through the pooler.
+    const sqlClient =
+      globalThis.__barkenciagaSql ??
+      postgres(databaseUrl, { prepare: false });
+    const realDb = drizzlePostgres(sqlClient, { schema }) as unknown as DbType;
+    globalThis.__barkenciagaSql = sqlClient;
+    globalThis.__barkenciagaDb = realDb;
+    return realDb;
   }
 
   const client = openClient();
-  const realDb = drizzle(client, { schema });
+  const realDb = drizzlePglite(client, { schema });
 
   globalThis.__barkenciagaPg = client;
   globalThis.__barkenciagaDb = realDb;
   registerShutdownHooks();
-  return { db: realDb, client };
+  return realDb;
 }
 
 /**
  * Nuke the on-disk PGlite directory and reopen a fresh client. Used by the
  * bootstrap self-heal path when the previous run left a corrupt WAL behind.
- * Callers should also re-run migrations + seed.
+ * Callers should also re-run migrations + seed. No-op on external Postgres.
  */
 export async function resetDbHard(): Promise<void> {
+  if (usingExternalPostgres) return;
   // PGlite.close() is async; awaiting (and swallowing rejections) prevents an
   // unhandled rejection from terminating the dev server on Node 15+, and also
   // ensures the WASM runtime has released its file handles before we rmSync.
@@ -118,7 +140,10 @@ export const db = new Proxy({} as DbType, {
 export const pgClient = new Proxy({} as PGlite, {
   get(_target, prop, receiver) {
     const current = globalThis.__barkenciagaPg;
-    if (!current) throw new Error("Barkenciaga PGlite client not initialized");
+    if (!current)
+      throw new Error(
+        "Barkenciaga PGlite client not initialized (running on external Postgres?)",
+      );
     return Reflect.get(current as object, prop, receiver);
   },
 }) as PGlite;
