@@ -654,6 +654,68 @@ export const demoUsers = [
   },
 ];
 
+export const demoAddresses: Array<{
+  id: string;
+  userId: string;
+  label: string | null;
+  line1: string;
+  line2: string | null;
+  city: string;
+  region: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}> = [
+  {
+    id: "addr_demo_home",
+    userId: "usr_demo_customer",
+    label: "Home",
+    line1: "18 Greenwich Avenue",
+    line2: "Apt 4B",
+    city: "New York",
+    region: "NY",
+    postalCode: "10011",
+    country: "US",
+    isDefault: true,
+  },
+  {
+    id: "addr_demo_studio",
+    userId: "usr_demo_customer",
+    label: "Studio",
+    line1: "920 Abbot Kinney Blvd",
+    line2: null,
+    city: "Venice",
+    region: "CA",
+    postalCode: "90291",
+    country: "US",
+    isDefault: false,
+  },
+];
+
+// A historical order whose source address has since been deleted from the
+// address book. The shipping address lives as a JSONB snapshot on the order,
+// so deleting the address must never break this order's confirmation page.
+// Powers the deletion-safety smoke test.
+export const demoLegacyOrder = {
+  id: "ord_seed_legacy",
+  userId: "usr_demo_customer",
+  status: "fulfilled" as const,
+  email: "hello@barkenciaga.test",
+  subtotalCents: 24000,
+  shippingCents: 1200,
+  taxCents: 1740,
+  totalCents: 26940,
+  shippingAddress: {
+    line1: "77 Deleted Lane",
+    line2: "Suite 9",
+    city: "Portland",
+    region: "OR",
+    postalCode: "97201",
+    country: "US",
+  },
+  dogName: "Luna",
+};
+
 export const demoDogs: Array<{
   id: string;
   userId: string;

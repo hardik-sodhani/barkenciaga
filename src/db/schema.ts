@@ -225,6 +225,10 @@ export const dogsRelations = relations(dogs, ({ one }) => ({
   user: one(users, { fields: [dogs.userId], references: [users.id] }),
 }));
 
+export const addressesRelations = relations(addresses, ({ one }) => ({
+  user: one(users, { fields: [addresses.userId], references: [users.id] }),
+}));
+
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
     fields: [products.categoryId],

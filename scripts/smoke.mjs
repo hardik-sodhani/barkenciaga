@@ -21,6 +21,13 @@ const routes = [
   { path: "/sign-in", contains: "Sign in" },
   { path: "/showroom", contains: "Showroom" },
   { path: "/search?q=quilted", contains: "Quilted" },
+  // Address book routes are gated behind a logged-in user; guests are
+  // redirected (307) to /sign-in. The redirectOk check below allows this.
+  { path: "/account/addresses", contains: null },
+  { path: "/account/addresses/new", contains: null },
+  // Deletion-safety: a seeded historical order whose source address was
+  // deleted from the address book must still render its shipping snapshot.
+  { path: "/orders/ord_seed_legacy", contains: "77 Deleted Lane" },
 ];
 
 let failures = 0;
