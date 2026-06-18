@@ -32,7 +32,14 @@ export default async function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link href="/collections/autumn-woofer-26">
+                <Link
+                  href="/collections/autumn-woofer-26"
+                  className="text-bone hover:text-bone visited:text-bone"
+                  style={{
+                    color: "#f5f1e8",
+                    WebkitTextFillColor: "#f5f1e8",
+                  }}
+                >
                   Shop Autumn/Woofer &apos;26
                 </Link>
               </Button>

@@ -8,13 +8,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-ink text-bone hover:bg-ink-80",
-        accent: "bg-burgundy text-bone hover:bg-burgundy-600",
+        // Use the literal bone hex here instead of `text-bone`: a runtime
+        // CSS variable override in Chrome was poisoning `--bone` to a dark
+        // value, which made primary CTAs render dark text on dark fills.
+        primary: "bg-ink text-[#f5f1e8] hover:bg-ink-80 hover:text-[#f5f1e8]",
+        accent: "bg-burgundy text-[#f5f1e8] hover:bg-burgundy-600 hover:text-[#f5f1e8]",
         highlight: "bg-chartreuse text-ink hover:bg-chartreuse-600",
         outline: "border border-ink text-ink hover:bg-ink hover:text-bone",
         ghost: "text-ink hover:bg-bone-200",
         subtle: "bg-bone-200 text-ink hover:bg-bone-300",
-        danger: "border border-danger text-danger hover:bg-danger hover:text-bone",
+        danger: "border border-danger text-danger hover:bg-danger hover:text-[#f5f1e8]",
       },
       size: {
         sm: "h-8 px-3 text-xs tracking-wider uppercase",
