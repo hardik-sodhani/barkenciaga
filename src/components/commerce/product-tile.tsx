@@ -27,6 +27,7 @@ export function ProductTile({
   const alt = product.subtitle
     ? `${product.name}, ${product.subtitle}`
     : product.name;
+  const fallbackEyebrow = eyebrow ?? product.brandLine;
 
   return (
     <Link
@@ -60,10 +61,17 @@ export function ProductTile({
         ) : (
           <div className="absolute inset-0 flex items-end p-5">
             <span className="bg-bone/90 px-2.5 py-1 text-xs font-medium tracking-[0.18em] uppercase text-ink">
-              {eyebrow ?? product.brandLine}
+              {fallbackEyebrow}
             </span>
           </div>
         )}
+        {hasImage && eyebrow ? (
+          <div className="absolute left-3 top-3 z-10">
+            <span className="bg-bone/90 px-2.5 py-1 text-xs font-medium tracking-[0.18em] uppercase text-ink">
+              {eyebrow}
+            </span>
+          </div>
+        ) : null}
       </div>
       <div className="mt-3 flex items-start justify-between gap-4">
         <div>

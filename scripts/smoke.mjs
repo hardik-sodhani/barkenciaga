@@ -10,7 +10,7 @@
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 
 const routes = [
-  { path: "/", contains: "Barkenciaga", expectsImage: true },
+  { path: "/", contains: "Limited quantities", expectsImage: true },
   { path: "/c/couture", contains: "Couture", expectsImage: true },
   { path: "/c/accessories", contains: "Accessories", expectsImage: true },
   { path: "/c/eyewear", contains: "Eyewear", expectsImage: true },
