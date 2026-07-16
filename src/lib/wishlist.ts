@@ -114,6 +114,15 @@ export async function removeWishlistItem(userId: string, variantId: string) {
 }
 
 export async function moveWishlistItemToCart(userId: string, variantId: string) {
+  await ensureDbReady();
+  const [existing] = await db
+    .select({ id: wishlistItems.id })
+    .from(wishlistItems)
+    .where(
+      and(eq(wishlistItems.userId, userId), eq(wishlistItems.variantId, variantId)),
+    );
+  if (!existing) return;
+
   await addToCart(variantId, 1);
   await removeWishlistItem(userId, variantId);
 }

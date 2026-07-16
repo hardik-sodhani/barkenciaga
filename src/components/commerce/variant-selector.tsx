@@ -58,6 +58,9 @@ export function VariantSelector({
   );
   const [qty, setQty] = useState(1);
   const [pending, setPending] = useState(false);
+  const [savedVariantIds, setSavedVariantIds] = useState(
+    () => new Set(wishlistedVariantIds),
+  );
 
   const activeVariant = variants.find(
     (v) => v.color === color && v.size === size,
@@ -65,8 +68,17 @@ export function VariantSelector({
   const inventory = activeVariant?.inventory ?? 0;
   const isSoldOut = !activeVariant || inventory === 0;
   const isWishlisted = activeVariant
-    ? wishlistedVariantIds.includes(activeVariant.id)
+    ? savedVariantIds.has(activeVariant.id)
     : false;
+
+  function handleWishlistChange(variantId: string, saved: boolean) {
+    setSavedVariantIds((prev) => {
+      const next = new Set(prev);
+      if (saved) next.add(variantId);
+      else next.delete(variantId);
+      return next;
+    });
+  }
 
   // DEMO-TODO: wire React's useOptimistic() here so the header cart count
   // increments immediately instead of waiting for the server action to
@@ -196,6 +208,7 @@ export function VariantSelector({
           initialSaved={isWishlisted}
           isSignedIn={isSignedIn}
           signInHref={signInHref}
+          onSavedChange={handleWishlistChange}
         />
         {activeVariant && (
           <Badge tone={inventory < 6 ? "burgundy" : "bone"}>

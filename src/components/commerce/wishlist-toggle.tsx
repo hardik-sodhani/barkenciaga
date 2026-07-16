@@ -12,11 +12,13 @@ export function WishlistToggle({
   initialSaved,
   isSignedIn,
   signInHref,
+  onSavedChange,
 }: {
   variantId: string | null;
   initialSaved: boolean;
   isSignedIn: boolean;
   signInHref: string;
+  onSavedChange?: (variantId: string, saved: boolean) => void;
 }) {
   const [saved, setSaved] = useState(initialSaved);
   const [pending, setPending] = useState(false);
@@ -48,6 +50,7 @@ export function WishlistToggle({
       fd.set("variantId", variantId!);
       fd.set("saved", saved ? "true" : "false");
       await toggleWishlistAction(fd);
+      onSavedChange?.(variantId!, nextSaved);
     } catch {
       setSaved(!nextSaved);
     } finally {
