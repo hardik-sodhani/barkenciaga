@@ -6,6 +6,7 @@ import { cn, formatPrice } from "@/lib/utils";
 import { addToCartAction } from "@/server/actions/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { WishlistToggle } from "@/components/commerce/wishlist-toggle";
 
 type Variant = Pick<
   ProductVariant,
@@ -25,11 +26,17 @@ export function VariantSelector({
   priceCents,
   recommendedSize,
   activeDogName,
+  wishlistedVariantIds = [],
+  isSignedIn = false,
+  signInHref = "/sign-in",
 }: {
   variants: Variant[];
   priceCents: number;
   recommendedSize?: Variant["size"] | null;
   activeDogName?: string | null;
+  wishlistedVariantIds?: string[];
+  isSignedIn?: boolean;
+  signInHref?: string;
 }) {
   const colors = useMemo(() => {
     const map = new Map<string, { color: string; colorHex: string }>();
@@ -57,6 +64,9 @@ export function VariantSelector({
   );
   const inventory = activeVariant?.inventory ?? 0;
   const isSoldOut = !activeVariant || inventory === 0;
+  const isWishlisted = activeVariant
+    ? wishlistedVariantIds.includes(activeVariant.id)
+    : false;
 
   // DEMO-TODO: wire React's useOptimistic() here so the header cart count
   // increments immediately instead of waiting for the server action to
@@ -180,6 +190,13 @@ export function VariantSelector({
         <Button type="submit" size="lg" disabled={isSoldOut || pending} className="flex-1">
           {pending ? "Adding..." : isSoldOut ? "Sold out" : "Add to bag"}
         </Button>
+        <WishlistToggle
+          key={activeVariant?.id ?? "none"}
+          variantId={activeVariant?.id ?? null}
+          initialSaved={isWishlisted}
+          isSignedIn={isSignedIn}
+          signInHref={signInHref}
+        />
         {activeVariant && (
           <Badge tone={inventory < 6 ? "burgundy" : "bone"}>
             {inventory < 6 ? `Only ${inventory} left` : `${inventory} in stock`}

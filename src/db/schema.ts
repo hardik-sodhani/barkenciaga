@@ -215,10 +215,29 @@ export const orderItems = pgTable(
   (t) => [index("order_items_order_idx").on(t.orderId)],
 );
 
+export const wishlistItems = pgTable(
+  "wishlist_items",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    variantId: text("variant_id")
+      .notNull()
+      .references(() => productVariants.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("wishlist_items_user_idx").on(t.userId),
+    uniqueIndex("wishlist_items_user_variant_idx").on(t.userId, t.variantId),
+  ],
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   dogs: many(dogs),
   orders: many(orders),
   addresses: many(addresses),
+  wishlistItems: many(wishlistItems),
 }));
 
 export const dogsRelations = relations(dogs, ({ one }) => ({
@@ -234,10 +253,19 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   collectionProducts: many(collectionProducts),
 }));
 
-export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+export const productVariantsRelations = relations(productVariants, ({ one, many }) => ({
   product: one(products, {
     fields: [productVariants.productId],
     references: [products.id],
+  }),
+  wishlistItems: many(wishlistItems),
+}));
+
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  user: one(users, { fields: [wishlistItems.userId], references: [users.id] }),
+  variant: one(productVariants, {
+    fields: [wishlistItems.variantId],
+    references: [productVariants.id],
   }),
 }));
 
@@ -299,3 +327,4 @@ export type CartItem = typeof cartItems.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Address = typeof addresses.$inferSelect;
+export type WishlistItem = typeof wishlistItems.$inferSelect;

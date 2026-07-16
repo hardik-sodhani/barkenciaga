@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getProductBySlug } from "@/lib/products";
 import { getActiveDog, recommendSizeForDog } from "@/lib/dogs";
+import { getSession } from "@/lib/session";
+import { getWishlistedVariantIdsForProduct } from "@/lib/wishlist";
 import { VariantSelector } from "@/components/commerce/variant-selector";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +19,10 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const dog = await getActiveDog();
+  const session = await getSession();
+  const wishlistedVariantIds = session.userId
+    ? await getWishlistedVariantIdsForProduct(session.userId, product.id)
+    : [];
   const availableSizes = Array.from(
     new Set(product.variants.map((v) => v.size)),
   ) as Array<"xs" | "s" | "m" | "l" | "xl">;
@@ -116,6 +122,9 @@ export default async function ProductPage({
             priceCents={product.priceCents}
             recommendedSize={recommended ?? null}
             activeDogName={dog?.name ?? null}
+            wishlistedVariantIds={wishlistedVariantIds}
+            isSignedIn={Boolean(session.userId)}
+            signInHref={`/sign-in?next=/p/${slug}`}
           />
 
           {product.editorialCopy && (
