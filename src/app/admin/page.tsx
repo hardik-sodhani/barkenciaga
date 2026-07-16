@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, products, productVariants, categories } from "@/db/schema";
 import { ensureDbReady } from "@/db/bootstrap";
