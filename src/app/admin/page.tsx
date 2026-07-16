@@ -5,12 +5,17 @@ import { db } from "@/db";
 import { orders, products, productVariants, categories } from "@/db/schema";
 import { ensureDbReady } from "@/db/bootstrap";
 import { getSession } from "@/lib/session";
+import { listPromoCodes } from "@/lib/promos";
 import {
   updateProductAction,
   updateVariantInventoryAction,
 } from "@/server/actions/products";
+import {
+  createPromoAction,
+  deactivatePromoAction,
+} from "@/server/actions/promo";
 import { formatPrice } from "@/lib/utils";
-import { Input, Label } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default async function AdminPage() {
@@ -20,11 +25,12 @@ export default async function AdminPage() {
   }
   await ensureDbReady();
 
-  const [prods, variants, cats, recentOrders] = await Promise.all([
+  const [prods, variants, cats, recentOrders, promos] = await Promise.all([
     db.select().from(products),
     db.select().from(productVariants),
     db.select().from(categories),
     db.select().from(orders).orderBy(desc(orders.createdAt)).limit(20),
+    listPromoCodes(),
   ]);
 
   const variantsByProduct = new Map<string, typeof variants>();
@@ -49,6 +55,98 @@ export default async function AdminPage() {
       </div>
 
       <section className="mt-12">
+        <h2 className="font-display text-3xl mb-6">Promo codes</h2>
+        <div className="grid gap-8 md:grid-cols-2">
+          <form action={createPromoAction} className="space-y-3 border border-ink-20 bg-bone-50 p-5">
+            <div className="eyebrow mb-2">Create promo</div>
+            <div>
+              <Label htmlFor="promo-code">Code</Label>
+              <Input id="promo-code" name="code" placeholder="WOOFER20" required className="uppercase" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="promo-kind">Kind</Label>
+                <Select id="promo-kind" name="kind" defaultValue="percent" required>
+                  <option value="percent">Percent</option>
+                  <option value="fixed">Fixed (cents)</option>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="promo-value">Value</Label>
+                <Input
+                  id="promo-value"
+                  name="valueInt"
+                  type="number"
+                  min={1}
+                  placeholder="20"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="promo-min">Min subtotal (¢)</Label>
+                <Input id="promo-min" name="minSubtotalCents" type="number" min={0} defaultValue={0} />
+              </div>
+              <div>
+                <Label htmlFor="promo-max">Max redemptions</Label>
+                <Input id="promo-max" name="maxRedemptions" type="number" min={1} placeholder="unlimited" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="promo-starts">Starts at</Label>
+                <Input id="promo-starts" name="startsAt" type="datetime-local" />
+              </div>
+              <div>
+                <Label htmlFor="promo-ends">Ends at</Label>
+                <Input id="promo-ends" name="endsAt" type="datetime-local" />
+              </div>
+            </div>
+            <Button type="submit" size="sm">
+              Create
+            </Button>
+          </form>
+
+          <ul className="divide-y divide-ink-20 border border-ink-20 bg-bone-50">
+            {promos.length === 0 ? (
+              <li className="p-5 text-sm text-ink-60">No promo codes yet.</li>
+            ) : (
+              promos.map((p) => (
+                <li key={p.id} className="flex items-start justify-between gap-3 p-4 text-sm">
+                  <div>
+                    <div className="font-medium tracking-wide">{p.code}</div>
+                    <div className="text-xs text-ink-60">
+                      {p.kind === "percent" ? `${p.valueInt}%` : formatPrice(p.valueInt)}
+                      {" · "}
+                      min {formatPrice(p.minSubtotalCents)}
+                      {" · "}
+                      {p.redemptionsCount}
+                      {p.maxRedemptions != null ? `/${p.maxRedemptions}` : ""} redemptions
+                      {!p.active ? " · inactive" : ""}
+                    </div>
+                  </div>
+                  {p.active ? (
+                    <form action={deactivatePromoAction}>
+                      <input type="hidden" name="id" value={p.id} />
+                      <button
+                        type="submit"
+                        className="text-[10px] tracking-[0.2em] uppercase text-ink-60 hover:text-burgundy"
+                      >
+                        Deactivate
+                      </button>
+                    </form>
+                  ) : (
+                    <span className="eyebrow">Off</span>
+                  )}
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+      </section>
+
+      <section className="mt-16">
         <h2 className="font-display text-3xl mb-6">Recent orders</h2>
         {recentOrders.length === 0 ? (
           <div className="border border-dashed border-ink-20 p-8 text-sm text-ink-60">

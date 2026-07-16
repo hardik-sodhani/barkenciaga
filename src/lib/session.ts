@@ -14,6 +14,7 @@ export type SessionData = {
   userRole?: "customer" | "admin";
   activeDogId?: string;
   cartId?: string;
+  promoCodeId?: string;
 };
 
 export type BarkenciagaSession = {
@@ -23,6 +24,7 @@ export type BarkenciagaSession = {
   userRole: "customer" | "admin" | null;
   activeDogId: string | null;
   cartId: string | null;
+  promoCodeId: string | null;
 };
 
 const sessionPassword =
@@ -54,7 +56,18 @@ export async function getSession(): Promise<BarkenciagaSession> {
     userRole: s.userRole ?? null,
     activeDogId: s.activeDogId ?? null,
     cartId: s.cartId ?? null,
+    promoCodeId: s.promoCodeId ?? null,
   };
+}
+
+export async function setSessionPromoCodeId(promoCodeId: string | null) {
+  const s = await getRawSession();
+  if (promoCodeId) {
+    s.promoCodeId = promoCodeId;
+  } else {
+    delete s.promoCodeId;
+  }
+  await s.save();
 }
 
 /**

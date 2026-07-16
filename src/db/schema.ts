@@ -181,6 +181,8 @@ export const orders = pgTable(
     subtotalCents: integer("subtotal_cents").notNull(),
     shippingCents: integer("shipping_cents").notNull().default(0),
     taxCents: integer("tax_cents").notNull().default(0),
+    discountCents: integer("discount_cents").notNull().default(0),
+    promoCode: text("promo_code"),
     totalCents: integer("total_cents").notNull(),
     shippingAddress: jsonb("shipping_address").$type<{
       line1: string;
@@ -194,6 +196,43 @@ export const orders = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("orders_user_idx").on(t.userId)],
+);
+
+export const promoCodes = pgTable(
+  "promo_codes",
+  {
+    id: text("id").primaryKey(),
+    code: text("code").notNull(),
+    kind: text("kind", { enum: ["percent", "fixed"] }).notNull(),
+    valueInt: integer("value_int").notNull(),
+    minSubtotalCents: integer("min_subtotal_cents").notNull().default(0),
+    maxRedemptions: integer("max_redemptions"),
+    redemptionsCount: integer("redemptions_count").notNull().default(0),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("promo_codes_code_idx").on(t.code)],
+);
+
+export const promoRedemptions = pgTable(
+  "promo_redemptions",
+  {
+    id: text("id").primaryKey(),
+    promoId: text("promo_id")
+      .notNull()
+      .references(() => promoCodes.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("promo_redemptions_promo_idx").on(t.promoId),
+    uniqueIndex("promo_redemptions_promo_user_idx").on(t.promoId, t.userId),
+  ],
 );
 
 export const orderItems = pgTable(
@@ -277,6 +316,7 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
 export const ordersRelations = relations(orders, ({ one, many }) => ({
   user: one(users, { fields: [orders.userId], references: [users.id] }),
   items: many(orderItems),
+  promoRedemptions: many(promoRedemptions),
 }));
 
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
@@ -284,6 +324,25 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   variant: one(productVariants, {
     fields: [orderItems.variantId],
     references: [productVariants.id],
+  }),
+}));
+
+export const promoCodesRelations = relations(promoCodes, ({ many }) => ({
+  redemptions: many(promoRedemptions),
+}));
+
+export const promoRedemptionsRelations = relations(promoRedemptions, ({ one }) => ({
+  promo: one(promoCodes, {
+    fields: [promoRedemptions.promoId],
+    references: [promoCodes.id],
+  }),
+  user: one(users, {
+    fields: [promoRedemptions.userId],
+    references: [users.id],
+  }),
+  order: one(orders, {
+    fields: [promoRedemptions.orderId],
+    references: [orders.id],
   }),
 }));
 
@@ -299,3 +358,5 @@ export type CartItem = typeof cartItems.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Address = typeof addresses.$inferSelect;
+export type PromoCode = typeof promoCodes.$inferSelect;
+export type PromoRedemption = typeof promoRedemptions.$inferSelect;

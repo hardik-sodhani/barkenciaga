@@ -5,23 +5,41 @@ import { checkoutAction } from "@/server/actions/checkout";
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PromoCodeForm } from "@/components/commerce/promo-code-form";
 
-export default async function CheckoutPage() {
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ promoError?: string }>;
+}) {
   const cart = await getCart();
   if (cart.lines.length === 0) {
     redirect("/cart");
   }
 
+  const { promoError } = await searchParams;
   const session = await getSession();
   const shipping = shippingCentsFor(cart.subtotalCents);
-  const tax = taxCentsFor(cart.subtotalCents);
-  const total = cart.subtotalCents + shipping + tax;
+  // Match checkoutAction tax base (subtotal + shipping) so the button total
+  // equals what will be charged after discount.
+  const tax = taxCentsFor(cart.subtotalCents + shipping);
+  const total =
+    Math.max(0, cart.subtotalCents - cart.discountCents) + shipping + tax;
 
   return (
     <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">
       <div className="md:col-span-7">
         <div className="eyebrow mb-2">Checkout</div>
         <h1 className="display-lg mb-8">Final steps.</h1>
+
+        {promoError ? (
+          <div
+            className="mb-6 border border-burgundy/40 bg-bone-50 px-4 py-3 text-sm text-burgundy"
+            role="alert"
+          >
+            {promoError} Your promo was removed — update your bag or continue without it.
+          </div>
+        ) : null}
 
         <form action={checkoutAction} className="space-y-12">
           <section>
@@ -144,6 +162,12 @@ export default async function CheckoutPage() {
               <dt>Subtotal</dt>
               <dd className="tabular-nums">{formatPrice(cart.subtotalCents)}</dd>
             </div>
+            {cart.discountCents > 0 && (
+              <div className="flex justify-between text-burgundy">
+                <dt>Discount{cart.appliedPromo ? ` (${cart.appliedPromo.code})` : ""}</dt>
+                <dd className="tabular-nums">−{formatPrice(cart.discountCents)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt>Shipping</dt>
               <dd className="tabular-nums">
@@ -159,6 +183,16 @@ export default async function CheckoutPage() {
             <span>Total</span>
             <span className="tabular-nums">{formatPrice(total)}</span>
           </div>
+          <PromoCodeForm
+            appliedPromo={
+              cart.appliedPromo
+                ? {
+                    code: cart.appliedPromo.code,
+                    discountCents: cart.appliedPromo.discountCents,
+                  }
+                : null
+            }
+          />
         </div>
       </aside>
     </section>

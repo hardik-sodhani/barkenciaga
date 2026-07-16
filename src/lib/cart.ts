@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { ensureCartId, getSession, readCartId } from "./session";
 import { ensureDbReady } from "@/db/bootstrap";
+import { validatePromo } from "./promos";
 
 export type CartLine = {
   id: string;
@@ -47,11 +48,26 @@ async function ensureCartRow(cartId: string) {
 // DEMO-TODO: three sequential SELECTs (items, variants, products) = classic
 // N+1 shape. Collapse into a single Drizzle relational query or a JOIN and
 // keep the public return shape identical. See TECH_DEBT.md item 6.
+export type AppliedPromo = {
+  id: string;
+  code: string;
+  kind: "percent" | "fixed";
+  valueInt: number;
+  discountCents: number;
+};
+
 export async function getCart() {
   await ensureDbReady();
   const cartId = await readCartId();
   if (!cartId) {
-    return { cartId: null, lines: [] as CartLine[], subtotalCents: 0, itemCount: 0 };
+    return {
+      cartId: null,
+      lines: [] as CartLine[],
+      subtotalCents: 0,
+      itemCount: 0,
+      discountCents: 0,
+      appliedPromo: null as AppliedPromo | null,
+    };
   }
 
   const itemRows = await db
@@ -60,7 +76,14 @@ export async function getCart() {
     .where(eq(cartItems.cartId, cartId));
 
   if (itemRows.length === 0) {
-    return { cartId, lines: [] as CartLine[], subtotalCents: 0, itemCount: 0 };
+    return {
+      cartId,
+      lines: [] as CartLine[],
+      subtotalCents: 0,
+      itemCount: 0,
+      discountCents: 0,
+      appliedPromo: null as AppliedPromo | null,
+    };
   }
 
   const lines: CartLine[] = [];
@@ -102,15 +125,38 @@ export async function getCart() {
   const subtotalCents = lines.reduce((s, l) => s + l.lineTotalCents, 0);
   const itemCount = lines.reduce((s, l) => s + l.quantity, 0);
 
-  return { cartId, lines, subtotalCents, itemCount };
+  const session = await getSession();
+  let discountCents = 0;
+  let appliedPromo: AppliedPromo | null = null;
+  if (session.promoCodeId) {
+    const result = await validatePromo({
+      promoId: session.promoCodeId,
+      userId: session.userId,
+      subtotalCents,
+    });
+    if (result.ok) {
+      discountCents = result.discountCents;
+      appliedPromo = {
+        id: result.promo.id,
+        code: result.promo.code,
+        kind: result.promo.kind,
+        valueInt: result.promo.valueInt,
+        discountCents: result.discountCents,
+      };
+    }
+    // Invalid session promos are ignored for display; checkout re-validates
+    // and clears them via setSessionPromoCodeId in an action context.
+  }
+
+  return { cartId, lines, subtotalCents, itemCount, discountCents, appliedPromo };
 }
 
 export async function getCartSummary() {
   try {
-    const { itemCount, subtotalCents } = await getCart();
-    return { itemCount, subtotalCents };
+    const { itemCount, subtotalCents, discountCents } = await getCart();
+    return { itemCount, subtotalCents, discountCents };
   } catch {
-    return { itemCount: 0, subtotalCents: 0 };
+    return { itemCount: 0, subtotalCents: 0, discountCents: 0 };
   }
 }
 

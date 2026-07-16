@@ -58,6 +58,12 @@ export default async function OrderConfirmation({
             <dt>Subtotal</dt>
             <dd className="tabular-nums">{formatPrice(order.subtotalCents)}</dd>
           </div>
+          {order.discountCents > 0 && (
+            <div className="flex justify-between text-burgundy">
+              <dt>Discount{order.promoCode ? ` (${order.promoCode})` : ""}</dt>
+              <dd className="tabular-nums">−{formatPrice(order.discountCents)}</dd>
+            </div>
+          )}
           <div className="flex justify-between">
             <dt>Shipping</dt>
             <dd className="tabular-nums">

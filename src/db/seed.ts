@@ -7,6 +7,7 @@ import {
   productVariants,
   users as usersTable,
   dogs as dogsTable,
+  promoCodes as promoCodesTable,
 } from "./schema";
 import {
   categories,
@@ -17,9 +18,70 @@ import {
 } from "./seed-data";
 import { nanoid } from "nanoid";
 
+async function seedPromosIfEmpty() {
+  const existing = await db.select().from(promoCodesTable).limit(1);
+  if (existing.length > 0) return;
+
+  const now = Date.now();
+  await db.insert(promoCodesTable).values([
+    {
+      id: "promo_woofer20",
+      code: "WOOFER20",
+      kind: "percent",
+      valueInt: 20,
+      minSubtotalCents: 10000,
+      maxRedemptions: null,
+      redemptionsCount: 0,
+      startsAt: new Date(now - 7 * 24 * 60 * 60 * 1000),
+      endsAt: new Date(now + 90 * 24 * 60 * 60 * 1000),
+      active: true,
+    },
+    {
+      id: "promo_bark10",
+      code: "BARK10",
+      kind: "fixed",
+      valueInt: 1000,
+      minSubtotalCents: 0,
+      maxRedemptions: null,
+      redemptionsCount: 0,
+      startsAt: null,
+      endsAt: null,
+      active: true,
+    },
+    {
+      id: "promo_launch1",
+      code: "LAUNCH1",
+      kind: "percent",
+      valueInt: 15,
+      minSubtotalCents: 0,
+      maxRedemptions: 1,
+      redemptionsCount: 0,
+      startsAt: new Date(now - 24 * 60 * 60 * 1000),
+      endsAt: new Date(now + 30 * 24 * 60 * 60 * 1000),
+      active: true,
+    },
+    {
+      id: "promo_expired",
+      code: "EXPIRED",
+      kind: "percent",
+      valueInt: 50,
+      minSubtotalCents: 0,
+      maxRedemptions: null,
+      redemptionsCount: 0,
+      startsAt: new Date(now - 60 * 24 * 60 * 60 * 1000),
+      endsAt: new Date(now - 7 * 24 * 60 * 60 * 1000),
+      active: true,
+    },
+  ]);
+  console.log("[barkenciaga] seeded 4 promo codes");
+}
+
 export async function seedIfEmpty() {
   const existing = await db.select().from(categoriesTable);
-  if (existing.length > 0) return;
+  if (existing.length > 0) {
+    await seedPromosIfEmpty();
+    return;
+  }
 
   await db.transaction(async (tx) => {
     await tx.insert(categoriesTable).values(
@@ -96,6 +158,8 @@ export async function seedIfEmpty() {
     await tx.insert(usersTable).values(demoUsers);
     await tx.insert(dogsTable).values(demoDogs);
   });
+
+  await seedPromosIfEmpty();
 
   console.log(
     `[barkenciaga] seeded ${categories.length} categories, ${products.length} products, ${collections.length} collections`,
