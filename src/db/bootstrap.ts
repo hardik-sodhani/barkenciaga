@@ -4,17 +4,10 @@ import fs from "node:fs";
 import { sql } from "drizzle-orm";
 import { db, resetDbHard, usingExternalPostgres } from "./index";
 import { seedIfEmpty } from "./seed";
+import { isPgliteAbort } from "./pglite-errors";
 
 declare global {
   var __barkenciagaBootstrap: Promise<void> | undefined;
-}
-
-function isPgliteAbort(err: unknown): boolean {
-  const msg = String((err as { message?: string })?.message ?? err ?? "");
-  const causeMsg = String(
-    (err as { cause?: { message?: string } })?.cause?.message ?? "",
-  );
-  return /Aborted\(\)/i.test(msg) || /Aborted\(\)/i.test(causeMsg);
 }
 
 async function runMigrations() {
