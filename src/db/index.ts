@@ -19,7 +19,13 @@ import * as schema from "./schema";
  * of which driver is active.
  */
 
-const databaseUrl = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
+export function resolveDatabaseUrl(
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  return env.DATABASE_URL ?? env.POSTGRES_URL;
+}
+
+const databaseUrl = resolveDatabaseUrl();
 export const usingExternalPostgres = Boolean(databaseUrl);
 
 type DbType = ReturnType<typeof drizzlePglite<typeof schema>>;
