@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
+import { getCart } from "@/lib/cart";
+import { computePreviewTotals } from "@/lib/checkout-totals";
 import { CartLines } from "@/components/commerce/cart-lines";
 import { formatPrice } from "@/lib/utils";
 import { clearCartAction } from "@/server/actions/cart";
 
 export default async function CartPage() {
   const cart = await getCart();
-  const shipping = shippingCentsFor(cart.subtotalCents);
-  const tax = taxCentsFor(cart.subtotalCents);
-  const total = cart.subtotalCents + shipping + tax;
+  const { shippingCents: shipping, taxCents: tax, totalCents: total } =
+    computePreviewTotals(cart.subtotalCents);
 
   return (
     <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">
