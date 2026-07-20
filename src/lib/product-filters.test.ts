@@ -1,5 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { filterProductsWithSizeVariant } from "@/lib/product-filters";
+import { getProductsForCategory } from "@/lib/products";
+
+const { ensureDbReadyMock, selectMock } = vi.hoisted(() => ({
+  ensureDbReadyMock: vi.fn(),
+  selectMock: vi.fn(),
+}));
+
+vi.mock("@/db", () => ({ db: { select: selectMock } }));
+vi.mock("@/db/bootstrap", () => ({ ensureDbReady: ensureDbReadyMock }));
 
 const products = [
   { id: "p1", name: "Coat" },
@@ -19,17 +28,21 @@ describe("filterProductsWithSizeVariant", () => {
 });
 
 describe("category size filter contract", () => {
-  function buggyCategoryFilter<T extends { id: string }>(
-    rows: T[],
-    productIdsWithSize: Iterable<string>,
-  ) {
-    const allowed = new Set(productIdsWithSize);
-    return rows.filter((row) => !allowed.has(row.id));
-  }
-
   // BRK-18: getProductsForCategory inverts membership and excludes matching products.
-  it.fails("category filter includes products with the selected size (BRK-18)", () => {
-    const filtered = buggyCategoryFilter(products, ["p1"]);
+  it.fails("category filter includes products with the selected size (BRK-18)", async () => {
+    selectMock
+      .mockReturnValueOnce({
+        from: () => ({
+          where: () => ({ orderBy: async () => products }),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: () => ({
+          where: async () => [{ productId: "p1" }],
+        }),
+      });
+
+    const filtered = await getProductsForCategory("category-1", { size: "m" });
     expect(filtered.map((p) => p.id)).toEqual(["p1"]);
   });
 });
