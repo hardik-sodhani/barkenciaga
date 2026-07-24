@@ -4,7 +4,7 @@
     {
       "name": "collection-catalog-and-imagery",
       "type": "worker",
-      "branch": "`orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-sodhani/barkenciaga/pull/23)",
+      "branch": "orch/hawaiian-ss26/collection-catalog-and-imagery",
       "startingRef": "main",
       "dependsOn": [],
       "agentId": "bc-71c8dcee-18b2-4364-8403-c90695a54bec",
@@ -49,24 +49,24 @@
       "name": "verify-collection",
       "type": "verifier",
       "branch": "orch/hawaiian-ss26/verify-collection",
-      "startingRef": "`orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-sodhani/barkenciaga/pull/23)",
+      "startingRef": "orch/hawaiian-ss26/collection-catalog-and-imagery",
       "dependsOn": [
         "collection-catalog-and-imagery"
       ],
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "error",
+      "status": "pending",
       "resultStatus": null,
       "handoffPath": null,
       "startedAt": null,
       "finishedAt": null,
-      "lastUpdate": "2026-07-24T21:02:27.963Z",
-      "note": "spawn failed after 3 transient sub-attempts: Error: collection-catalog-and-imagery: branch must be orch/hawaiian-ss26/collection-catalog-and-imagery, got `orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-so…",
+      "lastUpdate": "2026-07-24T21:02:50.491Z",
+      "note": "respawned by local-cli (was error; attempts=2)",
       "attempts": 2,
       "slackTs": null,
       "prNumber": null,
-      "failureMode": "unknown",
+      "failureMode": null,
       "verification": null
     }
   ],
@@ -126,6 +126,10 @@
     {
       "at": "2026-07-24T21:02:21.755Z",
       "message": "verify-collection: respawned by local-cli (was error)"
+    },
+    {
+      "at": "2026-07-24T21:02:31.173Z",
+      "message": "verify-collection: spawn failed after 3 transient sub-attempts: Error: collection-catalog-and-imagery: branch must be orch/hawaiian-ss26/collection-catalog-and-imagery, got `orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-so…"
     }
   ]
 }
