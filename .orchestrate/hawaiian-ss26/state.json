@@ -10,14 +10,14 @@
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "pending",
+      "status": "running",
       "resultStatus": null,
       "handoffPath": null,
-      "startedAt": null,
+      "startedAt": "2026-07-24T20:31:47.377Z",
       "finishedAt": null,
-      "lastUpdate": "2026-07-24T20:31:37.639Z",
+      "lastUpdate": "2026-07-24T20:31:47.377Z",
       "note": "respawned by local-cli (was error; attempts=1)",
-      "attempts": 1,
+      "attempts": 2,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
@@ -89,6 +89,10 @@
     {
       "at": "2026-07-24T20:31:40.891Z",
       "message": "collection-catalog-and-imagery: respawned by local-cli (was error)"
+    },
+    {
+      "at": "2026-07-24T20:31:44.342Z",
+      "message": "figma-presentation-screens: respawned by local-cli (was error)"
     }
   ]
 }
