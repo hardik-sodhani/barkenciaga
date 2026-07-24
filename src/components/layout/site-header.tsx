@@ -44,6 +44,12 @@ export function SiteHeader({
             AW26
           </Link>
           <Link
+            href="/collections/ss26-aloha"
+            className="text-[13px] tracking-[0.2em] uppercase text-burgundy hover:text-burgundy-600"
+          >
+            SS26 Aloha
+          </Link>
+          <Link
             href="/showroom"
             className="text-[13px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
           >

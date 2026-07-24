@@ -127,6 +127,20 @@ Good showcase of multi-step refactors with invariants.
 
 ---
 
+## 8. SS26 Aloha &mdash; limited-edition drop (3 minutes)
+
+**Story arc**: a full seasonal capsule shipped end-to-end &mdash; editorial imagery, seed catalog, and every commerce surface (home entry point &rarr; collection &rarr; PLP &rarr; PDP).
+
+1. Land on `/`. Below the hero, call out the black **Aloha Atelier** limited-edition band &mdash; &ldquo;SS26 · Limited Edition.&rdquo;
+2. Click **Shop the capsule** &rarr; `/collections/ss26-aloha`. Scroll the 17 aloha shirts; note each print is distinct (palm noir, hibiscus, koi, toile, sunset&hellip;) and shot in the house flat-lay art direction.
+3. Open the **Hibiscus Atelier Shirt** tile &rarr; `/p/hibiscus-atelier-shirt`. Show the editorial copy, care copy, and size/color variants.
+4. Follow the breadcrumb to **Couture** (`/c/couture`) &mdash; the aloha shirts sit alongside the coats and knitwear in the category PLP.
+5. Header shortcut: the **SS26 Aloha** nav link (burgundy) jumps straight back to the collection.
+
+**Talking point**: The imagery under `public/products/hawaiian/` was generated to match the existing flat-lay direction; the catalog is 17 new `SeedProduct` entries plus one limited-edition `SeedCollection` in [`src/db/seed-data.ts`](src/db/seed-data.ts) &mdash; no schema or route changes were needed to light up all four surfaces.
+
+---
+
 ## Closing beats
 
 Always end a session at `/showroom` to set up the next flow, or jump to an open ticket from the Sample tickets list.

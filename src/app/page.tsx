@@ -9,6 +9,7 @@ export default async function HomePage() {
   ]);
 
   const hero = collections.find((c) => c.slug === "autumn-woofer-26");
+  const aloha = collections.find((c) => c.slug === "ss26-aloha");
   const blackTie = collections.find((c) => c.slug === "black-tie");
   const commuter = collections.find((c) => c.slug === "city-commuter");
 
@@ -51,6 +52,38 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Limited-edition drop — SS26 Aloha */}
+      {aloha && (
+        <section className="border-b border-ink-20 bg-ink text-bone">
+          <div className="mx-auto max-w-[1400px] px-6 py-16">
+            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+              <div>
+                <div className="eyebrow mb-3 text-chartreuse">
+                  Limited edition · {aloha.season}
+                </div>
+                <h2 className="display-lg text-bone">{aloha.name}</h2>
+                <p className="mt-3 max-w-xl text-sm text-bone/70">
+                  {aloha.tagline}
+                </p>
+              </div>
+              <Link
+                href="/collections/ss26-aloha"
+                className="inline-block border border-bone bg-bone px-6 py-3 text-[11px] tracking-[0.24em] uppercase text-ink hover:bg-transparent hover:text-bone"
+              >
+                Shop the capsule ({aloha.products.length})
+              </Link>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-5">
+              {aloha.products.slice(0, 5).map((p) => (
+                <div key={p.id} className="bg-bone-50 p-3">
+                  <ProductTile product={p} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Category strip */}
       <section className="border-b border-ink-20 bg-bone-100">

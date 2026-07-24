@@ -42,6 +42,14 @@ const DEMO_FLOWS = [
       "Multi-file, multi-layer - the headline end-to-end agent demo.",
   },
   {
+    id: "ss26-aloha-drop",
+    title: "SS26 Aloha limited drop",
+    summary:
+      "From the homepage, click the black 'Aloha Atelier' limited-edition band, browse the 17-shirt capsule at /collections/ss26-aloha, open the Hibiscus Atelier Shirt PDP, then see it in /c/couture.",
+    highlight:
+      "Shows a full seasonal capsule: seed data, editorial imagery, collection + PLP + PDP surfaces.",
+  },
+  {
     id: "figma-to-code",
     title: "Figma → code",
     summary:
@@ -141,6 +149,13 @@ export default async function ShowroomPage() {
         >
           <div className="eyebrow mb-2">Collection</div>
           <div className="font-display text-xl">/collections/autumn-woofer-26</div>
+        </Link>
+        <Link
+          href="/collections/ss26-aloha"
+          className="border border-ink-20 bg-bone-50 p-5 hover:bg-bone-200"
+        >
+          <div className="eyebrow mb-2">Collection · Limited</div>
+          <div className="font-display text-xl">/collections/ss26-aloha</div>
         </Link>
         <Link
           href="/account/dogs"
