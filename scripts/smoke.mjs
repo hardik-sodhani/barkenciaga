@@ -8,6 +8,25 @@
  */
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+
+// Preview/production URLs behind Vercel Deployment Protection return 302/401
+// without the automation bypass header. Local smoke does not need it.
+if (/\.vercel\.app(?::|\/|$)/.test(BASE) && !bypassSecret) {
+  console.error(
+    "VERCEL_AUTOMATION_BYPASS_SECRET is required to smoke protected Vercel deployments.\n" +
+      "Generate it in Vercel → Project Settings → Deployment Protection → Protection Bypass for Automation,\n" +
+      "then add it as a GitHub Actions secret with the same name.",
+  );
+  process.exit(1);
+}
+
+const headers = bypassSecret
+  ? {
+      "x-vercel-protection-bypass": bypassSecret,
+      "x-vercel-set-bypass-cookie": "true",
+    }
+  : undefined;
 
 const routes = [
   { path: "/", contains: "Barkenciaga", expectsImage: true },
@@ -26,7 +45,7 @@ const routes = [
 let failures = 0;
 for (const r of routes) {
   try {
-    const res = await fetch(`${BASE}${r.path}`, { redirect: "manual" });
+    const res = await fetch(`${BASE}${r.path}`, { redirect: "manual", headers });
     const redirectOk = res.status === 307 && ["/account", "/admin"].some((p) => r.path.startsWith(p));
     if (!res.ok && !redirectOk) {
       console.error(`  FAIL  ${res.status}  ${r.path}`);

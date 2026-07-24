@@ -95,8 +95,30 @@ Every shipped screen is mirrored in a Figma file generated via the Figma MCP cap
 | `pnpm build` | Production build |
 | `pnpm start` | Run built production server |
 | `pnpm lint` | ESLint |
+| `pnpm typecheck` | TypeScript (`tsc --noEmit`) |
+| `pnpm test` | Vitest unit tests |
+| `pnpm smoke` | HTTP smoke against `BASE_URL` (default `http://localhost:3000`) |
 | `pnpm drizzle-kit generate` | Re-generate SQL migrations from schema |
 | `pnpm tsx src/db/seed.ts` | Manually re-run the seed |
+
+## CI / CD
+
+GitHub Actions owns quality gates and Vercel deploys:
+
+| Workflow | When | What |
+| --- | --- | --- |
+| `Preview` | Pull requests | Lint → typecheck → unit tests → build → Vercel preview |
+| `Deploy` | Push to `main` | Same quality gate → Vercel production |
+
+Required GitHub Actions secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+**Avoid double deploys:** In the Vercel project settings, disable Git-triggered Production (and ideally Preview) deployments so only these Actions workflows deploy.
+
+**Suggested branch protection** on `main`: require `Preview / quality` and `Preview / deploy-preview` before merge.
 
 ## Intentional rough edges
 

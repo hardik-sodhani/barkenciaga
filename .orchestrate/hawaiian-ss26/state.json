@@ -1,0 +1,98 @@
+{
+  "rootSlug": "hawaiian-ss26",
+  "tasks": [
+    {
+      "name": "collection-catalog-and-imagery",
+      "type": "worker",
+      "branch": "orch/hawaiian-ss26/collection-catalog-and-imagery",
+      "startingRef": "main",
+      "dependsOn": [],
+      "agentId": "bc-71c8dcee-18b2-4364-8403-c90695a54bec",
+      "runId": "run-04e39c49-8da7-4318-ad88-a3bbbf710e39",
+      "parentAgentId": "bc-75549ee9-32f7-4a74-90c0-0fd8bc250f81",
+      "status": "running",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": "2026-07-24T20:31:47.377Z",
+      "finishedAt": null,
+      "lastUpdate": "2026-07-24T20:31:52.709Z",
+      "note": "respawned by local-cli (was error; attempts=1)",
+      "attempts": 2,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "figma-presentation-screens",
+      "type": "worker",
+      "branch": "orch/hawaiian-ss26/figma-presentation-screens",
+      "startingRef": "main",
+      "dependsOn": [],
+      "agentId": "bc-95a6bffa-05b8-4d1d-a130-af6c56f340a7",
+      "runId": "run-c9fdf30a-a026-4883-8162-4f95cdc8ca0a",
+      "parentAgentId": "bc-75549ee9-32f7-4a74-90c0-0fd8bc250f81",
+      "status": "handed-off",
+      "resultStatus": "finished",
+      "handoffPath": "handoffs/figma-presentation-screens.md",
+      "startedAt": "2026-07-24T20:31:53.820Z",
+      "finishedAt": "2026-07-24T20:38:24.329Z",
+      "lastUpdate": "2026-07-24T20:38:24.331Z",
+      "note": "respawned by local-cli (was error; attempts=1)",
+      "attempts": 2,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "verify-collection",
+      "type": "verifier",
+      "branch": "orch/hawaiian-ss26/verify-collection",
+      "startingRef": "orch/hawaiian-ss26/collection-catalog-and-imagery",
+      "dependsOn": [
+        "collection-catalog-and-imagery"
+      ],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "pending",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "lastUpdate": null,
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    }
+  ],
+  "attention": [
+    {
+      "at": "2026-07-24T20:30:20.792Z",
+      "message": "collection-catalog-and-imagery: spawn failed after 3 transient sub-attempts: ConfigurationError: [invalid_model] Model 'gpt-5.5' does not match a known variant. Call GET /v1/models to list valid id+params combinations. run `bun cli.ts models --check` to re-probe the catalog against /v1/agents."
+    },
+    {
+      "at": "2026-07-24T20:30:36.849Z",
+      "message": "figma-presentation-screens: spawn failed after 3 transient sub-attempts: ConfigurationError: [invalid_model] Model 'gpt-5.5' does not match a known variant. Call GET /v1/models to list valid id+params combinations. run `bun cli.ts models --check` to re-probe the catalog against /v1/agents."
+    },
+    {
+      "at": "2026-07-24T20:30:36.851Z",
+      "message": "verify-collection: unreachable — blocked on collection-catalog-and-imagery (error). Fix the upstream and rerun, or `kill verify-collection` to abandon."
+    },
+    {
+      "at": "2026-07-24T20:31:24.076Z",
+      "message": "verify-collection: unreachable — blocked on collection-catalog-and-imagery (error). Fix the upstream and rerun, or `kill verify-collection` to abandon."
+    },
+    {
+      "at": "2026-07-24T20:31:40.891Z",
+      "message": "collection-catalog-and-imagery: respawned by local-cli (was error)"
+    },
+    {
+      "at": "2026-07-24T20:31:44.342Z",
+      "message": "figma-presentation-screens: respawned by local-cli (was error)"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-name: Deploy to Vercel (Production)
+name: Deploy
 
 on:
   push:
@@ -10,7 +10,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  quality:
+    uses: ./.github/workflows/ci.yml
+
+  deploy-production:
+    needs: quality
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -19,11 +23,20 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+        run: npm install -g vercel@57.0.0
 
       # Remote build on Vercel: the build runs on Vercel infrastructure, where
       # the project's (sensitive) Neon env vars are available. This lets the
       # vercel.json buildCommand run `drizzle-kit migrate` against Neon. A
       # local `--prebuilt` build would not have the sensitive credentials.
       - name: Deploy to production
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          output=$(vercel deploy --prod --yes --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "$output"
+          url=$(printf '%s\n' "$output" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n1)
+          if [ -z "$url" ]; then
+            echo "Failed to parse Vercel production URL from CLI output" >&2
+            exit 1
+          fi
+          echo "Production URL: $url"

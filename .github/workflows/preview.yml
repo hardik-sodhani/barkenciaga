@@ -1,0 +1,38 @@
+name: Preview
+
+on:
+  pull_request:
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    uses: ./.github/workflows/ci.yml
+
+  deploy-preview:
+    needs: quality
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@57.0.0
+
+      # Remote build on Vercel so project env vars (including Neon) are available
+      # for vercel.json buildCommand (`drizzle-kit migrate && pnpm build`).
+      - name: Deploy preview
+        run: |
+          set -euo pipefail
+          output=$(vercel deploy --yes --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "$output"
+          url=$(printf '%s\n' "$output" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n1)
+          if [ -z "$url" ]; then
+            echo "Failed to parse Vercel preview URL from CLI output" >&2
+            exit 1
+          fi
+          echo "Preview URL: $url"
