@@ -4,22 +4,22 @@
     {
       "name": "collection-catalog-and-imagery",
       "type": "worker",
-      "branch": "orch/hawaiian-ss26/collection-catalog-and-imagery",
+      "branch": "`orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-sodhani/barkenciaga/pull/23)",
       "startingRef": "main",
       "dependsOn": [],
       "agentId": "bc-71c8dcee-18b2-4364-8403-c90695a54bec",
       "runId": "run-04e39c49-8da7-4318-ad88-a3bbbf710e39",
       "parentAgentId": "bc-75549ee9-32f7-4a74-90c0-0fd8bc250f81",
-      "status": "running",
-      "resultStatus": null,
-      "handoffPath": null,
+      "status": "handed-off",
+      "resultStatus": "finished",
+      "handoffPath": "handoffs/collection-catalog-and-imagery.md",
       "startedAt": "2026-07-24T20:31:47.377Z",
-      "finishedAt": null,
-      "lastUpdate": "2026-07-24T20:31:52.709Z",
+      "finishedAt": "2026-07-24T21:01:37.491Z",
+      "lastUpdate": "2026-07-24T21:01:37.492Z",
       "note": "respawned by local-cli (was error; attempts=1)",
       "attempts": 2,
       "slackTs": null,
-      "prNumber": null,
+      "prNumber": 23,
       "failureMode": null,
       "verification": null
     },
@@ -37,13 +37,13 @@
       "handoffPath": "handoffs/figma-presentation-screens.md",
       "startedAt": "2026-07-24T20:31:53.820Z",
       "finishedAt": "2026-07-24T20:38:24.329Z",
-      "lastUpdate": "2026-07-24T20:38:24.331Z",
+      "lastUpdate": "2026-07-24T20:38:29.583Z",
       "note": "respawned by local-cli (was error; attempts=1)",
       "attempts": 2,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
-      "verification": null
+      "verification": "not-verified"
     },
     {
       "name": "verify-collection",
@@ -93,6 +93,18 @@
     {
       "at": "2026-07-24T20:31:44.342Z",
       "message": "figma-presentation-screens: respawned by local-cli (was error)"
+    },
+    {
+      "at": "2026-07-24T20:38:29.584Z",
+      "message": "figma-presentation-screens: verification self-reported (not-verified)"
+    },
+    {
+      "at": "2026-07-24T20:53:05.793Z",
+      "message": "collection-catalog-and-imagery: tool_call idle 339861ms; last=2026-07-24T20:47:25.932Z"
+    },
+    {
+      "at": "2026-07-24T20:55:06.823Z",
+      "message": "collection-catalog-and-imagery: SSE idle 324707ms, polled status=running; watchdog still waiting"
     }
   ]
 }
