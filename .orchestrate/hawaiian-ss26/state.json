@@ -56,18 +56,18 @@
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "error",
+      "status": "pending",
       "resultStatus": null,
       "handoffPath": null,
       "startedAt": null,
       "finishedAt": null,
-      "lastUpdate": "2026-07-24T21:01:47.162Z",
-      "note": "spawn failed after 3 transient sub-attempts: Error: collection-catalog-and-imagery: branch must be orch/hawaiian-ss26/collection-catalog-and-imagery, got `orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-so…",
+      "lastUpdate": "2026-07-24T21:02:18.525Z",
+      "note": "respawned by local-cli (was error; attempts=1)",
+      "attempts": 1,
       "slackTs": null,
       "prNumber": null,
-      "failureMode": "unknown",
-      "verification": null,
-      "attempts": 1
+      "failureMode": null,
+      "verification": null
     }
   ],
   "attention": [
@@ -114,6 +114,14 @@
     {
       "at": "2026-07-24T21:01:42.053Z",
       "message": "collection-catalog-and-imagery: verification self-reported (live-ui-verified)"
+    },
+    {
+      "at": "2026-07-24T21:01:50.382Z",
+      "message": "verify-collection: spawn failed after 3 transient sub-attempts: Error: collection-catalog-and-imagery: branch must be orch/hawaiian-ss26/collection-catalog-and-imagery, got `orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-so…"
+    },
+    {
+      "at": "2026-07-24T21:02:18.524Z",
+      "message": "verify-collection: startingRef reconciled orch/hawaiian-ss26/collection-catalog-and-imagery -> `orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-sodhani/barkenciaga/pull/23) (target collection-catalog-and-imagery handed off on actual branch)"
     }
   ]
 }

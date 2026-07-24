@@ -1,6 +1,6 @@
 <!-- orchestrate handoff
 task: collection-catalog-and-imagery
-branch: `orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-sodhani/barkenciaga/pull/23)
+branch: orch/hawaiian-ss26/collection-catalog-and-imagery
 agentId: bc-71c8dcee-18b2-4364-8403-c90695a54bec
 runId: run-04e39c49-8da7-4318-ad88-a3bbbf710e39
 resultStatus: finished
@@ -13,7 +13,7 @@ The diff is clean — only the intended files. Everything is verified end-to-end
 success
 
 ## Branch
-`orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-sodhani/barkenciaga/pull/23)
+orch/hawaiian-ss26/collection-catalog-and-imagery
 
 ## What I did
 - **Imagery** — Generated 17 distinct high-fashion editorial flat-lay product shots of dog aloha shirts with `GenerateImage`, matching the existing house art direction (top-down garment on warm bone linen, soft shadow), then converted them to web-optimized WebP via `ffmpeg` and saved under `public/products/hawaiian/` with kebab-case slugs (~4.8 MB total, 170–382 KB each).
