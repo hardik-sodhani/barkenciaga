@@ -19,6 +19,21 @@ Each screen is a separate page in the file. Navigate via the left sidebar.
 | Cart | `/cart` | `4-2` |
 | Showroom | `/showroom` | `5-2` |
 | Access + Imagery v1 | &mdash; | `8-2` (design-system audit) |
+| SS26 &mdash; Aloha Lookbook | `/collections/aloha-capsule-26` | spec &mdash; [ss26-aloha.md &sect;4](./ss26-aloha.md#4-screen-a--collection-landing--lookbook) |
+| SS26 &mdash; Aloha PLP (Couture) | `/c/couture` (capsule filter) | spec &mdash; [ss26-aloha.md &sect;5](./ss26-aloha.md#5-screen-b--category--plp-grid) |
+| SS26 &mdash; Aloha PDP (Sunset Ombr&eacute;) | `/p/sunset-ombre-shirt` | spec &mdash; [ss26-aloha.md &sect;6](./ss26-aloha.md#6-screen-c--hero-pdp) |
+
+### SS26 &mdash; The Aloha Capsule (Hawaiian shirts)
+
+A limited-edition summer capsule of 15 high-fashion Hawaiian shirts for dogs.
+The three desktop screens above (collection lookbook, category/PLP grid, hero
+PDP) are fully specified in [ss26-aloha.md](./ss26-aloha.md), reusing only the
+shipped Barkenciaga tokens (no invented brand values). Figma node ids are
+**pending**: the Figma MCP tools (`use_figma` / `generate_figma_design` /
+`search_design_system`) were not available/authenticated when this was authored,
+so the capture pipeline could not run. When MCP is reconnected, build the three
+frames per that spec, capture their node ids, and replace the `spec` pointers in
+the table above.
 
 ### Access + Imagery v1
 
