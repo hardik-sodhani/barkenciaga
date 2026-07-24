@@ -60,6 +60,7 @@ GitHub Actions owns preview and production deploys (same secrets as today). Disa
 - `BASE_URL=<deployment-url> pnpm smoke`
 - Runs after successful preview and production deploys
 - Uses existing `scripts/smoke.mjs` route checks
+- Against `*.vercel.app`, requires `VERCEL_AUTOMATION_BYPASS_SECRET` and sends `x-vercel-protection-bypass` (Deployment Protection otherwise returns 302/401)
 
 ## Package.json additions
 

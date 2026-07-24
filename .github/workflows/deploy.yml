@@ -69,4 +69,5 @@ jobs:
       - name: Smoke test production
         env:
           BASE_URL: ${{ needs.deploy-production.outputs.url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: pnpm smoke

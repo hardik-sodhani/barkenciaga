@@ -110,11 +110,12 @@ GitHub Actions owns quality gates and Vercel deploys:
 | `Preview` | Pull requests | Lint → typecheck → unit tests → build → Vercel preview → smoke |
 | `Deploy` | Push to `main` | Same quality gate → Vercel production → smoke |
 
-Required GitHub Actions secrets (already used for production deploys):
+Required GitHub Actions secrets:
 
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
+- `VERCEL_AUTOMATION_BYPASS_SECRET` — from Vercel → Project Settings → Deployment Protection → **Protection Bypass for Automation** (required so smoke can reach SSO-protected preview/prod URLs)
 
 **Avoid double deploys:** In the Vercel project settings, disable Git-triggered Production (and ideally Preview) deployments so only these Actions workflows deploy.
 
