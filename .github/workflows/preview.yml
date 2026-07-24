@@ -1,19 +1,17 @@
-name: Deploy
+name: Preview
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  pull_request:
 
 concurrency:
-  group: vercel-production
-  cancel-in-progress: false
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   quality:
     uses: ./.github/workflows/ci.yml
 
-  deploy-production:
+  deploy-preview:
     needs: quality
     runs-on: ubuntu-latest
     env:
@@ -27,26 +25,24 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@57.0.0
 
-      # Remote build on Vercel: the build runs on Vercel infrastructure, where
-      # the project's (sensitive) Neon env vars are available. This lets the
-      # vercel.json buildCommand run `drizzle-kit migrate` against Neon. A
-      # local `--prebuilt` build would not have the sensitive credentials.
-      - name: Deploy to production
+      # Remote build on Vercel so project env vars (including Neon) are available
+      # for vercel.json buildCommand (`drizzle-kit migrate && pnpm build`).
+      - name: Deploy preview
         id: deploy
         run: |
           set -euo pipefail
-          output=$(vercel deploy --prod --yes --token="${{ secrets.VERCEL_TOKEN }}")
+          output=$(vercel deploy --yes --token="${{ secrets.VERCEL_TOKEN }}")
           echo "$output"
           url=$(printf '%s\n' "$output" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n1)
           if [ -z "$url" ]; then
-            echo "Failed to parse Vercel production URL from CLI output" >&2
+            echo "Failed to parse Vercel preview URL from CLI output" >&2
             exit 1
           fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Production URL: $url"
+          echo "Preview URL: $url"
 
   smoke:
-    needs: deploy-production
+    needs: deploy-preview
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +62,7 @@ jobs:
       - name: Wait for deployment to serve
         run: sleep 15
 
-      - name: Smoke test production
+      - name: Smoke test preview
         env:
-          BASE_URL: ${{ needs.deploy-production.outputs.url }}
+          BASE_URL: ${{ needs.deploy-preview.outputs.url }}
         run: pnpm smoke
