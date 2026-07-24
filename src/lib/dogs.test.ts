@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { recommendSizeForDog } from "@/lib/dogs";
+
+vi.mock("@/db", () => ({ db: {} }));
+vi.mock("@/db/bootstrap", () => ({ ensureDbReady: vi.fn() }));
 
 describe("recommendSizeForDog", () => {
   it("returns the dog bucket when that size is in stock", () => {

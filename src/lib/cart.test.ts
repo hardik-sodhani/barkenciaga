@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shippingCentsFor, taxCentsFor } from "@/lib/cart";
+
+vi.mock("@/db", () => ({ db: {} }));
+vi.mock("@/db/bootstrap", () => ({ ensureDbReady: vi.fn() }));
 
 describe("shippingCentsFor", () => {
   it("waives shipping on empty carts", () => {
