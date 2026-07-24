@@ -56,14 +56,14 @@
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "pending",
+      "status": "running",
       "resultStatus": null,
       "handoffPath": null,
-      "startedAt": null,
+      "startedAt": "2026-07-24T21:02:56.833Z",
       "finishedAt": null,
-      "lastUpdate": "2026-07-24T21:02:50.491Z",
+      "lastUpdate": "2026-07-24T21:02:56.833Z",
       "note": "respawned by local-cli (was error; attempts=2)",
-      "attempts": 2,
+      "attempts": 3,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
@@ -130,6 +130,10 @@
     {
       "at": "2026-07-24T21:02:31.173Z",
       "message": "verify-collection: spawn failed after 3 transient sub-attempts: Error: collection-catalog-and-imagery: branch must be orch/hawaiian-ss26/collection-catalog-and-imagery, got `orch/hawaiian-ss26/collection-catalog-and-imagery` (draft PR: https://github.com/hardik-so…"
+    },
+    {
+      "at": "2026-07-24T21:02:53.810Z",
+      "message": "verify-collection: respawned by local-cli (was error)"
     }
   ]
 }
