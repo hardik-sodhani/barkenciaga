@@ -1,0 +1,72 @@
+{
+  "rootSlug": "hawaiian-ss26",
+  "tasks": [
+    {
+      "name": "collection-catalog-and-imagery",
+      "type": "worker",
+      "branch": "orch/hawaiian-ss26/collection-catalog-and-imagery",
+      "startingRef": "main",
+      "dependsOn": [],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "running",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": "2026-07-24T20:30:05.903Z",
+      "finishedAt": null,
+      "lastUpdate": "2026-07-24T20:30:05.903Z",
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null,
+      "attempts": 1
+    },
+    {
+      "name": "figma-presentation-screens",
+      "type": "worker",
+      "branch": "orch/hawaiian-ss26/figma-presentation-screens",
+      "startingRef": "main",
+      "dependsOn": [],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "pending",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "lastUpdate": null,
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "verify-collection",
+      "type": "verifier",
+      "branch": "orch/hawaiian-ss26/verify-collection",
+      "startingRef": "orch/hawaiian-ss26/collection-catalog-and-imagery",
+      "dependsOn": [
+        "collection-catalog-and-imagery"
+      ],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "pending",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "lastUpdate": null,
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    }
+  ],
+  "attention": []
+}
