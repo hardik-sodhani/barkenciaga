@@ -19,8 +19,6 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-    outputs:
-      url: ${{ steps.deploy.outputs.url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +30,6 @@ jobs:
       # vercel.json buildCommand run `drizzle-kit migrate` against Neon. A
       # local `--prebuilt` build would not have the sensitive credentials.
       - name: Deploy to production
-        id: deploy
         run: |
           set -euo pipefail
           output=$(vercel deploy --prod --yes --token="${{ secrets.VERCEL_TOKEN }}")
@@ -42,32 +39,4 @@ jobs:
             echo "Failed to parse Vercel production URL from CLI output" >&2
             exit 1
           fi
-          echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Production URL: $url"
-
-  smoke:
-    needs: deploy-production
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Wait for deployment to serve
-        run: sleep 15
-
-      - name: Smoke test production
-        env:
-          BASE_URL: ${{ needs.deploy-production.outputs.url }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: pnpm smoke

@@ -9,8 +9,8 @@
 Ship a proper GitHub Actions pipeline that:
 
 1. Runs quality gates on every PR and before production deploy
-2. Deploys Vercel **preview** on PRs and smokes the preview URL
-3. Deploys Vercel **production** on `main` only after quality passes, then smokes production
+2. Deploys Vercel **preview** on PRs (post-deploy HTTP smoke deferred for now)
+3. Deploys Vercel **production** on `main` only after quality passes
 4. Folds in Vitest unit tests from PR #13
 
 ## Non-goals
@@ -35,8 +35,8 @@ Three workflows, shared quality job via `workflow_call`:
 | Workflow | Trigger | Jobs |
 | --- | --- | --- |
 | `ci.yml` | `workflow_call` only (reusable) | `quality`: install → lint → typecheck → test → build |
-| `preview.yml` | `pull_request` | `quality` → `deploy-preview` → `smoke` |
-| `deploy.yml` | `push` to `main`, `workflow_dispatch` | `quality` → `deploy-production` → `smoke` |
+| `preview.yml` | `pull_request` | `quality` → `deploy-preview` |
+| `deploy.yml` | `push` to `main`, `workflow_dispatch` | `quality` → `deploy-production` |
 
 GitHub Actions owns preview and production deploys (same secrets as today). Disable overlapping Vercel Git auto-deploys for Production (and ideally Preview) in the Vercel project so deploys are not duplicated.
 
@@ -55,12 +55,10 @@ GitHub Actions owns preview and production deploys (same secrets as today). Disa
 - Remote deploy (not `--prebuilt`) so Vercel env + `drizzle-kit migrate` keep working
 - Capture deployment URL from CLI stdout into `GITHUB_OUTPUT`
 
-### Smoke
+### Smoke (deferred)
 
-- `BASE_URL=<deployment-url> pnpm smoke`
-- Runs after successful preview and production deploys
-- Uses existing `scripts/smoke.mjs` route checks
-- Against `*.vercel.app`, requires `VERCEL_AUTOMATION_BYPASS_SECRET` and sends `x-vercel-protection-bypass` (Deployment Protection otherwise returns 302/401)
+- `pnpm smoke` remains available locally
+- Not run in CI yet (Vercel Deployment Protection blocked unauthenticated preview hits; revisit with `VERCEL_AUTOMATION_BYPASS_SECRET` later)
 
 ## Package.json additions
 
@@ -71,10 +69,7 @@ GitHub Actions owns preview and production deploys (same secrets as today). Disa
 
 On `main`, require:
 
-- `Preview / quality` is PR-only; for mergeability require **`Preview / smoke`** (implies quality + deploy succeeded), or require both `Preview / quality` and `Preview / smoke`
-- For `main` pushes, `Deploy / smoke` is the post-merge signal (cannot block the push that triggered it; protection applies to PRs)
-
-Recommended PR required checks: `Preview / quality`, `Preview / smoke`.
+Recommended PR required checks: `Preview / quality`, `Preview / deploy-preview`.
 
 ## Risks & mitigations
 
@@ -82,12 +77,11 @@ Recommended PR required checks: `Preview / quality`, `Preview / smoke`.
 | --- | --- |
 | Preview migrate hits shared Neon | Out of scope to split DBs; relies on existing Vercel Preview env. Document the risk. |
 | Duplicate Vercel Git deploys | Document disabling Git production (and preview) auto-deploy in Vercel |
-| Flaky smoke right after deploy | Single retry or short sleep before smoke if needed during implementation |
 | PR #13 `it.fails` demo contracts | Keep as-is; suite should exit 0 |
 
 ## Success criteria
 
-- Opening a PR runs quality, preview deploy, and smoke against the preview URL
-- Merging to `main` runs quality, production deploy, and smoke against production
+- Opening a PR runs quality then preview deploy
+- Merging to `main` runs quality then production deploy
 - `pnpm test` is green locally and in CI
 - No deploy proceeds if quality fails

@@ -17,8 +17,6 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-    outputs:
-      url: ${{ steps.deploy.outputs.url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +26,6 @@ jobs:
       # Remote build on Vercel so project env vars (including Neon) are available
       # for vercel.json buildCommand (`drizzle-kit migrate && pnpm build`).
       - name: Deploy preview
-        id: deploy
         run: |
           set -euo pipefail
           output=$(vercel deploy --yes --token="${{ secrets.VERCEL_TOKEN }}")
@@ -38,32 +35,4 @@ jobs:
             echo "Failed to parse Vercel preview URL from CLI output" >&2
             exit 1
           fi
-          echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Preview URL: $url"
-
-  smoke:
-    needs: deploy-preview
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Wait for deployment to serve
-        run: sleep 15
-
-      - name: Smoke test preview
-        env:
-          BASE_URL: ${{ needs.deploy-preview.outputs.url }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: pnpm smoke
