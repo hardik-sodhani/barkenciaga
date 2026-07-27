@@ -110,6 +110,11 @@ export default async function AccountPage() {
               </Link>
             </li>
             <li>
+              <Link href="/account/wishlist" className="hover:text-burgundy">
+                Saved for later
+              </Link>
+            </li>
+            <li>
               <Link href="/cart" className="hover:text-burgundy">
                 Current bag
               </Link>

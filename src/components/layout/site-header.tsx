@@ -72,6 +72,12 @@ export function SiteHeader({
           {session.userId ? (
             <>
               <Link
+                href="/account/wishlist"
+                className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+              >
+                Saved
+              </Link>
+              <Link
                 href="/account"
                 className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
               >

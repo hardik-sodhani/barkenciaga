@@ -3,7 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { getProductBySlug } from "@/lib/products";
 import { getActiveDog, recommendSizeForDog } from "@/lib/dogs";
+import { getSession } from "@/lib/session";
+import { isProductWishlisted } from "@/lib/wishlist";
 import { VariantSelector } from "@/components/commerce/variant-selector";
+import { WishlistButton } from "@/components/commerce/wishlist-button";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -16,7 +19,10 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const dog = await getActiveDog();
+  const [dog, session] = await Promise.all([getActiveDog(), getSession()]);
+  const initialSaved = session.userId
+    ? await isProductWishlisted(session.userId, product.id)
+    : false;
   const availableSizes = Array.from(
     new Set(product.variants.map((v) => v.size)),
   ) as Array<"xs" | "s" | "m" | "l" | "xl">;
@@ -95,6 +101,13 @@ export default async function ProductPage({
             )}
             <div className="mt-6 text-2xl font-display tabular-nums">
               {formatPrice(product.priceCents)}
+            </div>
+            <div className="mt-5">
+              <WishlistButton
+                productId={product.id}
+                initialSaved={initialSaved}
+                signedIn={Boolean(session.userId)}
+              />
             </div>
           </div>
 

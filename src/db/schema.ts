@@ -148,6 +148,24 @@ export const cartItems = pgTable(
   ],
 );
 
+export const wishlistItems = pgTable(
+  "wishlist_items",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("wishlist_user_idx").on(t.userId),
+    uniqueIndex("wishlist_user_product_idx").on(t.userId, t.productId),
+  ],
+);
+
 export const addresses = pgTable(
   "addresses",
   {
@@ -219,6 +237,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   dogs: many(dogs),
   orders: many(orders),
   addresses: many(addresses),
+  wishlistItems: many(wishlistItems),
 }));
 
 export const dogsRelations = relations(dogs, ({ one }) => ({
@@ -232,6 +251,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   }),
   variants: many(productVariants),
   collectionProducts: many(collectionProducts),
+  wishlistItems: many(wishlistItems),
 }));
 
 export const productVariantsRelations = relations(productVariants, ({ one }) => ({
@@ -274,6 +294,11 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
   }),
 }));
 
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  user: one(users, { fields: [wishlistItems.userId], references: [users.id] }),
+  product: one(products, { fields: [wishlistItems.productId], references: [products.id] }),
+}));
+
 export const ordersRelations = relations(orders, ({ one, many }) => ({
   user: one(users, { fields: [orders.userId], references: [users.id] }),
   items: many(orderItems),
@@ -296,6 +321,7 @@ export type Category = typeof categories.$inferSelect;
 export type Collection = typeof collections.$inferSelect;
 export type Cart = typeof carts.$inferSelect;
 export type CartItem = typeof cartItems.$inferSelect;
+export type WishlistItem = typeof wishlistItems.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Address = typeof addresses.$inferSelect;
