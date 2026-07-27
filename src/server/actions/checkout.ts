@@ -7,7 +7,7 @@ import { nanoid } from "nanoid";
 import { db } from "@/db";
 import { orders, orderItems } from "@/db/schema";
 import { getCart, clearCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
-import { getSession } from "@/lib/session";
+import { getSession, signOrderToken } from "@/lib/session";
 import { getActiveDog } from "@/lib/dogs";
 import { ensureDbReady } from "@/db/bootstrap";
 
@@ -94,5 +94,12 @@ export async function checkoutAction(formData: FormData) {
 
   revalidatePath("/cart");
   revalidatePath("/account");
+
+  // Guests get a signed share link; signed-in owners rely on session ownership.
+  if (!session.userId) {
+    const token = signOrderToken(orderId);
+    redirect(`/orders/${orderId}?token=${encodeURIComponent(token)}`);
+  }
+
   redirect(`/orders/${orderId}`);
 }

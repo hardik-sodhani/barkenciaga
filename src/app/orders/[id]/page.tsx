@@ -4,17 +4,31 @@ import { db } from "@/db";
 import { orders, orderItems } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureDbReady } from "@/db/bootstrap";
+import { getSession, verifyOrderToken } from "@/lib/session";
 import { formatPrice } from "@/lib/utils";
 
 export default async function OrderConfirmation({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { id } = await params;
+  const { token } = await searchParams;
   await ensureDbReady();
   const [order] = await db.select().from(orders).where(eq(orders.id, id));
   if (!order) notFound();
+
+  const session = await getSession();
+  const isOwner = Boolean(session.userId && session.userId === order.userId);
+  const isAdmin = session.userRole === "admin";
+  const hasValidToken = Boolean(token && verifyOrderToken(id, token));
+
+  if (!isOwner && !isAdmin && !hasValidToken) {
+    notFound();
+  }
+
   const items = await db.select().from(orderItems).where(eq(orderItems.orderId, id));
 
   return (

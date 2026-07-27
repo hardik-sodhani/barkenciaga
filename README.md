@@ -29,7 +29,7 @@ The seed populates two users. No passwords:
 | Framework | Next.js 16, App Router, Server Actions, Turbopack |
 | UI | Tailwind CSS v4, hand-rolled design system in `src/components/ui/` |
 | Data | Drizzle ORM against PGlite (swap driver for Neon/Postgres) |
-| Auth | Cookie sessions via `iron-session` (demo-grade) |
+| Auth | Cookie sessions via `iron-session` (demo-grade); guest order links use HMAC share tokens (`ORDER_TOKEN_SECRET`) |
 | Validation | Zod |
 | Icons | lucide-react |
 | Fonts | Inter, Cormorant Garamond, JetBrains Mono |
@@ -115,6 +115,10 @@ Required GitHub Actions secrets:
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
+
+Optional app env vars:
+
+- `ORDER_TOKEN_SECRET` &mdash; HMAC secret for guest order confirmation share links (`/orders/[id]?token=...`). Separate from `SESSION_PASSWORD`. A demo fallback is used when unset.
 
 **Avoid double deploys:** In the Vercel project settings, disable Git-triggered Production (and ideally Preview) deployments so only these Actions workflows deploy.
 

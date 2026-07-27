@@ -1,4 +1,5 @@
 import "server-only";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { getIronSession, type SessionOptions } from "iron-session";
 import { nanoid } from "nanoid";
@@ -6,6 +7,20 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureDbReady } from "@/db/bootstrap";
+
+/** Guest order share-link TTL (~7 days). */
+export const ORDER_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Dedicated secret for signed order share links. Must not reuse SESSION_PASSWORD.
+ * Demo fallback keeps local/dev usable when the env var is unset.
+ */
+function getOrderTokenSecret(): string {
+  return (
+    process.env.ORDER_TOKEN_SECRET ??
+    "barkenciaga-order-token-demo-secret-not-for-production-use"
+  );
+}
 
 export type SessionData = {
   userId?: string;
@@ -113,4 +128,44 @@ export async function requireAdmin() {
     throw new Error("forbidden: admin only");
   }
   return s;
+}
+
+/**
+ * Sign a time-limited share token for an order confirmation URL.
+ * Token format: `{expiresUnix}.{hmacBase64url}` over payload `{orderId}.{expiresUnix}`.
+ */
+export function signOrderToken(orderId: string, nowMs: number = Date.now()): string {
+  const expiresAt = Math.floor((nowMs + ORDER_TOKEN_TTL_MS) / 1000);
+  const payload = `${orderId}.${expiresAt}`;
+  const signature = createHmac("sha256", getOrderTokenSecret())
+    .update(payload)
+    .digest("base64url");
+  return `${expiresAt}.${signature}`;
+}
+
+/**
+ * Verify a guest share token for an order. Rejects tampered or expired tokens
+ * using a constant-time signature compare.
+ */
+export function verifyOrderToken(
+  orderId: string,
+  token: string,
+  nowMs: number = Date.now(),
+): boolean {
+  const [expiresAtRaw, signature, ...rest] = token.split(".");
+  if (!expiresAtRaw || !signature || rest.length > 0) return false;
+
+  const expiresAt = Number(expiresAtRaw);
+  if (!Number.isFinite(expiresAt) || !Number.isInteger(expiresAt)) return false;
+  if (expiresAt * 1000 < nowMs) return false;
+
+  const payload = `${orderId}.${expiresAt}`;
+  const expected = createHmac("sha256", getOrderTokenSecret())
+    .update(payload)
+    .digest("base64url");
+
+  const providedBuf = Buffer.from(signature, "utf8");
+  const expectedBuf = Buffer.from(expected, "utf8");
+  if (providedBuf.length !== expectedBuf.length) return false;
+  return timingSafeEqual(providedBuf, expectedBuf);
 }
