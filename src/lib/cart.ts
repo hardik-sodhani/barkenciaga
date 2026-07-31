@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { ensureCartId, getSession, readCartId } from "./session";
 import { ensureDbReady } from "@/db/bootstrap";
+import { validatePromo } from "./promos";
 
 export type CartLine = {
   id: string;
@@ -105,12 +106,32 @@ export async function getCart() {
   return { cartId, lines, subtotalCents, itemCount };
 }
 
-export async function getCartSummary() {
+export async function getCartSummary(
+  cart?: Pick<Awaited<ReturnType<typeof getCart>>, "itemCount" | "subtotalCents">,
+) {
   try {
-    const { itemCount, subtotalCents } = await getCart();
-    return { itemCount, subtotalCents };
+    const { itemCount, subtotalCents } = cart ?? (await getCart());
+    const session = await getSession();
+    const promoResult = session.promoCodeId
+      ? await validatePromo({
+          promoId: session.promoCodeId,
+          userId: session.userId,
+          subtotalCents,
+        })
+      : null;
+    return {
+      itemCount,
+      subtotalCents,
+      discountCents: promoResult?.ok ? promoResult.discountCents : 0,
+      promoCode: promoResult?.ok ? promoResult.promo.code : null,
+    };
   } catch {
-    return { itemCount: 0, subtotalCents: 0 };
+    return {
+      itemCount: 0,
+      subtotalCents: 0,
+      discountCents: 0,
+      promoCode: null,
+    };
   }
 }
 
@@ -169,4 +190,17 @@ export function shippingCentsFor(subtotalCents: number) {
 
 export function taxCentsFor(subtotalCents: number) {
   return Math.round(subtotalCents * 0.0725);
+}
+
+export function getCartTotals(subtotalCents: number, discountCents = 0) {
+  const cappedDiscountCents = Math.min(subtotalCents, discountCents);
+  const shippingCents = shippingCentsFor(subtotalCents);
+  const taxCents = taxCentsFor(subtotalCents - cappedDiscountCents);
+  return {
+    discountCents: cappedDiscountCents,
+    shippingCents,
+    taxCents,
+    totalCents:
+      subtotalCents - cappedDiscountCents + shippingCents + taxCents,
+  };
 }

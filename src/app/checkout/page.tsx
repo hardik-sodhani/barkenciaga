@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
+import Link from "next/link";
+import { getCart, getCartSummary, getCartTotals } from "@/lib/cart";
 import { getSession } from "@/lib/session";
 import { checkoutAction } from "@/server/actions/checkout";
 import { formatPrice } from "@/lib/utils";
@@ -13,9 +14,11 @@ export default async function CheckoutPage() {
   }
 
   const session = await getSession();
-  const shipping = shippingCentsFor(cart.subtotalCents);
-  const tax = taxCentsFor(cart.subtotalCents);
-  const total = cart.subtotalCents + shipping + tax;
+  const summary = await getCartSummary(cart);
+  const totals = getCartTotals(
+    cart.subtotalCents,
+    summary.discountCents,
+  );
 
   return (
     <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">
@@ -105,7 +108,7 @@ export default async function CheckoutPage() {
           </section>
 
           <Button type="submit" size="lg" className="w-full">
-            Place order — {formatPrice(total)}
+            Place order — {formatPrice(totals.totalCents)}
           </Button>
         </form>
       </div>
@@ -144,20 +147,38 @@ export default async function CheckoutPage() {
               <dt>Subtotal</dt>
               <dd className="tabular-nums">{formatPrice(cart.subtotalCents)}</dd>
             </div>
+            {totals.discountCents > 0 && (
+              <div className="flex justify-between text-burgundy">
+                <dt>Discount{summary.promoCode ? ` (${summary.promoCode})` : ""}</dt>
+                <dd className="tabular-nums">
+                  −{formatPrice(totals.discountCents)}
+                </dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt>Shipping</dt>
               <dd className="tabular-nums">
-                {shipping === 0 ? "Complimentary" : formatPrice(shipping)}
+                {totals.shippingCents === 0
+                  ? "Complimentary"
+                  : formatPrice(totals.shippingCents)}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt>Tax</dt>
-              <dd className="tabular-nums">{formatPrice(tax)}</dd>
+              <dd className="tabular-nums">{formatPrice(totals.taxCents)}</dd>
             </div>
           </dl>
+          {summary.promoCode && (
+            <p className="mt-4 text-xs text-ink-60">
+              Promo {summary.promoCode} applied.{" "}
+              <Link href="/cart" className="underline hover:text-ink">
+                Change in bag
+              </Link>
+            </p>
+          )}
           <div className="mt-4 border-t border-ink-20 pt-4 flex justify-between font-medium">
             <span>Total</span>
-            <span className="tabular-nums">{formatPrice(total)}</span>
+            <span className="tabular-nums">{formatPrice(totals.totalCents)}</span>
           </div>
         </div>
       </aside>

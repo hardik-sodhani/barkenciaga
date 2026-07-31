@@ -7,6 +7,7 @@ import {
   productVariants,
   users as usersTable,
   dogs as dogsTable,
+  promoCodes,
 } from "./schema";
 import {
   categories,
@@ -17,11 +18,42 @@ import {
 } from "./seed-data";
 import { nanoid } from "nanoid";
 
+const demoPromoCodes = [
+  {
+    id: "promo_woof10",
+    code: "WOOF10",
+    kind: "percent" as const,
+    valueInt: 10,
+    minSubtotalCents: 0,
+    maxRedemptions: null,
+    startsAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    id: "promo_flat20",
+    code: "FLAT20",
+    kind: "fixed" as const,
+    valueInt: 2000,
+    minSubtotalCents: 10000,
+    maxRedemptions: 100,
+    startsAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+];
+
 export async function seedIfEmpty() {
-  const existing = await db.select().from(categoriesTable);
-  if (existing.length > 0) return;
+  const [existingCategories, existingPromos] = await Promise.all([
+    db.select().from(categoriesTable),
+    db.select().from(promoCodes),
+  ]);
+
+  if (existingCategories.length > 0 && existingPromos.length > 0) return;
 
   await db.transaction(async (tx) => {
+    if (existingPromos.length === 0) {
+      await tx.insert(promoCodes).values(demoPromoCodes);
+    }
+
+    if (existingCategories.length > 0) return;
+
     await tx.insert(categoriesTable).values(
       categories.map((c) => ({
         id: c.id,
@@ -98,6 +130,6 @@ export async function seedIfEmpty() {
   });
 
   console.log(
-    `[barkenciaga] seeded ${categories.length} categories, ${products.length} products, ${collections.length} collections`,
+    `[barkenciaga] seeded ${categories.length} categories, ${products.length} products, ${collections.length} collections, ${demoPromoCodes.length} promo codes`,
   );
 }
