@@ -6,6 +6,9 @@ const stylexBabelPlugin = [
     dev: process.env.NODE_ENV !== "production",
     runtimeInjection: false,
     treeshakeCompensation: true,
+    aliases: {
+      "@/*": ["/ROOT/src/*"],
+    },
     unstable_moduleResolution: {
       type: "commonJS",
       rootDir: process.cwd(),
@@ -20,6 +23,7 @@ const config = {
       useCSSLayers: true,
       babelConfig: {
         babelrc: false,
+        configFile: false,
         parserOpts: {
           plugins: ["typescript", "jsx"],
         },

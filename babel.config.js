@@ -5,6 +5,9 @@ const stylexPlugin = [
     test: process.env.NODE_ENV === "test",
     runtimeInjection: false,
     treeshakeCompensation: true,
+    aliases: {
+      "@/*": ["/ROOT/src/*"],
+    },
     unstable_moduleResolution: {
       type: "commonJS",
       rootDir: __dirname,

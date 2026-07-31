@@ -42,11 +42,27 @@ export function VariantSelector({
     return Array.from(map.values());
   }, [variants]);
 
-  const sizesForColor = (color: string) =>
-    Array.from(new Set(variants.filter((v) => v.color === color).map((v) => v.size)));
+  const getSizesForColor = (selectedColor: string) =>
+    Array.from(
+      new Set(
+        variants
+          .filter((v) => v.color === selectedColor)
+          .map((v) => v.size),
+      ),
+    );
 
   const [color, setColor] = useState(colors[0]?.color ?? "");
-  const availableSizes = useMemo(() => sizesForColor(color), [color, variants]);
+  const availableSizes = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          variants
+            .filter((v) => v.color === color)
+            .map((v) => v.size),
+        ),
+      ),
+    [color, variants],
+  );
   const [size, setSize] = useState<Variant["size"] | null>(
     recommendedSize && availableSizes.includes(recommendedSize)
       ? recommendedSize
@@ -91,7 +107,7 @@ export function VariantSelector({
               type="button"
               onClick={() => {
                 setColor(c.color);
-                const next = sizesForColor(c.color);
+                const next = getSizesForColor(c.color);
                 setSize(
                   recommendedSize && next.includes(recommendedSize)
                     ? recommendedSize
