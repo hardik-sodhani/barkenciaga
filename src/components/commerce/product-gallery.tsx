@@ -168,6 +168,7 @@ export function ProductGallery({
 
       {lightboxOpen && (
         <Lightbox
+          key={images[index]?.id ?? index}
           images={images}
           index={index}
           productName={productName}
@@ -204,10 +205,6 @@ function Lightbox({
       document.body.style.overflow = prev;
     };
   }, []);
-
-  useEffect(() => {
-    setScale(1);
-  }, [index]);
 
   const distance = (touches: React.TouchList) => {
     const a = touches[0];
