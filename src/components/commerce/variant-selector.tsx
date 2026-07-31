@@ -57,6 +57,7 @@ export function VariantSelector({
     (v) => v.color === color && v.size === size,
   );
   const inventory = activeVariant?.inventory ?? 0;
+  const lowStock = isLowStock(inventory);
   const isSoldOut = !activeVariant || inventory === 0;
 
   // DEMO-TODO: wire React's useOptimistic() here so the header cart count
@@ -182,8 +183,8 @@ export function VariantSelector({
           {pending ? "Adding..." : isSoldOut ? "Sold out" : "Add to bag"}
         </Button>
         {activeVariant && (
-          <Badge tone={isLowStock(inventory) ? "burgundy" : "bone"}>
-            {isLowStock(inventory) ? `Only ${inventory} left` : `${inventory} in stock`}
+          <Badge tone={lowStock ? "burgundy" : "bone"}>
+            {lowStock ? `Only ${inventory} left` : `${inventory} in stock`}
           </Badge>
         )}
       </div>

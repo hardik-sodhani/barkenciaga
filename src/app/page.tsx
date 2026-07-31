@@ -15,7 +15,6 @@ export default async function HomePage() {
 
   const productIds = [
     ...new Set([
-      ...(hero?.products.slice(0, 4).map((p) => p.id) ?? []),
       ...(hero?.products.slice(0, 8).map((p) => p.id) ?? []),
       ...(blackTie?.products.slice(0, 4).map((p) => p.id) ?? []),
       ...(commuter?.products.slice(0, 4).map((p) => p.id) ?? []),
