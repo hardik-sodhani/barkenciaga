@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import * as stylex from "@stylexjs/stylex";
 import { getProductBySlug } from "@/lib/products";
 import { getActiveDog, recommendSizeForDog } from "@/lib/dogs";
 import { VariantSelector } from "@/components/commerce/variant-selector";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 export default async function ProductPage({
   params,
@@ -32,32 +35,32 @@ export default async function ProductPage({
       {/* DEMO-TODO: surface collection membership here as chips.
           Pull from collection_products and link to /collections/<slug>.
           See TECH_DEBT.md item 4. */}
-      <div className="mx-auto max-w-[1400px] px-6 py-6 text-xs text-ink-60">
+      <div {...stylex.props(styles.breadcrumbs)}>
         <Link href="/">Home</Link> /{" "}
         {product.category && (
           <>
             <Link href={`/c/${product.category.slug}`}>{product.category.name}</Link> /{" "}
           </>
         )}
-        <span className="text-ink">{product.name}</span>
+        <span {...stylex.props(styles.breadcrumbCurrent)}>{product.name}</span>
       </div>
 
-      <section className="mx-auto grid max-w-[1400px] gap-10 px-6 pb-20 md:grid-cols-12">
-        <div className="md:col-span-7">
+      <section {...stylex.props(styles.layout)}>
+        <div {...stylex.props(styles.mediaColumn)}>
           {product.imagePath ? (
-            <div className="relative aspect-[4/5] overflow-hidden border border-ink-20 bg-bone-50">
+            <div {...stylex.props(styles.mainImageWrap)}>
               <Image
                 src={product.imagePath}
                 alt={product.subtitle ? `${product.name}, ${product.subtitle}` : product.name}
                 fill
                 sizes="(min-width: 1024px) 55vw, 100vw"
                 priority
-                className="object-cover"
+                {...stylex.props(styles.objectCover)}
               />
             </div>
           ) : (
             <div
-              className="product-tile-gradient relative aspect-[4/5] border border-ink-20"
+              {...stylex.props(styles.mainImageWrap, commonStyles.productTileGradient)}
               style={
                 {
                   ["--tile-a" as string]: product.basePalette.a,
@@ -65,19 +68,19 @@ export default async function ProductPage({
                 } as React.CSSProperties
               }
             >
-              <div className="absolute inset-0 flex items-end p-10">
-                <span className="bg-bone/90 px-3 py-1.5 text-xs font-medium tracking-[0.18em] uppercase text-ink">
+              <div {...stylex.props(styles.noImageOverlay)}>
+                <span {...stylex.props(styles.noImageLabel)}>
                   {product.brandLine} — {product.category?.name}
                 </span>
               </div>
             </div>
           )}
 
-          <div className="mt-6 grid grid-cols-4 gap-3">
+          <div {...stylex.props(styles.swatchGrid)}>
             {product.variants.slice(0, 4).map((v) => (
               <div
                 key={v.id}
-                className="aspect-square border border-ink-20"
+                {...stylex.props(styles.swatch)}
                 style={{ background: v.colorHex }}
                 title={`${v.color} / ${v.size.toUpperCase()}`}
                 aria-label={`Color ${v.color}, size ${v.size.toUpperCase()}`}
@@ -86,24 +89,28 @@ export default async function ProductPage({
           </div>
         </div>
 
-        <div className="md:col-span-5 flex flex-col gap-8">
+        <div {...stylex.props(styles.copyColumn)}>
           <div>
-            <div className="eyebrow mb-2">{product.brandLine}</div>
-            <h1 className="display-lg leading-tight">{product.name}</h1>
+            <div {...stylex.props(commonStyles.eyebrow, styles.brandEyebrow)}>
+              {product.brandLine}
+            </div>
+            <h1 {...stylex.props(commonStyles.displayLg, styles.productName)}>
+              {product.name}
+            </h1>
             {product.subtitle && (
-              <p className="mt-2 text-sm text-ink-60">{product.subtitle}</p>
+              <p {...stylex.props(styles.subtitle)}>{product.subtitle}</p>
             )}
-            <div className="mt-6 text-2xl font-display tabular-nums">
+            <div {...stylex.props(styles.price)}>
               {formatPrice(product.priceCents)}
             </div>
           </div>
 
-          <p className="text-sm leading-relaxed text-ink-80">{product.description}</p>
+          <p {...stylex.props(styles.description)}>{product.description}</p>
 
           {dog && recommended && (
-            <div className="flex items-center gap-2">
+            <div {...stylex.props(styles.fitFinderRow)}>
               <Badge tone="chartreuse">Fit finder</Badge>
-              <span className="text-xs text-ink-60">
+              <span {...stylex.props(styles.fitFinderText)}>
                 Based on {dog.name}&apos;s measurements ({dog.breed}, size{" "}
                 {dog.sizeBucket.toUpperCase()}), we recommend{" "}
                 <strong>{recommended.toUpperCase()}</strong>.
@@ -119,16 +126,20 @@ export default async function ProductPage({
           />
 
           {product.editorialCopy && (
-            <div className="border-t border-ink-20 pt-6">
-              <div className="eyebrow mb-2">From the studio</div>
-              <p className="text-sm italic text-ink-80">{product.editorialCopy}</p>
+            <div {...stylex.props(styles.copyBlock)}>
+              <div {...stylex.props(commonStyles.eyebrow, styles.copyBlockEyebrow)}>
+                From the studio
+              </div>
+              <p {...stylex.props(styles.editorialCopy)}>{product.editorialCopy}</p>
             </div>
           )}
 
           {product.careCopy && (
-            <div className="border-t border-ink-20 pt-6">
-              <div className="eyebrow mb-2">Care</div>
-              <p className="text-sm text-ink-60">{product.careCopy}</p>
+            <div {...stylex.props(styles.copyBlock)}>
+              <div {...stylex.props(commonStyles.eyebrow, styles.copyBlockEyebrow)}>
+                Care
+              </div>
+              <p {...stylex.props(styles.careCopy)}>{product.careCopy}</p>
             </div>
           )}
         </div>
@@ -136,3 +147,127 @@ export default async function ProductPage({
     </>
   );
 }
+
+const styles = stylex.create({
+  breadcrumbs: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    paddingInline: "1.5rem",
+    paddingBlock: "1.5rem",
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  breadcrumbCurrent: {
+    color: tokens.ink,
+  },
+  layout: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "grid",
+    gap: "2.5rem",
+    paddingInline: "1.5rem",
+    paddingBottom: "5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+    },
+  },
+  mediaColumn: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 7 / span 7",
+    },
+  },
+  mainImageWrap: {
+    position: "relative",
+    aspectRatio: "4 / 5",
+    overflow: "hidden",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+  },
+  objectCover: { objectFit: "cover" },
+  noImageOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "flex-end",
+    padding: "2.5rem",
+  },
+  noImageLabel: {
+    backgroundColor: "rgba(245, 241, 232, 0.9)",
+    paddingInline: "0.75rem",
+    paddingBlock: "0.375rem",
+    fontSize: "0.75rem",
+    fontWeight: 500,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: tokens.ink,
+  },
+  swatchGrid: {
+    marginTop: "1.5rem",
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: "0.75rem",
+  },
+  swatch: {
+    aspectRatio: "1 / 1",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+  },
+  copyColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2rem",
+    "@media (min-width: 768px)": {
+      gridColumn: "span 5 / span 5",
+    },
+  },
+  brandEyebrow: { marginBottom: "0.5rem" },
+  productName: {
+    lineHeight: 1.25,
+  },
+  subtitle: {
+    marginTop: "0.5rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  price: {
+    marginTop: "1.5rem",
+    fontSize: "1.5rem",
+    fontFamily: tokens.fontDisplay,
+    fontVariantNumeric: "tabular-nums",
+  },
+  description: {
+    fontSize: "0.875rem",
+    lineHeight: 1.625,
+    color: tokens.ink80,
+  },
+  fitFinderRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  fitFinderText: {
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  copyBlock: {
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+    paddingTop: "1.5rem",
+  },
+  copyBlockEyebrow: {
+    marginBottom: "0.5rem",
+  },
+  editorialCopy: {
+    fontSize: "0.875rem",
+    fontStyle: "italic",
+    color: tokens.ink80,
+  },
+  careCopy: {
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+});

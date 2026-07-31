@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import * as stylex from "@stylexjs/stylex";
 import { db } from "@/db";
 import { orders, orderItems } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureDbReady } from "@/db/bootstrap";
 import { formatPrice } from "@/lib/utils";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 export default async function OrderConfirmation({
   params,
@@ -18,11 +21,13 @@ export default async function OrderConfirmation({
   const items = await db.select().from(orderItems).where(eq(orderItems.orderId, id));
 
   return (
-    <section className="mx-auto max-w-3xl px-6 py-24">
-      <div className="text-center">
-        <div className="eyebrow mb-3">Order confirmed</div>
-        <h1 className="display-lg">Thank you.</h1>
-        <p className="mt-3 text-sm text-ink-60">
+    <section {...stylex.props(styles.container)}>
+      <div {...stylex.props(styles.center)}>
+        <div {...stylex.props(commonStyles.eyebrow, styles.eyebrow)}>
+          Order confirmed
+        </div>
+        <h1 {...stylex.props(commonStyles.displayLg)}>Thank you.</h1>
+        <p {...stylex.props(styles.confirmationText)}>
           A confirmation has been sent to <strong>{order.email}</strong>.
           {order.dogName && (
             <>
@@ -31,61 +36,63 @@ export default async function OrderConfirmation({
             </>
           )}
         </p>
-        <p className="mt-2 text-xs tracking-[0.2em] uppercase text-ink-65">
+        <p {...stylex.props(styles.orderId)}>
           Order {order.id}
         </p>
       </div>
 
-      <div className="mt-12 border border-ink-20 bg-bone-50 p-6">
-        <div className="eyebrow mb-4">Items</div>
-        <ul className="divide-y divide-ink-20">
+      <div {...stylex.props(styles.card)}>
+        <div {...stylex.props(commonStyles.eyebrow, styles.itemsEyebrow)}>Items</div>
+        <ul {...stylex.props(styles.itemList)}>
           {items.map((it) => (
-            <li key={it.id} className="flex justify-between py-3 text-sm">
+            <li key={it.id} {...stylex.props(styles.itemRow)}>
               <div>
-                <div className="font-medium">{it.productName}</div>
-                <div className="text-xs text-ink-60">
+                <div {...stylex.props(styles.medium)}>{it.productName}</div>
+                <div {...stylex.props(styles.mutedXs)}>
                   {it.variantLabel} · Qty {it.quantity}
                 </div>
               </div>
-              <div className="tabular-nums">
+              <div {...stylex.props(styles.tabularNums)}>
                 {formatPrice(it.unitPriceCents * it.quantity)}
               </div>
             </li>
           ))}
         </ul>
-        <dl className="mt-6 space-y-2 border-t border-ink-20 pt-4 text-sm">
-          <div className="flex justify-between">
+        <dl {...stylex.props(styles.totals)}>
+          <div {...stylex.props(styles.rowBetween)}>
             <dt>Subtotal</dt>
-            <dd className="tabular-nums">{formatPrice(order.subtotalCents)}</dd>
+            <dd {...stylex.props(styles.tabularNums)}>{formatPrice(order.subtotalCents)}</dd>
           </div>
           {order.discountCents > 0 && (
-            <div className="flex justify-between text-burgundy">
+            <div {...stylex.props(styles.rowBetween, styles.discountRow)}>
               <dt>Discount{order.promoCode ? ` (${order.promoCode})` : ""}</dt>
-              <dd className="tabular-nums">
+              <dd {...stylex.props(styles.tabularNums)}>
                 −{formatPrice(order.discountCents)}
               </dd>
             </div>
           )}
-          <div className="flex justify-between">
+          <div {...stylex.props(styles.rowBetween)}>
             <dt>Shipping</dt>
-            <dd className="tabular-nums">
+            <dd {...stylex.props(styles.tabularNums)}>
               {order.shippingCents === 0 ? "Complimentary" : formatPrice(order.shippingCents)}
             </dd>
           </div>
-          <div className="flex justify-between">
+          <div {...stylex.props(styles.rowBetween)}>
             <dt>Tax</dt>
-            <dd className="tabular-nums">{formatPrice(order.taxCents)}</dd>
+            <dd {...stylex.props(styles.tabularNums)}>{formatPrice(order.taxCents)}</dd>
           </div>
-          <div className="flex justify-between border-t border-ink-20 pt-3 font-medium">
+          <div {...stylex.props(styles.totalRow)}>
             <dt>Total</dt>
-            <dd className="tabular-nums">{formatPrice(order.totalCents)}</dd>
+            <dd {...stylex.props(styles.tabularNums)}>{formatPrice(order.totalCents)}</dd>
           </div>
         </dl>
       </div>
 
       {order.shippingAddress && (
-        <div className="mt-6 border border-ink-20 bg-bone-50 p-6 text-sm">
-          <div className="eyebrow mb-3">Shipping to</div>
+        <div {...stylex.props(styles.shippingCard)}>
+          <div {...stylex.props(commonStyles.eyebrow, styles.shippingEyebrow)}>
+            Shipping to
+          </div>
           <div>{order.shippingAddress.line1}</div>
           {order.shippingAddress.line2 && <div>{order.shippingAddress.line2}</div>}
           <div>
@@ -96,10 +103,10 @@ export default async function OrderConfirmation({
         </div>
       )}
 
-      <div className="mt-10 text-center">
+      <div {...stylex.props(styles.footerActionWrap)}>
         <Link
           href="/"
-          className="inline-block border border-ink px-6 py-3 text-[11px] tracking-[0.24em] uppercase hover:bg-ink hover:text-bone"
+          {...stylex.props(styles.footerAction)}
         >
           Continue shopping
         </Link>
@@ -107,3 +114,111 @@ export default async function OrderConfirmation({
     </section>
   );
 }
+
+const styles = stylex.create({
+  container: {
+    marginInline: "auto",
+    maxWidth: "48rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "6rem",
+  },
+  center: { textAlign: "center" },
+  eyebrow: { marginBottom: "0.75rem" },
+  confirmationText: {
+    marginTop: "0.75rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  orderId: {
+    marginTop: "0.5rem",
+    fontSize: "0.75rem",
+    letterSpacing: "0.2em",
+    textTransform: "uppercase",
+    color: tokens.ink65,
+  },
+  card: {
+    marginTop: "3rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.5rem",
+  },
+  itemsEyebrow: { marginBottom: "1rem" },
+  itemList: {
+    margin: 0,
+    padding: 0,
+    listStyle: "none",
+  },
+  itemRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    paddingBlock: "0.75rem",
+    fontSize: "0.875rem",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    ":last-child": { borderBottomWidth: 0 },
+  },
+  medium: { fontWeight: 500 },
+  mutedXs: {
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  tabularNums: {
+    fontVariantNumeric: "tabular-nums",
+  },
+  totals: {
+    marginTop: "1.5rem",
+    paddingTop: "1rem",
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+    display: "grid",
+    gap: "0.5rem",
+    fontSize: "0.875rem",
+  },
+  rowBetween: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
+  discountRow: { color: tokens.burgundy },
+  totalRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+    paddingTop: "0.75rem",
+    fontWeight: 500,
+  },
+  shippingCard: {
+    marginTop: "1.5rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.5rem",
+    fontSize: "0.875rem",
+  },
+  shippingEyebrow: { marginBottom: "0.75rem" },
+  footerActionWrap: {
+    marginTop: "2.5rem",
+    textAlign: "center",
+  },
+  footerAction: {
+    display: "inline-block",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink,
+    paddingInline: "1.5rem",
+    paddingBlock: "0.75rem",
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    ":hover": {
+      backgroundColor: tokens.ink,
+      color: tokens.bone,
+    },
+  },
+});

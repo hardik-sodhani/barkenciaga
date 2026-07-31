@@ -1,50 +1,54 @@
 import { forwardRef } from "react";
-import { cn } from "@/lib/utils";
+import * as stylex from "@stylexjs/stylex";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
+
+type InputElementProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "className"
+> & {
+  sx?: stylex.StyleXStyles;
+};
 
 export const Input = forwardRef<
   HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement>
->(function Input({ className, ...props }, ref) {
+  InputElementProps
+>(function Input({ sx, ...props }, ref) {
   return (
     <input
       ref={ref}
       {...props}
-      className={cn(
-        "h-11 w-full border-b border-ink-20 bg-transparent px-1 py-2 text-sm text-ink placeholder:text-ink-65 focus:border-ink outline-none transition-colors",
-        className,
-      )}
+      {...stylex.props(styles.inputBase, sx)}
     />
   );
 });
 
 export const Textarea = forwardRef<
   HTMLTextAreaElement,
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>
->(function Textarea({ className, ...props }, ref) {
+  Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "className"> & {
+    sx?: stylex.StyleXStyles;
+  }
+>(function Textarea({ sx, ...props }, ref) {
   return (
     <textarea
       ref={ref}
       {...props}
-      className={cn(
-        "w-full border border-ink-20 bg-transparent p-3 text-sm text-ink placeholder:text-ink-65 focus:border-ink outline-none transition-colors",
-        className,
-      )}
+      {...stylex.props(styles.textareaBase, sx)}
     />
   );
 });
 
 export const Select = forwardRef<
   HTMLSelectElement,
-  React.SelectHTMLAttributes<HTMLSelectElement>
->(function Select({ className, children, ...props }, ref) {
+  Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "className"> & {
+    sx?: stylex.StyleXStyles;
+  }
+>(function Select({ sx, children, ...props }, ref) {
   return (
     <select
       ref={ref}
       {...props}
-      className={cn(
-        "h-11 w-full border-b border-ink-20 bg-transparent px-1 py-2 text-sm text-ink focus:border-ink outline-none transition-colors appearance-none",
-        className,
-      )}
+      {...stylex.props(styles.selectBase, sx)}
     >
       {children}
     </select>
@@ -53,16 +57,88 @@ export const Select = forwardRef<
 
 export function Label({
   children,
-  className,
   htmlFor,
+  sx,
 }: {
   children: React.ReactNode;
-  className?: string;
   htmlFor?: string;
+  sx?: stylex.StyleXStyles;
 }) {
   return (
-    <label htmlFor={htmlFor} className={cn("eyebrow block mb-1", className)}>
+    <label
+      htmlFor={htmlFor}
+      {...stylex.props(commonStyles.eyebrow, styles.label, sx)}
+    >
       {children}
     </label>
   );
 }
+
+const styles = stylex.create({
+  inputBase: {
+    height: "2.75rem",
+    width: "100%",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    backgroundColor: "transparent",
+    paddingInline: "0.25rem",
+    paddingBlock: "0.5rem",
+    fontSize: "0.875rem",
+    color: tokens.ink,
+    outline: "none",
+    transitionProperty: "border-color",
+    transitionDuration: "150ms",
+    transitionTimingFunction: "ease",
+    "::placeholder": {
+      color: tokens.ink65,
+    },
+    ":focus": {
+      borderBottomColor: tokens.ink,
+    },
+  },
+  textareaBase: {
+    width: "100%",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: "transparent",
+    padding: "0.75rem",
+    fontSize: "0.875rem",
+    color: tokens.ink,
+    outline: "none",
+    transitionProperty: "border-color",
+    transitionDuration: "150ms",
+    transitionTimingFunction: "ease",
+    "::placeholder": {
+      color: tokens.ink65,
+    },
+    ":focus": {
+      borderColor: tokens.ink,
+    },
+  },
+  selectBase: {
+    height: "2.75rem",
+    width: "100%",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    backgroundColor: "transparent",
+    paddingInline: "0.25rem",
+    paddingBlock: "0.5rem",
+    fontSize: "0.875rem",
+    color: tokens.ink,
+    outline: "none",
+    transitionProperty: "border-color",
+    transitionDuration: "150ms",
+    transitionTimingFunction: "ease",
+    appearance: "none",
+    ":focus": {
+      borderBottomColor: tokens.ink,
+    },
+  },
+  label: {
+    display: "block",
+    marginBottom: "0.25rem",
+  },
+});

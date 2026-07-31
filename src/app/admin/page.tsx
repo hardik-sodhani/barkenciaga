@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import * as stylex from "@stylexjs/stylex";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import {
@@ -22,6 +23,8 @@ import {
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -48,41 +51,43 @@ export default async function AdminPage() {
   const categoriesById = new Map(cats.map((c) => [c.id, c]));
 
   return (
-    <section className="mx-auto max-w-[1400px] px-6 py-12">
-      <div className="flex items-baseline justify-between">
+    <section {...stylex.props(styles.container)}>
+      <div {...stylex.props(styles.pageHeader)}>
         <div>
-          <div className="eyebrow mb-2">Studio · admin</div>
-          <h1 className="display-lg">Ops</h1>
+          <div {...stylex.props(commonStyles.eyebrow, styles.pageEyebrow)}>
+            Studio · admin
+          </div>
+          <h1 {...stylex.props(commonStyles.displayLg)}>Ops</h1>
         </div>
-        <div className="text-xs text-ink-60">
+        <div {...stylex.props(styles.headerMeta)}>
           {prods.length} products · {variants.length} variants · {recentOrders.length} recent orders
         </div>
       </div>
 
-      <section className="mt-12">
-        <h2 className="font-display text-3xl mb-6">Recent orders</h2>
+      <section {...stylex.props(styles.sectionSpacingMd)}>
+        <h2 {...stylex.props(styles.sectionTitle)}>Recent orders</h2>
         {recentOrders.length === 0 ? (
-          <div className="border border-dashed border-ink-20 p-8 text-sm text-ink-60">
+          <div {...stylex.props(styles.emptyState)}>
             No orders yet. Place one via /checkout.
           </div>
         ) : (
-          <ul className="divide-y divide-ink-20 border-y border-ink-20">
+          <ul {...stylex.props(styles.dividedList, styles.borderedList)}>
             {recentOrders.map((o) => (
-              <li key={o.id} className="grid grid-cols-[1fr_120px_80px_100px_auto] gap-4 py-3 text-sm items-center">
+              <li key={o.id} {...stylex.props(styles.orderRow)}>
                 <div>
-                  <div className="font-medium">{o.email}</div>
-                  <div className="text-xs text-ink-60">
+                  <div {...stylex.props(styles.medium)}>{o.email}</div>
+                  <div {...stylex.props(styles.mutedXs)}>
                     {o.id} · {new Date(o.createdAt).toLocaleString()}
                   </div>
                 </div>
-                <div className="text-xs text-ink-60">
+                <div {...stylex.props(styles.mutedXs)}>
                   {o.dogName ? `for ${o.dogName}` : "—"}
                 </div>
-                <div className="eyebrow">{o.status}</div>
-                <div className="tabular-nums">{formatPrice(o.totalCents)}</div>
+                <div {...stylex.props(commonStyles.eyebrow)}>{o.status}</div>
+                <div {...stylex.props(styles.tabularNums)}>{formatPrice(o.totalCents)}</div>
                 <Link
                   href={`/orders/${o.id}`}
-                  className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                  {...stylex.props(styles.inlineActionLink)}
                 >
                   View
                 </Link>
@@ -92,29 +97,29 @@ export default async function AdminPage() {
         )}
       </section>
 
-      <section className="mt-16">
-        <h2 className="font-display text-3xl mb-6">Promo codes</h2>
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.7fr)]">
+      <section {...stylex.props(styles.sectionSpacingLg)}>
+        <h2 {...stylex.props(styles.sectionTitle)}>Promo codes</h2>
+        <div {...stylex.props(styles.promoLayout)}>
           <div>
             {promos.length === 0 ? (
-              <div className="border border-dashed border-ink-20 p-8 text-sm text-ink-60">
+              <div {...stylex.props(styles.emptyState)}>
                 No promo codes yet.
               </div>
             ) : (
-              <ul className="divide-y divide-ink-20 border-y border-ink-20">
+              <ul {...stylex.props(styles.dividedList, styles.borderedList)}>
                 {promos.map((promo) => (
                   <li
                     key={promo.id}
-                    className="grid gap-3 py-4 text-sm sm:grid-cols-[1fr_auto_auto] sm:items-center"
+                    {...stylex.props(styles.promoRow)}
                   >
                     <div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium tracking-wider">{promo.code}</span>
-                        <span className="eyebrow">
+                      <div {...stylex.props(styles.rowAlignCenterGap)}>
+                        <span {...stylex.props(styles.code)}>{promo.code}</span>
+                        <span {...stylex.props(commonStyles.eyebrow)}>
                           {promo.active ? "Active" : "Inactive"}
                         </span>
                       </div>
-                      <div className="mt-1 text-xs text-ink-60">
+                      <div {...stylex.props(styles.mutedXs, styles.mt1)}>
                         {promo.kind === "percent"
                           ? `${promo.valueInt}% off`
                           : `${formatPrice(promo.valueInt)} off`}
@@ -127,7 +132,7 @@ export default async function AdminPage() {
                           : ` / ${promo.maxRedemptions} redemptions`}
                       </div>
                     </div>
-                    <div className="text-xs text-ink-60">
+                    <div {...stylex.props(styles.mutedXs)}>
                       {new Date(promo.startsAt).toLocaleDateString()} —{" "}
                       {promo.endsAt
                         ? new Date(promo.endsAt).toLocaleDateString()
@@ -141,7 +146,7 @@ export default async function AdminPage() {
                         </Button>
                       </form>
                     ) : (
-                      <span className="text-xs text-ink-60">—</span>
+                      <span {...stylex.props(styles.mutedXs)}>—</span>
                     )}
                   </li>
                 ))}
@@ -149,26 +154,28 @@ export default async function AdminPage() {
             )}
           </div>
 
-          <form action={createPromoAction} className="space-y-3 border border-ink-20 bg-bone-50 p-5">
-            <div className="eyebrow mb-4">Create promo</div>
+          <form action={createPromoAction} {...stylex.props(styles.createPromoForm)}>
+            <div {...stylex.props(commonStyles.eyebrow, styles.mb4)}>
+              Create promo
+            </div>
             <div>
               <Label htmlFor="promo-code">Code</Label>
               <Input
                 id="promo-code"
                 name="code"
                 placeholder="WOOF10"
-                className="uppercase"
+                sx={styles.uppercase}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div {...stylex.props(styles.twoColGap3)}>
               <div>
                 <Label htmlFor="promo-kind">Kind</Label>
                 <select
                   id="promo-kind"
                   name="kind"
                   defaultValue="percent"
-                  className="h-11 w-full border border-ink-20 bg-transparent px-3 text-sm"
+                  {...stylex.props(styles.select)}
                 >
                   <option value="percent">Percent</option>
                   <option value="fixed">Fixed cents</option>
@@ -179,7 +186,7 @@ export default async function AdminPage() {
                 <Input id="promo-value" type="number" name="valueInt" min="1" required />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div {...stylex.props(styles.twoColGap3)}>
               <div>
                 <Label htmlFor="promo-minimum">Minimum subtotal (cents)</Label>
                 <Input
@@ -202,7 +209,7 @@ export default async function AdminPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div {...stylex.props(styles.twoColGap3)}>
               <div>
                 <Label htmlFor="promo-starts">Starts</Label>
                 <Input
@@ -225,31 +232,33 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <section className="mt-16">
-        <h2 className="font-display text-3xl mb-6">Products</h2>
-        <div className="space-y-6">
+      <section {...stylex.props(styles.sectionSpacingLg)}>
+        <h2 {...stylex.props(styles.sectionTitle)}>Products</h2>
+        <div {...stylex.props(styles.productStack)}>
           {prods.map((p) => {
             const vs = variantsByProduct.get(p.id) ?? [];
             return (
-              <details key={p.id} className="border border-ink-20 bg-bone-50 p-5">
-                <summary className="flex cursor-pointer items-center justify-between">
+              <details key={p.id} {...stylex.props(styles.productDetails)}>
+                <summary {...stylex.props(styles.detailsSummary)}>
                   <div>
-                    <div className="font-display text-xl">{p.name}</div>
-                    <div className="text-xs text-ink-60">
+                    <div {...stylex.props(styles.productName)}>{p.name}</div>
+                    <div {...stylex.props(styles.mutedXs)}>
                       {categoriesById.get(p.categoryId)?.name} · {vs.length} variants ·{" "}
                       {formatPrice(p.priceCents)}
                     </div>
                   </div>
                   <Link
                     href={`/p/${p.slug}`}
-                    className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                    {...stylex.props(styles.inlineActionLink)}
                   >
                     View PDP →
                   </Link>
                 </summary>
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  <form action={updateProductAction} className="space-y-3">
-                    <div className="eyebrow mb-2">Product details</div>
+                <div {...stylex.props(styles.detailsGrid)}>
+                  <form action={updateProductAction} {...stylex.props(styles.formStack)}>
+                    <div {...stylex.props(commonStyles.eyebrow, styles.mb2)}>
+                      Product details
+                    </div>
                     <input type="hidden" name="id" value={p.id} />
                     <div>
                       <Label htmlFor={`name-${p.id}`}>Name</Label>
@@ -279,7 +288,7 @@ export default async function AdminPage() {
                         name="description"
                         defaultValue={p.description}
                         rows={4}
-                        className="w-full border border-ink-20 bg-transparent p-3 text-sm"
+                        {...stylex.props(styles.textarea)}
                       />
                     </div>
                     <Button type="submit" size="sm">
@@ -287,30 +296,33 @@ export default async function AdminPage() {
                     </Button>
                   </form>
 
-                  <div className="space-y-2">
-                    <div className="eyebrow mb-2">Variants</div>
-                    <ul className="divide-y divide-ink-20 border border-ink-20 bg-bone">
+                  <div {...stylex.props(styles.variantStack)}>
+                    <div {...stylex.props(commonStyles.eyebrow, styles.mb2)}>Variants</div>
+                    <ul {...stylex.props(styles.variantList)}>
                       {vs.map((v) => (
-                        <li key={v.id} className="flex items-center gap-3 p-3">
+                        <li key={v.id} {...stylex.props(styles.variantRow)}>
                           <span
-                            className="inline-block h-4 w-4 border border-ink-20"
+                            {...stylex.props(styles.variantColorDot)}
                             style={{ background: v.colorHex }}
                           />
-                          <div className="flex-1 text-sm">
+                          <div {...stylex.props(styles.flex1TextSm)}>
                             {v.size.toUpperCase()} / {v.color}
-                            <div className="text-[11px] text-ink-65">{v.sku}</div>
+                            <div {...stylex.props(styles.sku)}>{v.sku}</div>
                           </div>
-                          <form action={updateVariantInventoryAction} className="flex items-center gap-2">
+                          <form
+                            action={updateVariantInventoryAction}
+                            {...stylex.props(styles.variantInventoryForm)}
+                          >
                             <input type="hidden" name="id" value={v.id} />
                             <input
                               type="number"
                               name="inventory"
                               defaultValue={v.inventory}
-                              className="w-20 border border-ink-20 bg-transparent px-2 py-1 text-sm text-right"
+                              {...stylex.props(styles.inventoryInput)}
                             />
                             <button
                               type="submit"
-                              className="text-[10px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                              {...stylex.props(styles.variantSaveButton)}
                             >
                               Save
                             </button>
@@ -328,3 +340,243 @@ export default async function AdminPage() {
     </section>
   );
 }
+
+const styles = stylex.create({
+  container: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    paddingInline: "1.5rem",
+    paddingBlock: "3rem",
+  },
+  pageHeader: {
+    display: "flex",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+  },
+  pageEyebrow: { marginBottom: "0.5rem" },
+  headerMeta: {
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  sectionSpacingMd: { marginTop: "3rem" },
+  sectionSpacingLg: { marginTop: "4rem" },
+  sectionTitle: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "1.875rem",
+    marginBottom: "1.5rem",
+  },
+  emptyState: {
+    borderWidth: "1px",
+    borderStyle: "dashed",
+    borderColor: tokens.ink20,
+    padding: "2rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  dividedList: {
+    margin: 0,
+    padding: 0,
+    listStyle: "none",
+  },
+  borderedList: {
+    borderTopWidth: "1px",
+    borderBottomWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+  },
+  orderRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr 120px 80px 100px auto",
+    gap: "1rem",
+    paddingBlock: "0.75rem",
+    fontSize: "0.875rem",
+    alignItems: "center",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    ":last-child": {
+      borderBottomWidth: 0,
+    },
+  },
+  medium: { fontWeight: 500 },
+  mutedXs: {
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  tabularNums: {
+    fontVariantNumeric: "tabular-nums",
+  },
+  inlineActionLink: {
+    fontSize: "11px",
+    letterSpacing: "0.2em",
+    textTransform: "uppercase",
+    color: tokens.ink60,
+    ":hover": {
+      color: tokens.ink,
+    },
+  },
+  promoLayout: {
+    display: "grid",
+    gap: "2rem",
+    "@media (min-width: 1024px)": {
+      gridTemplateColumns: "minmax(0, 1fr) minmax(320px, 0.7fr)",
+    },
+  },
+  promoRow: {
+    display: "grid",
+    gap: "0.75rem",
+    paddingBlock: "1rem",
+    fontSize: "0.875rem",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    ":last-child": { borderBottomWidth: 0 },
+    "@media (min-width: 640px)": {
+      gridTemplateColumns: "1fr auto auto",
+      alignItems: "center",
+    },
+  },
+  rowAlignCenterGap: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+  },
+  code: {
+    fontWeight: 500,
+    letterSpacing: "0.05em",
+  },
+  mt1: { marginTop: "0.25rem" },
+  createPromoForm: {
+    display: "grid",
+    gap: "0.75rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.25rem",
+  },
+  mb4: { marginBottom: "1rem" },
+  uppercase: { textTransform: "uppercase" },
+  twoColGap3: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "0.75rem",
+  },
+  select: {
+    height: "2.75rem",
+    width: "100%",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: "transparent",
+    paddingInline: "0.75rem",
+    fontSize: "0.875rem",
+  },
+  productStack: {
+    display: "grid",
+    gap: "1.5rem",
+  },
+  productDetails: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.25rem",
+  },
+  detailsSummary: {
+    display: "flex",
+    cursor: "pointer",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  productName: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "1.25rem",
+  },
+  detailsGrid: {
+    marginTop: "1.5rem",
+    display: "grid",
+    gap: "1.5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+  },
+  formStack: {
+    display: "grid",
+    gap: "0.75rem",
+  },
+  mb2: { marginBottom: "0.5rem" },
+  textarea: {
+    width: "100%",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: "transparent",
+    padding: "0.75rem",
+    fontSize: "0.875rem",
+  },
+  variantStack: {
+    display: "grid",
+    gap: "0.5rem",
+  },
+  variantList: {
+    margin: 0,
+    padding: 0,
+    listStyle: "none",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone,
+  },
+  variantRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    padding: "0.75rem",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    ":last-child": { borderBottomWidth: 0 },
+  },
+  variantColorDot: {
+    display: "inline-block",
+    height: "1rem",
+    width: "1rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+  },
+  flex1TextSm: {
+    flex: 1,
+    fontSize: "0.875rem",
+  },
+  sku: {
+    fontSize: "11px",
+    color: tokens.ink65,
+  },
+  variantInventoryForm: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  inventoryInput: {
+    width: "5rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: "transparent",
+    paddingInline: "0.5rem",
+    paddingBlock: "0.25rem",
+    fontSize: "0.875rem",
+    textAlign: "right",
+  },
+  variantSaveButton: {
+    fontSize: "10px",
+    letterSpacing: "0.2em",
+    textTransform: "uppercase",
+    color: tokens.ink60,
+    border: 0,
+    backgroundColor: "transparent",
+    ":hover": { color: tokens.ink },
+  },
+});

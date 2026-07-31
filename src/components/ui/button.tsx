@@ -1,59 +1,164 @@
 import { forwardRef } from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import * as stylex from "@stylexjs/stylex";
 import { Slot } from "@/components/ui/slot";
-import { cn } from "@/lib/utils";
+import { tokens } from "@/styles/tokens.stylex";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,color,border] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/60 disabled:opacity-40 disabled:pointer-events-none",
-  {
-    variants: {
-      variant: {
-        primary: "bg-ink text-bone hover:bg-ink-80",
-        accent: "bg-burgundy text-bone hover:bg-burgundy-600",
-        highlight: "bg-chartreuse text-ink hover:bg-chartreuse-600",
-        outline: "border border-ink text-ink hover:bg-ink hover:text-bone",
-        ghost: "text-ink hover:bg-bone-200",
-        subtle: "bg-bone-200 text-ink hover:bg-bone-300",
-        danger: "border border-danger text-danger hover:bg-danger hover:text-bone",
-      },
-      size: {
-        sm: "h-8 px-3 text-xs tracking-wider uppercase",
-        md: "h-11 px-5 text-sm tracking-wider uppercase",
-        lg: "h-14 px-8 text-sm tracking-widest uppercase",
-        icon: "h-10 w-10",
-      },
-      shape: {
-        square: "rounded-none",
-        pill: "rounded-full",
-        soft: "rounded-md",
-      },
-    },
-    defaultVariants: {
-      variant: "primary",
-      size: "md",
-      shape: "square",
-    },
-  },
-);
+type ButtonVariant =
+  | "primary"
+  | "accent"
+  | "highlight"
+  | "outline"
+  | "ghost"
+  | "subtle"
+  | "danger";
+type ButtonSize = "sm" | "md" | "lg" | "icon";
+type ButtonShape = "square" | "pill" | "soft";
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "className"> {
   asChild?: boolean;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  shape?: ButtonShape;
+  sx?: stylex.StyleXStyles;
 }
 
+const styles = stylex.create({
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5rem",
+    whiteSpace: "nowrap",
+    fontWeight: 500,
+    transitionProperty: "background-color, color, border-color",
+    transitionDuration: "150ms",
+    transitionTimingFunction: "ease",
+    ":focus-visible": {
+      outline: `2px solid ${tokens.ink60}`,
+      outlineOffset: "2px",
+    },
+    ":disabled": {
+      opacity: 0.4,
+      pointerEvents: "none",
+    },
+  },
+  primary: {
+    backgroundColor: tokens.ink,
+    color: tokens.bone,
+    ":hover": { backgroundColor: tokens.ink80 },
+  },
+  accent: {
+    backgroundColor: tokens.burgundy,
+    color: tokens.bone,
+    ":hover": { backgroundColor: tokens.burgundy600 },
+  },
+  highlight: {
+    backgroundColor: tokens.chartreuse,
+    color: tokens.ink,
+    ":hover": { backgroundColor: tokens.chartreuse600 },
+  },
+  outline: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink,
+    color: tokens.ink,
+    ":hover": {
+      backgroundColor: tokens.ink,
+      color: tokens.bone,
+    },
+  },
+  ghost: {
+    color: tokens.ink,
+    ":hover": { backgroundColor: tokens.bone200 },
+  },
+  subtle: {
+    backgroundColor: tokens.bone200,
+    color: tokens.ink,
+    ":hover": { backgroundColor: tokens.bone300 },
+  },
+  danger: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.danger,
+    color: tokens.danger,
+    ":hover": {
+      backgroundColor: tokens.danger,
+      color: tokens.bone,
+    },
+  },
+  sizeSm: {
+    height: "2rem",
+    paddingInline: "0.75rem",
+    fontSize: "0.75rem",
+    letterSpacing: "0.05em",
+    textTransform: "uppercase",
+  },
+  sizeMd: {
+    height: "2.75rem",
+    paddingInline: "1.25rem",
+    fontSize: "0.875rem",
+    letterSpacing: "0.05em",
+    textTransform: "uppercase",
+  },
+  sizeLg: {
+    height: "3.5rem",
+    paddingInline: "2rem",
+    fontSize: "0.875rem",
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+  },
+  sizeIcon: {
+    height: "2.5rem",
+    width: "2.5rem",
+  },
+  shapeSquare: { borderRadius: 0 },
+  shapePill: { borderRadius: "9999px" },
+  shapeSoft: { borderRadius: tokens.radiusMd },
+});
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, shape, asChild, ...props }, ref) => {
+  (
+    {
+      variant = "primary",
+      size = "md",
+      shape = "square",
+      asChild,
+      sx,
+      ...props
+    },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
+    const variantStyle = styles[variant];
+    const sizeStyle =
+      size === "sm"
+        ? styles.sizeSm
+        : size === "lg"
+          ? styles.sizeLg
+          : size === "icon"
+            ? styles.sizeIcon
+            : styles.sizeMd;
+    const shapeStyle =
+      shape === "pill"
+        ? styles.shapePill
+        : shape === "soft"
+          ? styles.shapeSoft
+          : styles.shapeSquare;
+
     return (
       <Comp
         ref={ref}
-        className={cn(buttonVariants({ variant, size, shape }), className)}
+        {...stylex.props(
+          styles.base,
+          variantStyle,
+          sizeStyle,
+          shapeStyle,
+          sx,
+        )}
         {...props}
       />
     );
   },
 );
 Button.displayName = "Button";
-
-export { buttonVariants };

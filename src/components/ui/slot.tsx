@@ -17,10 +17,15 @@ export const Slot = forwardRef<HTMLElement, SlotProps>(function Slot(
   ]
     .filter(Boolean)
     .join(" ");
+  const mergedStyle = {
+    ...((childProps as { style?: React.CSSProperties }).style ?? {}),
+    ...((props as { style?: React.CSSProperties }).style ?? {}),
+  };
   return cloneElement(child, {
     ...props,
     ...childProps,
     className: mergedClassName,
+    style: mergedStyle,
     ref,
   } as Record<string, unknown>);
 });

@@ -1,5 +1,8 @@
 import Link from "next/link";
+import * as stylex from "@stylexjs/stylex";
 import { getAllCategories } from "@/lib/products";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 const DEMO_FLOWS = [
   {
@@ -72,98 +75,232 @@ export default async function ShowroomPage() {
   const categories = await getAllCategories();
 
   return (
-    <section className="mx-auto max-w-[1200px] px-6 py-16">
-      <div className="eyebrow mb-2">Internal · Presenters only</div>
-      <h1 className="display-xl">Showroom.</h1>
-      <p className="mt-4 max-w-2xl text-sm text-ink-60">
+    <section {...stylex.props(styles.container)}>
+      <div {...stylex.props(commonStyles.eyebrow, styles.topEyebrow)}>
+        Internal · Presenters only
+      </div>
+      <h1 {...stylex.props(commonStyles.displayXl)}>Showroom.</h1>
+      <p {...stylex.props(styles.intro)}>
         Barkenciaga is a demo surface for Cursor enablement sessions. This page
         gives presenters a single index of canned flows, sample tickets, and
         known good demo starting points.
       </p>
 
-      <section className="mt-16">
-        <h2 className="font-display text-3xl mb-6">Canned demo flows</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+      <section {...stylex.props(styles.sectionSpacing)}>
+        <h2 {...stylex.props(styles.sectionTitle)}>Canned demo flows</h2>
+        <div {...stylex.props(styles.flowGrid)}>
           {DEMO_FLOWS.map((f) => (
-            <div key={f.id} className="border border-ink-20 bg-bone-50 p-6">
-              <div className="eyebrow mb-2">{f.id}</div>
-              <h3 className="font-display text-xl">{f.title}</h3>
-              <p className="mt-3 text-sm text-ink-80">{f.summary}</p>
-              <p className="mt-3 text-xs text-ink-60 italic">{f.highlight}</p>
+            <div key={f.id} {...stylex.props(styles.flowCard)}>
+              <div {...stylex.props(commonStyles.eyebrow, styles.flowEyebrow)}>
+                {f.id}
+              </div>
+              <h3 {...stylex.props(styles.flowTitle)}>{f.title}</h3>
+              <p {...stylex.props(styles.flowSummary)}>{f.summary}</p>
+              <p {...stylex.props(styles.flowHighlight)}>{f.highlight}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mt-16">
-        <h2 className="font-display text-3xl mb-6">Sample tickets</h2>
-        <p className="mb-6 max-w-2xl text-sm text-ink-60">
+      <section {...stylex.props(styles.sectionSpacing)}>
+        <h2 {...stylex.props(styles.sectionTitle)}>Sample tickets</h2>
+        <p {...stylex.props(styles.sampleCopy)}>
           Drop these into a Linear/Jira integration, or paste directly into
           Cursor as a task. Each ticket is sized for a 5-15 minute live demo.
         </p>
-        <ul className="divide-y divide-ink-20 border-y border-ink-20">
+        <ul {...stylex.props(styles.ticketList)}>
           {SAMPLE_TICKETS.map((t) => (
-            <li key={t.id} className="grid gap-4 py-5 md:grid-cols-[120px_1fr]">
-              <div className="font-mono text-xs text-ink-60">{t.id}</div>
+            <li key={t.id} {...stylex.props(styles.ticketItem)}>
+              <div {...stylex.props(styles.ticketId)}>{t.id}</div>
               <div>
-                <div className="font-medium">{t.title}</div>
-                <div className="mt-1 text-sm text-ink-60">{t.body}</div>
+                <div {...stylex.props(styles.ticketTitle)}>{t.title}</div>
+                <div {...stylex.props(styles.ticketBody)}>{t.body}</div>
               </div>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mt-16 grid gap-6 md:grid-cols-4">
-        <div className="md:col-span-4">
-          <h2 className="font-display text-3xl mb-6">Jump-off points</h2>
+      <section {...stylex.props(styles.jumpGrid)}>
+        <div {...stylex.props(styles.jumpHeader)}>
+          <h2 {...stylex.props(styles.sectionTitle)}>Jump-off points</h2>
         </div>
         <Link
           href="/"
-          className="border border-ink-20 bg-bone-50 p-5 hover:bg-bone-200"
+          {...stylex.props(styles.jumpCard)}
         >
-          <div className="eyebrow mb-2">Home</div>
-          <div className="font-display text-xl">/ (editorial)</div>
+          <div {...stylex.props(commonStyles.eyebrow, styles.jumpEyebrow)}>Home</div>
+          <div {...stylex.props(styles.jumpPath)}>/ (editorial)</div>
         </Link>
         {categories.map((c) => (
           <Link
             key={c.id}
             href={`/c/${c.slug}`}
-            className="border border-ink-20 bg-bone-50 p-5 hover:bg-bone-200"
+            {...stylex.props(styles.jumpCard)}
           >
-            <div className="eyebrow mb-2">Category</div>
-            <div className="font-display text-xl">/c/{c.slug}</div>
+            <div {...stylex.props(commonStyles.eyebrow, styles.jumpEyebrow)}>
+              Category
+            </div>
+            <div {...stylex.props(styles.jumpPath)}>/c/{c.slug}</div>
           </Link>
         ))}
         <Link
           href="/collections/autumn-woofer-26"
-          className="border border-ink-20 bg-bone-50 p-5 hover:bg-bone-200"
+          {...stylex.props(styles.jumpCard)}
         >
-          <div className="eyebrow mb-2">Collection</div>
-          <div className="font-display text-xl">/collections/autumn-woofer-26</div>
+          <div {...stylex.props(commonStyles.eyebrow, styles.jumpEyebrow)}>
+            Collection
+          </div>
+          <div {...stylex.props(styles.jumpPath)}>/collections/autumn-woofer-26</div>
         </Link>
         <Link
           href="/account/dogs"
-          className="border border-ink-20 bg-bone-50 p-5 hover:bg-bone-200"
+          {...stylex.props(styles.jumpCard)}
         >
-          <div className="eyebrow mb-2">Account</div>
-          <div className="font-display text-xl">/account/dogs</div>
+          <div {...stylex.props(commonStyles.eyebrow, styles.jumpEyebrow)}>
+            Account
+          </div>
+          <div {...stylex.props(styles.jumpPath)}>/account/dogs</div>
         </Link>
         <Link
           href="/admin"
-          className="border border-ink-20 bg-bone-50 p-5 hover:bg-bone-200"
+          {...stylex.props(styles.jumpCard)}
         >
-          <div className="eyebrow mb-2">Admin</div>
-          <div className="font-display text-xl">/admin</div>
+          <div {...stylex.props(commonStyles.eyebrow, styles.jumpEyebrow)}>
+            Admin
+          </div>
+          <div {...stylex.props(styles.jumpPath)}>/admin</div>
         </Link>
         <Link
           href="/search?q=rain"
-          className="border border-ink-20 bg-bone-50 p-5 hover:bg-bone-200"
+          {...stylex.props(styles.jumpCard)}
         >
-          <div className="eyebrow mb-2">Search</div>
-          <div className="font-display text-xl">/search?q=rain</div>
+          <div {...stylex.props(commonStyles.eyebrow, styles.jumpEyebrow)}>
+            Search
+          </div>
+          <div {...stylex.props(styles.jumpPath)}>/search?q=rain</div>
         </Link>
       </section>
     </section>
   );
 }
+
+const styles = stylex.create({
+  container: {
+    marginInline: "auto",
+    maxWidth: "1200px",
+    paddingInline: "1.5rem",
+    paddingBlock: "4rem",
+  },
+  topEyebrow: { marginBottom: "0.5rem" },
+  intro: {
+    marginTop: "1rem",
+    maxWidth: "42rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  sectionSpacing: { marginTop: "4rem" },
+  sectionTitle: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "1.875rem",
+    marginBottom: "1.5rem",
+  },
+  flowGrid: {
+    display: "grid",
+    gap: "1rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+  },
+  flowCard: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.5rem",
+  },
+  flowEyebrow: { marginBottom: "0.5rem" },
+  flowTitle: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "1.25rem",
+  },
+  flowSummary: {
+    marginTop: "0.75rem",
+    fontSize: "0.875rem",
+    color: tokens.ink80,
+  },
+  flowHighlight: {
+    marginTop: "0.75rem",
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+    fontStyle: "italic",
+  },
+  sampleCopy: {
+    marginBottom: "1.5rem",
+    maxWidth: "42rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  ticketList: {
+    margin: 0,
+    padding: 0,
+    listStyle: "none",
+    borderTopWidth: "1px",
+    borderBottomWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+  },
+  ticketItem: {
+    display: "grid",
+    gap: "1rem",
+    paddingBlock: "1.25rem",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    ":last-child": { borderBottomWidth: 0 },
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "120px 1fr",
+    },
+  },
+  ticketId: {
+    fontFamily: tokens.fontMono,
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  ticketTitle: {
+    fontWeight: 500,
+  },
+  ticketBody: {
+    marginTop: "0.25rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  jumpGrid: {
+    marginTop: "4rem",
+    display: "grid",
+    gap: "1.5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    },
+  },
+  jumpHeader: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 4 / span 4",
+    },
+  },
+  jumpCard: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.25rem",
+    ":hover": {
+      backgroundColor: tokens.bone200,
+    },
+  },
+  jumpEyebrow: { marginBottom: "0.5rem" },
+  jumpPath: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "1.25rem",
+  },
+});

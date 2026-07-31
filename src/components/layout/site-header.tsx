@@ -1,8 +1,9 @@
 import Link from "next/link";
+import * as stylex from "@stylexjs/stylex";
 import type { BarkenciagaSession } from "@/lib/session";
 import type { Dog } from "@/db/schema";
 import { signOutAction } from "@/server/actions/auth";
-import { cn } from "@/lib/utils";
+import { tokens } from "@/styles/tokens.stylex";
 
 const CATEGORIES = [
   { slug: "couture", name: "Couture" },
@@ -21,51 +22,49 @@ export function SiteHeader({
   activeDog: Dog | null;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-20 bg-bone/95 backdrop-blur">
-      <div className="mx-auto flex h-[var(--header-h)] max-w-[1400px] items-center gap-6 px-6">
-        <Link href="/" className="font-display text-2xl tracking-tight">
+    <header {...stylex.props(styles.header)}>
+      <div {...stylex.props(styles.container)}>
+        <Link href="/" {...stylex.props(styles.brand)}>
           Barkenciaga
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 flex-1">
+        <nav {...stylex.props(styles.nav)}>
           {CATEGORIES.map((c) => (
             <Link
               key={c.slug}
               href={`/c/${c.slug}`}
-              className="text-[13px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+              {...stylex.props(styles.navLink)}
             >
               {c.name}
             </Link>
           ))}
           <Link
             href="/collections/autumn-woofer-26"
-            className="text-[13px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+            {...stylex.props(styles.navLink)}
           >
             AW26
           </Link>
           <Link
             href="/showroom"
-            className="text-[13px] tracking-[0.2em] uppercase text-ink-65 hover:text-ink"
+            {...stylex.props(styles.navLinkMuted)}
           >
             Showroom
           </Link>
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div {...stylex.props(styles.rightGroup)}>
           <Link
             href="/search"
-            className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+            {...stylex.props(styles.utilityLink)}
           >
             Search
           </Link>
           {activeDog && (
             <Link
               href="/account/dogs"
-              className={cn(
-                "hidden lg:inline-flex items-center gap-2 border border-ink-20 px-3 py-2 text-[11px] tracking-[0.18em] uppercase text-ink-80 hover:border-ink",
-              )}
+              {...stylex.props(styles.activeDogLink)}
             >
-              <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-chartreuse" />
+              <span aria-hidden {...stylex.props(styles.activeDogDot)} />
               Shopping for {activeDog.name}
             </Link>
           )}
@@ -73,14 +72,14 @@ export function SiteHeader({
             <>
               <Link
                 href="/account"
-                className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+                {...stylex.props(styles.utilityLink)}
               >
                 {session.userName ?? "Account"}
               </Link>
               {session.userRole === "admin" && (
                 <Link
                   href="/admin"
-                  className="text-[11px] tracking-[0.24em] uppercase text-burgundy hover:text-burgundy-600"
+                  {...stylex.props(styles.adminLink)}
                 >
                   Admin
                 </Link>
@@ -88,7 +87,7 @@ export function SiteHeader({
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="text-[11px] tracking-[0.24em] uppercase text-ink-65 hover:text-ink"
+                  {...stylex.props(styles.signOutButton)}
                 >
                   Sign out
                 </button>
@@ -97,19 +96,150 @@ export function SiteHeader({
           ) : (
             <Link
               href="/sign-in"
-              className="text-[11px] tracking-[0.24em] uppercase text-ink-60 hover:text-ink"
+              {...stylex.props(styles.utilityLink)}
             >
               Sign in
             </Link>
           )}
           <Link
             href="/cart"
-            className="inline-flex items-center gap-1 text-[11px] tracking-[0.24em] uppercase text-ink hover:text-burgundy"
+            {...stylex.props(styles.cartLink)}
           >
-            Bag <span className="text-ink-65">({cartCount})</span>
+            Bag <span {...stylex.props(styles.cartCount)}>({cartCount})</span>
           </Link>
         </div>
       </div>
     </header>
   );
 }
+
+const styles = stylex.create({
+  header: {
+    position: "sticky",
+    top: 0,
+    zIndex: 40,
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    backgroundColor: "rgba(245, 241, 232, 0.95)",
+    backdropFilter: "blur(8px)",
+  },
+  container: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "flex",
+    height: tokens.headerH,
+    alignItems: "center",
+    gap: "1.5rem",
+    paddingInline: "1.5rem",
+  },
+  brand: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "1.5rem",
+    letterSpacing: "-0.025em",
+  },
+  nav: {
+    display: "none",
+    alignItems: "center",
+    gap: "1.5rem",
+    flex: 1,
+    "@media (min-width: 768px)": {
+      display: "flex",
+    },
+  },
+  navLink: {
+    fontSize: "13px",
+    letterSpacing: "0.2em",
+    textTransform: "uppercase",
+    color: tokens.ink60,
+    ":hover": {
+      color: tokens.ink,
+    },
+  },
+  navLinkMuted: {
+    fontSize: "13px",
+    letterSpacing: "0.2em",
+    textTransform: "uppercase",
+    color: tokens.ink65,
+    ":hover": {
+      color: tokens.ink,
+    },
+  },
+  rightGroup: {
+    marginLeft: "auto",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+  },
+  utilityLink: {
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    color: tokens.ink60,
+    ":hover": {
+      color: tokens.ink,
+    },
+  },
+  activeDogLink: {
+    display: "none",
+    alignItems: "center",
+    gap: "0.5rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    paddingInline: "0.75rem",
+    paddingBlock: "0.5rem",
+    fontSize: "11px",
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: tokens.ink80,
+    ":hover": {
+      borderColor: tokens.ink,
+    },
+    "@media (min-width: 1024px)": {
+      display: "inline-flex",
+    },
+  },
+  activeDogDot: {
+    display: "inline-block",
+    height: "0.5rem",
+    width: "0.5rem",
+    borderRadius: "9999px",
+    backgroundColor: tokens.chartreuse,
+  },
+  adminLink: {
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    color: tokens.burgundy,
+    ":hover": {
+      color: tokens.burgundy600,
+    },
+  },
+  signOutButton: {
+    border: 0,
+    backgroundColor: "transparent",
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    color: tokens.ink65,
+    ":hover": {
+      color: tokens.ink,
+    },
+  },
+  cartLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.25rem",
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    color: tokens.ink,
+    ":hover": {
+      color: tokens.burgundy,
+    },
+  },
+  cartCount: {
+    color: tokens.ink65,
+  },
+});

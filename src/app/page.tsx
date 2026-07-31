@@ -1,6 +1,9 @@
 import Link from "next/link";
+import * as stylex from "@stylexjs/stylex";
 import { getFeaturedCollections, getAllCategories } from "@/lib/products";
 import { ProductTile } from "@/components/commerce/product-tile";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 export default async function HomePage() {
   const [collections, categories] = await Promise.all([
@@ -15,36 +18,38 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-ink-20">
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 px-6 py-24 md:grid-cols-12">
-          <div className="md:col-span-7 flex flex-col justify-end">
-            <div className="eyebrow mb-6">AW/26 — Editorial 01</div>
-            <h1 className="display-xl">
+      <section {...stylex.props(styles.heroSection)}>
+        <div {...stylex.props(styles.heroContainer)}>
+          <div {...stylex.props(styles.heroCopy)}>
+            <div {...stylex.props(commonStyles.eyebrow, styles.heroEyebrow)}>
+              AW/26 — Editorial 01
+            </div>
+            <h1 {...stylex.props(commonStyles.displayXl)}>
               High fashion.
               <br />
-              <span className="italic">For dogs.</span>
+              <span {...stylex.props(styles.italic)}>For dogs.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-sm text-ink-60">
+            <p {...stylex.props(styles.heroText)}>
               Couture, accessories, eyewear, and footwear - engineered for the
               discerning dog and the humans who walk them. Hand-finished in
               Milan. Approved by a panel of six studio canines.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div {...stylex.props(styles.heroActions)}>
               <Link
                 href="/collections/autumn-woofer-26"
-                className="border border-ink bg-ink px-6 py-3 text-[11px] tracking-[0.24em] uppercase text-bone hover:bg-ink-80"
+                {...stylex.props(styles.primaryCta)}
               >
                 Shop Autumn/Woofer &apos;26
               </Link>
               <Link
                 href="/account/dogs/new"
-                className="border border-ink-20 px-6 py-3 text-[11px] tracking-[0.24em] uppercase text-ink hover:border-ink"
+                {...stylex.props(styles.secondaryCta)}
               >
                 Build a dog profile
               </Link>
             </div>
           </div>
-          <div className="md:col-span-5 grid grid-cols-2 gap-4">
+          <div {...stylex.props(styles.heroTiles)}>
             {hero?.products.slice(0, 4).map((p) => (
               <ProductTile key={p.id} product={p} priority />
             ))}
@@ -53,17 +58,19 @@ export default async function HomePage() {
       </section>
 
       {/* Category strip */}
-      <section className="border-b border-ink-20 bg-bone-100">
-        <div className="mx-auto grid max-w-[1400px] grid-cols-2 md:grid-cols-4">
+      <section {...stylex.props(styles.categorySection)}>
+        <div {...stylex.props(styles.categoryGrid)}>
           {categories.map((c) => (
             <Link
               key={c.id}
               href={`/c/${c.slug}`}
-              className="border-r border-ink-20 p-10 text-center last:border-r-0 hover:bg-bone-200"
+              {...stylex.props(styles.categoryCard)}
             >
-              <div className="eyebrow mb-2">Shop</div>
-              <div className="font-display text-4xl">{c.name}</div>
-              <div className="mt-2 text-xs text-ink-60">{c.tagline}</div>
+              <div {...stylex.props(commonStyles.eyebrow, styles.categoryEyebrow)}>
+                Shop
+              </div>
+              <div {...stylex.props(styles.categoryName)}>{c.name}</div>
+              <div {...stylex.props(styles.categoryTagline)}>{c.tagline}</div>
             </Link>
           ))}
         </div>
@@ -71,21 +78,23 @@ export default async function HomePage() {
 
       {/* Featured collection */}
       {hero && (
-        <section className="mx-auto max-w-[1400px] px-6 py-20">
-          <div className="flex items-end justify-between mb-10">
+        <section {...stylex.props(styles.featuredSection)}>
+          <div {...stylex.props(styles.featuredHeader)}>
             <div>
-              <div className="eyebrow mb-2">The season</div>
-              <h2 className="display-lg">{hero.name}</h2>
-              <p className="mt-3 max-w-lg text-sm text-ink-60">{hero.tagline}</p>
+              <div {...stylex.props(commonStyles.eyebrow, styles.seasonEyebrow)}>
+                The season
+              </div>
+              <h2 {...stylex.props(commonStyles.displayLg)}>{hero.name}</h2>
+              <p {...stylex.props(styles.featuredTagline)}>{hero.tagline}</p>
             </div>
             <Link
               href={`/collections/${hero.slug}`}
-              className="text-[11px] tracking-[0.24em] uppercase hover:text-burgundy"
+              {...stylex.props(styles.inlineLink)}
             >
               See all ({hero.products.length}) →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+          <div {...stylex.props(styles.featuredGrid)}>
             {hero.products.slice(0, 8).map((p) => (
               <ProductTile key={p.id} product={p} />
             ))}
@@ -95,20 +104,22 @@ export default async function HomePage() {
 
       {/* Editorial split */}
       {blackTie && commuter && (
-        <section className="mx-auto grid max-w-[1400px] gap-10 px-6 pb-20 md:grid-cols-2">
+        <section {...stylex.props(styles.editorialSection)}>
           {[blackTie, commuter].map((col) => (
-            <div key={col.id} className="border border-ink-20 bg-bone-50 p-8">
-              <div className="eyebrow mb-2">{col.season}</div>
-              <h3 className="font-display text-4xl">{col.name}</h3>
-              <p className="mt-3 max-w-md text-sm text-ink-60">{col.tagline}</p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
+            <div key={col.id} {...stylex.props(styles.editorialCard)}>
+              <div {...stylex.props(commonStyles.eyebrow, styles.editorialEyebrow)}>
+                {col.season}
+              </div>
+              <h3 {...stylex.props(styles.editorialTitle)}>{col.name}</h3>
+              <p {...stylex.props(styles.editorialTagline)}>{col.tagline}</p>
+              <div {...stylex.props(styles.editorialTiles)}>
                 {col.products.slice(0, 4).map((p) => (
                   <ProductTile key={p.id} product={p} />
                 ))}
               </div>
               <Link
                 href={`/collections/${col.slug}`}
-                className="mt-6 inline-block text-[11px] tracking-[0.24em] uppercase hover:text-burgundy"
+                {...stylex.props(styles.inlineBlockLink)}
               >
                 Shop the edit →
               </Link>
@@ -118,15 +129,17 @@ export default async function HomePage() {
       )}
 
       {/* Editorial footer */}
-      <section className="border-t border-ink-20 bg-ink text-bone">
-        <div className="mx-auto grid max-w-[1400px] gap-10 px-6 py-24 md:grid-cols-2">
+      <section {...stylex.props(styles.footerSection)}>
+        <div {...stylex.props(styles.footerContainer)}>
           <div>
-            <div className="eyebrow text-bone-300 mb-4">The studio</div>
-            <h2 className="display-lg text-bone">
+            <div {...stylex.props(commonStyles.eyebrow, styles.footerEyebrow)}>
+              The studio
+            </div>
+            <h2 {...stylex.props(commonStyles.displayLg, styles.footerTitle)}>
               Designed around the dog, not the human.
             </h2>
           </div>
-          <div className="space-y-4 text-sm text-bone/80 md:mt-10">
+          <div {...stylex.props(styles.footerCopy)}>
             <p>
               Barkenciaga is the first house to cut, fit, and photograph every
               garment on its canine-first lasts. Measurements are taken at neck,
@@ -142,3 +155,236 @@ export default async function HomePage() {
     </>
   );
 }
+
+const styles = stylex.create({
+  heroSection: {
+    position: "relative",
+    overflow: "hidden",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+  },
+  heroContainer: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "2rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "6rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+    },
+  },
+  heroCopy: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    "@media (min-width: 768px)": {
+      gridColumn: "span 7 / span 7",
+    },
+  },
+  heroEyebrow: { marginBottom: "1.5rem" },
+  italic: { fontStyle: "italic" },
+  heroText: {
+    marginTop: "1.5rem",
+    maxWidth: "36rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  heroActions: {
+    marginTop: "2rem",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.75rem",
+  },
+  primaryCta: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink,
+    backgroundColor: tokens.ink,
+    paddingInline: "1.5rem",
+    paddingBlock: "0.75rem",
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    color: tokens.bone,
+    ":hover": {
+      backgroundColor: tokens.ink80,
+    },
+  },
+  secondaryCta: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    paddingInline: "1.5rem",
+    paddingBlock: "0.75rem",
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    color: tokens.ink,
+    ":hover": {
+      borderColor: tokens.ink,
+    },
+  },
+  heroTiles: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "1rem",
+    "@media (min-width: 768px)": {
+      gridColumn: "span 5 / span 5",
+    },
+  },
+  categorySection: {
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+    backgroundColor: tokens.bone100,
+  },
+  categoryGrid: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    },
+  },
+  categoryCard: {
+    borderRightWidth: "1px",
+    borderRightStyle: "solid",
+    borderRightColor: tokens.ink20,
+    padding: "2.5rem",
+    textAlign: "center",
+    ":hover": {
+      backgroundColor: tokens.bone200,
+    },
+    ":last-child": {
+      borderRightWidth: 0,
+    },
+  },
+  categoryEyebrow: { marginBottom: "0.5rem" },
+  categoryName: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "2.25rem",
+  },
+  categoryTagline: {
+    marginTop: "0.5rem",
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  featuredSection: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    paddingInline: "1.5rem",
+    paddingBlock: "5rem",
+  },
+  featuredHeader: {
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    marginBottom: "2.5rem",
+  },
+  seasonEyebrow: { marginBottom: "0.5rem" },
+  featuredTagline: {
+    marginTop: "0.75rem",
+    maxWidth: "32rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  inlineLink: {
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    ":hover": {
+      color: tokens.burgundy,
+    },
+  },
+  featuredGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "1.5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    },
+  },
+  editorialSection: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "grid",
+    gap: "2.5rem",
+    paddingInline: "1.5rem",
+    paddingBottom: "5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+  },
+  editorialCard: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "2rem",
+  },
+  editorialEyebrow: { marginBottom: "0.5rem" },
+  editorialTitle: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "2.25rem",
+  },
+  editorialTagline: {
+    marginTop: "0.75rem",
+    maxWidth: "28rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  editorialTiles: {
+    marginTop: "1.5rem",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "0.75rem",
+  },
+  inlineBlockLink: {
+    marginTop: "1.5rem",
+    display: "inline-block",
+    fontSize: "11px",
+    letterSpacing: "0.24em",
+    textTransform: "uppercase",
+    ":hover": {
+      color: tokens.burgundy,
+    },
+  },
+  footerSection: {
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+    backgroundColor: tokens.ink,
+    color: tokens.bone,
+  },
+  footerContainer: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "grid",
+    gap: "2.5rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "6rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+  },
+  footerEyebrow: {
+    color: tokens.bone300,
+    marginBottom: "1rem",
+  },
+  footerTitle: {
+    color: tokens.bone,
+  },
+  footerCopy: {
+    display: "grid",
+    gap: "1rem",
+    fontSize: "0.875rem",
+    color: "rgba(245, 241, 232, 0.8)",
+    "@media (min-width: 768px)": {
+      marginTop: "2.5rem",
+    },
+  },
+});

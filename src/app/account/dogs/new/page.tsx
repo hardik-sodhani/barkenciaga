@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
+import * as stylex from "@stylexjs/stylex";
 import { getSession } from "@/lib/session";
 import { BREEDS } from "@/lib/dogs";
 import { createDogAction } from "@/server/actions/dogs";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 const SIZES = [
   { id: "xs", label: "XS — under 5kg" },
@@ -18,21 +21,21 @@ export default async function NewDogPage() {
   if (!session.userId) redirect("/sign-in");
 
   return (
-    <section className="mx-auto max-w-2xl px-6 py-16">
-      <div className="eyebrow mb-2">Onboarding</div>
-      <h1 className="display-lg">Tell us about the dog.</h1>
-      <p className="mt-3 text-sm text-ink-60">
+    <section {...stylex.props(styles.container)}>
+      <div {...stylex.props(commonStyles.eyebrow, styles.eyebrow)}>Onboarding</div>
+      <h1 {...stylex.props(commonStyles.displayLg)}>Tell us about the dog.</h1>
+      <p {...stylex.props(styles.copy)}>
         Measurements are optional but unlock fit-finder recommendations on every
         product. We recommend measuring with a soft tape in centimeters.
       </p>
 
-      <form action={createDogAction} className="mt-10 grid gap-6">
+      <form action={createDogAction} {...stylex.props(styles.form)}>
         <div>
           <Label htmlFor="name">Name</Label>
           <Input id="name" name="name" required placeholder="Luna" />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div {...stylex.props(styles.twoColGrid)}>
           <div>
             <Label htmlFor="breed">Breed</Label>
             <Select id="breed" name="breed" defaultValue="French Bulldog">
@@ -64,8 +67,10 @@ export default async function NewDogPage() {
           </Select>
         </div>
 
-        <fieldset className="grid gap-6 border border-ink-20 p-6 md:grid-cols-4">
-          <legend className="eyebrow px-2">Measurements (optional)</legend>
+        <fieldset {...stylex.props(styles.measurementsFieldset)}>
+          <legend {...stylex.props(commonStyles.eyebrow, styles.legend)}>
+            Measurements (optional)
+          </legend>
           <div>
             <Label htmlFor="neckCm">Neck (cm)</Label>
             <Input id="neckCm" name="neckCm" type="number" placeholder="34" />
@@ -91,3 +96,44 @@ export default async function NewDogPage() {
     </section>
   );
 }
+
+const styles = stylex.create({
+  container: {
+    marginInline: "auto",
+    maxWidth: "42rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "4rem",
+  },
+  eyebrow: { marginBottom: "0.5rem" },
+  copy: {
+    marginTop: "0.75rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  form: {
+    marginTop: "2.5rem",
+    display: "grid",
+    gap: "1.5rem",
+  },
+  twoColGrid: {
+    display: "grid",
+    gap: "1.5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+  },
+  measurementsFieldset: {
+    display: "grid",
+    gap: "1.5rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    padding: "1.5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    },
+  },
+  legend: {
+    paddingInline: "0.5rem",
+  },
+});

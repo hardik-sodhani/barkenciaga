@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import * as stylex from "@stylexjs/stylex";
 import {
   getCategoryBySlug,
   getProductsForCategory,
 } from "@/lib/products";
 import { ProductTile } from "@/components/commerce/product-tile";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 const SIZES = ["xs", "s", "m", "l", "xl"] as const;
 const SORTS = [
@@ -44,26 +47,28 @@ export default async function CategoryPage({
 
   return (
     <>
-      <section className="border-b border-ink-20">
-        <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-6 py-16 md:flex-row md:items-end md:justify-between">
+      <section {...stylex.props(styles.heroSection)}>
+        <div {...stylex.props(styles.heroContainer)}>
           <div>
-            <div className="eyebrow mb-2">Category</div>
-            <h1 className="display-lg">{category.name}</h1>
-            <p className="mt-3 max-w-xl text-sm text-ink-60">{category.heroCopy}</p>
+            <div {...stylex.props(commonStyles.eyebrow, styles.eyebrow)}>
+              Category
+            </div>
+            <h1 {...stylex.props(commonStyles.displayLg)}>{category.name}</h1>
+            <p {...stylex.props(styles.heroCopy)}>{category.heroCopy}</p>
           </div>
-          <div className="text-xs text-ink-60">
+          <div {...stylex.props(styles.heroMeta)}>
             {products.length} pieces available
           </div>
         </div>
       </section>
 
-      <section className="mx-auto flex max-w-[1400px] gap-10 px-6 py-10">
-        <aside className="hidden w-48 flex-shrink-0 md:block">
-          <div className="eyebrow mb-3">Size</div>
-          <div className="space-y-2 text-sm">
+      <section {...stylex.props(styles.contentSection)}>
+        <aside {...stylex.props(styles.filtersAside)}>
+          <div {...stylex.props(commonStyles.eyebrow, styles.mb3)}>Size</div>
+          <div {...stylex.props(styles.filterList)}>
             <Link
               href={`/c/${slug}${qs({ size: undefined })}`}
-              className={!size ? "font-medium" : "text-ink-60 hover:text-ink"}
+              {...stylex.props(!size ? styles.filterActive : styles.filterInactive)}
             >
               All sizes
             </Link>
@@ -71,9 +76,7 @@ export default async function CategoryPage({
               <div key={s}>
                 <Link
                   href={`/c/${slug}${qs({ size: s })}`}
-                  className={
-                    size === s ? "font-medium" : "text-ink-60 hover:text-ink"
-                  }
+                  {...stylex.props(size === s ? styles.filterActive : styles.filterInactive)}
                 >
                   {s.toUpperCase()}
                 </Link>
@@ -81,15 +84,13 @@ export default async function CategoryPage({
             ))}
           </div>
 
-          <div className="eyebrow mt-10 mb-3">Sort</div>
-          <div className="space-y-2 text-sm">
+          <div {...stylex.props(commonStyles.eyebrow, styles.sortEyebrow)}>Sort</div>
+          <div {...stylex.props(styles.filterList)}>
             {SORTS.map((s) => (
               <div key={s.id}>
                 <Link
                   href={`/c/${slug}${qs({ sort: s.id })}`}
-                  className={
-                    sort === s.id ? "font-medium" : "text-ink-60 hover:text-ink"
-                  }
+                  {...stylex.props(sort === s.id ? styles.filterActive : styles.filterInactive)}
                 >
                   {s.label}
                 </Link>
@@ -98,20 +99,20 @@ export default async function CategoryPage({
           </div>
         </aside>
 
-        <div className="flex-1">
+        <div {...stylex.props(styles.productsWrap)}>
           {products.length === 0 ? (
-            <div className="border border-dashed border-ink-20 p-16 text-center">
-              <p className="font-display text-3xl">Nothing in this size.</p>
-              <p className="mt-3 text-sm text-ink-60">
+            <div {...stylex.props(styles.emptyState)}>
+              <p {...stylex.props(styles.emptyTitle)}>Nothing in this size.</p>
+              <p {...stylex.props(styles.emptyCopy)}>
                 Try a different size or{" "}
-                <Link className="underline" href={`/c/${slug}`}>
+                <Link {...stylex.props(styles.underlineLink)} href={`/c/${slug}`}>
                   clear filters
                 </Link>
                 .
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+            <div {...stylex.props(styles.productsGrid)}>
               {products.map((p) => (
                 <ProductTile key={p.id} product={p} />
               ))}
@@ -122,3 +123,101 @@ export default async function CategoryPage({
     </>
   );
 }
+
+const styles = stylex.create({
+  heroSection: {
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+  },
+  heroContainer: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1.5rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "4rem",
+    "@media (min-width: 768px)": {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      justifyContent: "space-between",
+    },
+  },
+  eyebrow: { marginBottom: "0.5rem" },
+  heroCopy: {
+    marginTop: "0.75rem",
+    maxWidth: "36rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  heroMeta: {
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  contentSection: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "flex",
+    gap: "2.5rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "2.5rem",
+  },
+  filtersAside: {
+    display: "none",
+    width: "12rem",
+    flexShrink: 0,
+    "@media (min-width: 768px)": {
+      display: "block",
+    },
+  },
+  mb3: { marginBottom: "0.75rem" },
+  sortEyebrow: {
+    marginTop: "2.5rem",
+    marginBottom: "0.75rem",
+  },
+  filterList: {
+    display: "grid",
+    gap: "0.5rem",
+    fontSize: "0.875rem",
+  },
+  filterActive: {
+    fontWeight: 500,
+  },
+  filterInactive: {
+    color: tokens.ink60,
+    ":hover": {
+      color: tokens.ink,
+    },
+  },
+  productsWrap: {
+    flex: 1,
+  },
+  emptyState: {
+    borderWidth: "1px",
+    borderStyle: "dashed",
+    borderColor: tokens.ink20,
+    padding: "4rem",
+    textAlign: "center",
+  },
+  emptyTitle: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "1.875rem",
+  },
+  emptyCopy: {
+    marginTop: "0.75rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  underlineLink: {
+    textDecoration: "underline",
+  },
+  productsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "1.5rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    },
+  },
+});

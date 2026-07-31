@@ -1,67 +1,77 @@
 import Link from "next/link";
+import * as stylex from "@stylexjs/stylex";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-32 border-t border-ink-20 bg-bone-100">
-      <div className="mx-auto max-w-[1400px] grid gap-10 px-6 py-16 md:grid-cols-4">
-        <div className="md:col-span-2">
-          <div className="font-display text-5xl leading-none">Barkenciaga</div>
-          <p className="mt-4 max-w-sm text-sm text-ink-60">
+    <footer {...stylex.props(styles.footer)}>
+      <div {...stylex.props(styles.topGrid)}>
+        <div {...stylex.props(styles.brandBlock)}>
+          <div {...stylex.props(styles.brand)}>Barkenciaga</div>
+          <p {...stylex.props(styles.brandCopy)}>
             High fashion. For dogs. Designed in Milan, engineered for the daily
             walk, and judged by a rotating panel of studio canines.
           </p>
         </div>
         <div>
-          <div className="eyebrow mb-3">Shop</div>
-          <ul className="space-y-2 text-sm">
+          <div {...stylex.props(commonStyles.eyebrow, styles.sectionLabel)}>
+            Shop
+          </div>
+          <ul {...stylex.props(styles.linkList)}>
             <li>
-              <Link href="/c/couture" className="hover:text-burgundy">
+              <Link href="/c/couture" {...stylex.props(styles.link)}>
                 Couture
               </Link>
             </li>
             <li>
-              <Link href="/c/accessories" className="hover:text-burgundy">
+              <Link href="/c/accessories" {...stylex.props(styles.link)}>
                 Accessories
               </Link>
             </li>
             <li>
-              <Link href="/c/eyewear" className="hover:text-burgundy">
+              <Link href="/c/eyewear" {...stylex.props(styles.link)}>
                 Eyewear
               </Link>
             </li>
             <li>
-              <Link href="/c/footwear" className="hover:text-burgundy">
+              <Link href="/c/footwear" {...stylex.props(styles.link)}>
                 Footwear
               </Link>
             </li>
           </ul>
         </div>
         <div>
-          <div className="eyebrow mb-3">Studio</div>
-          <ul className="space-y-2 text-sm">
+          <div {...stylex.props(commonStyles.eyebrow, styles.sectionLabel)}>
+            Studio
+          </div>
+          <ul {...stylex.props(styles.linkList)}>
             <li>
-              <Link href="/showroom" className="hover:text-burgundy">
+              <Link href="/showroom" {...stylex.props(styles.link)}>
                 Showroom
               </Link>
             </li>
             <li>
-              <Link href="/collections/autumn-woofer-26" className="hover:text-burgundy">
+              <Link
+                href="/collections/autumn-woofer-26"
+                {...stylex.props(styles.link)}
+              >
                 Autumn/Woofer &apos;26
               </Link>
             </li>
             <li>
-              <Link href="/account" className="hover:text-burgundy">
+              <Link href="/account" {...stylex.props(styles.link)}>
                 Account
               </Link>
             </li>
             <li>
-              <span className="text-ink-65">Careers</span>
+              <span {...stylex.props(styles.mutedText)}>Careers</span>
             </li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-ink-20">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 text-xs text-ink-65">
+      <div {...stylex.props(styles.bottomBorder)}>
+        <div {...stylex.props(styles.bottomRow)}>
           <span>(c) {new Date().getFullYear()} Barkenciaga Studio. A Cursor demo surface.</span>
           <span>AW/26 - Milan / New York / Kennel</span>
         </div>
@@ -69,3 +79,75 @@ export function SiteFooter() {
     </footer>
   );
 }
+
+const styles = stylex.create({
+  footer: {
+    marginTop: "8rem",
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+    backgroundColor: tokens.bone100,
+  },
+  topGrid: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "grid",
+    gap: "2.5rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "4rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    },
+  },
+  brandBlock: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 2 / span 2",
+    },
+  },
+  brand: {
+    fontFamily: tokens.fontDisplay,
+    fontSize: "3rem",
+    lineHeight: 1,
+  },
+  brandCopy: {
+    marginTop: "1rem",
+    maxWidth: "24rem",
+    fontSize: "0.875rem",
+    color: tokens.ink60,
+  },
+  sectionLabel: {
+    marginBottom: "0.75rem",
+  },
+  linkList: {
+    margin: 0,
+    padding: 0,
+    listStyle: "none",
+    display: "grid",
+    gap: "0.5rem",
+    fontSize: "0.875rem",
+  },
+  link: {
+    ":hover": {
+      color: tokens.burgundy,
+    },
+  },
+  mutedText: {
+    color: tokens.ink65,
+  },
+  bottomBorder: {
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+  },
+  bottomRow: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingInline: "1.5rem",
+    paddingBlock: "1.5rem",
+    fontSize: "0.75rem",
+    color: tokens.ink65,
+  },
+});

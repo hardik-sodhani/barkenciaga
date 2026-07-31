@@ -1,40 +1,63 @@
-import { cn } from "@/lib/utils";
+import * as stylex from "@stylexjs/stylex";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 export function Card({
   children,
-  className,
+  sx,
 }: {
   children: React.ReactNode;
-  className?: string;
+  sx?: stylex.StyleXStyles;
 }) {
-  return (
-    <div
-      className={cn(
-        "border border-ink-20 bg-bone-50 p-6",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
+  return <div {...stylex.props(styles.card, sx)}>{children}</div>;
 }
 
 export function CardHeader({
   title,
   eyebrow,
   action,
+  sx,
 }: {
   title: React.ReactNode;
   eyebrow?: React.ReactNode;
   action?: React.ReactNode;
+  sx?: stylex.StyleXStyles;
 }) {
   return (
-    <div className="flex items-end justify-between gap-4 mb-6">
+    <div {...stylex.props(styles.headerRow, sx)}>
       <div>
-        {eyebrow && <div className="eyebrow mb-1">{eyebrow}</div>}
-        <h2 className="text-xl font-display">{title}</h2>
+        {eyebrow && (
+          <div {...stylex.props(commonStyles.eyebrow, styles.eyebrowSpacing)}>
+            {eyebrow}
+          </div>
+        )}
+        <h2 {...stylex.props(styles.title)}>{title}</h2>
       </div>
       {action}
     </div>
   );
 }
+
+const styles = stylex.create({
+  card: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.5rem",
+  },
+  headerRow: {
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: "1rem",
+    marginBottom: "1.5rem",
+  },
+  eyebrowSpacing: {
+    marginBottom: "0.25rem",
+  },
+  title: {
+    fontSize: "1.25rem",
+    fontFamily: tokens.fontDisplay,
+  },
+});

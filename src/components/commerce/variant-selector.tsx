@@ -1,11 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import * as stylex from "@stylexjs/stylex";
 import type { ProductVariant } from "@/db/schema";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { addToCartAction } from "@/server/actions/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 type Variant = Pick<
   ProductVariant,
@@ -76,10 +79,12 @@ export function VariantSelector({
   }
 
   return (
-    <form onSubmit={onAdd} className="space-y-6">
+    <form onSubmit={onAdd} {...stylex.props(styles.form)}>
       <div>
-        <div className="eyebrow mb-2">Color - {color}</div>
-        <div className="flex flex-wrap gap-3">
+        <div {...stylex.props(commonStyles.eyebrow, styles.sectionLabel)}>
+          Color - {color}
+        </div>
+        <div {...stylex.props(styles.colorOptions)}>
           {colors.map((c) => (
             <button
               key={c.color}
@@ -93,16 +98,16 @@ export function VariantSelector({
                     : next[0] ?? null,
                 );
               }}
-              className={cn(
-                "flex items-center gap-2 border px-3 py-2 text-xs tracking-widest uppercase transition-colors",
+              {...stylex.props(
+                styles.colorButton,
                 color === c.color
-                  ? "border-ink"
-                  : "border-ink-20 hover:border-ink-40",
+                  ? styles.colorButtonActive
+                  : styles.colorButtonInactive,
               )}
             >
               <span
                 aria-hidden
-                className="inline-block h-4 w-4 border border-ink-20"
+                {...stylex.props(styles.colorSwatch)}
                 style={{ background: c.colorHex }}
               />
               {c.color}
@@ -112,13 +117,16 @@ export function VariantSelector({
       </div>
 
       <div>
-        <div className="eyebrow mb-2 flex items-center gap-2">
+        <div {...stylex.props(commonStyles.eyebrow, styles.sizeLabelRow)}>
           <span>Size</span>
           {recommendedSize && (
-            <span className="normal-case tracking-normal text-ink-60">
+            <span {...stylex.props(styles.recommendedCopy)}>
               {activeDogName ? (
                 <>
-                  <span className="text-burgundy">{SIZE_LABEL[recommendedSize]}</span> recommended for{" "}
+                  <span {...stylex.props(styles.recommendedSize)}>
+                    {SIZE_LABEL[recommendedSize]}
+                  </span>{" "}
+                  recommended for{" "}
                   {activeDogName}
                 </>
               ) : (
@@ -127,7 +135,7 @@ export function VariantSelector({
             </span>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div {...stylex.props(styles.sizeOptions)}>
           {(["xs", "s", "m", "l", "xl"] as const).map((s) => {
             const available = availableSizes.includes(s);
             return (
@@ -136,14 +144,16 @@ export function VariantSelector({
                 type="button"
                 disabled={!available}
                 onClick={() => setSize(s)}
-                className={cn(
-                  "w-14 py-3 text-xs tracking-widest uppercase border",
+                {...stylex.props(
+                  styles.sizeButton,
                   size === s
-                    ? "bg-ink text-bone border-ink"
+                    ? styles.sizeButtonActive
                     : available
-                      ? "border-ink-20 text-ink hover:border-ink"
-                      : "border-ink-20 text-ink-65 line-through",
-                  recommendedSize === s && size !== s && "outline outline-1 outline-burgundy",
+                      ? styles.sizeButtonAvailable
+                      : styles.sizeButtonUnavailable,
+                  recommendedSize === s &&
+                    size !== s &&
+                    styles.sizeButtonRecommended,
                 )}
               >
                 {SIZE_LABEL[s]}
@@ -153,31 +163,36 @@ export function VariantSelector({
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center border border-ink-20">
+      <div {...stylex.props(styles.quantityRow)}>
+        <div {...stylex.props(styles.quantityStepper)}>
           <button
             type="button"
-            className="h-11 w-11 text-lg text-ink hover:bg-bone-200"
+            {...stylex.props(styles.stepperButton)}
             onClick={() => setQty((q) => Math.max(1, q - 1))}
           >
             -
           </button>
-          <div className="w-10 text-center text-sm tabular-nums">{qty}</div>
+          <div {...stylex.props(styles.qtyValue)}>{qty}</div>
           <button
             type="button"
-            className="h-11 w-11 text-lg text-ink hover:bg-bone-200"
+            {...stylex.props(styles.stepperButton)}
             onClick={() => setQty((q) => Math.min(10, q + 1))}
           >
             +
           </button>
         </div>
-        <div className="text-sm tabular-nums">
+        <div {...stylex.props(styles.total)}>
           {formatPrice(priceCents * qty)}
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button type="submit" size="lg" disabled={isSoldOut || pending} className="flex-1">
+      <div {...stylex.props(styles.addRow)}>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isSoldOut || pending}
+          sx={styles.addButton}
+        >
           {pending ? "Adding..." : isSoldOut ? "Sold out" : "Add to bag"}
         </Button>
         {activeVariant && (
@@ -187,10 +202,152 @@ export function VariantSelector({
         )}
       </div>
       {activeVariant && (
-        <div className="text-[11px] tracking-[0.18em] uppercase text-ink-65">
+        <div {...stylex.props(styles.sku)}>
           SKU {activeVariant.sku}
         </div>
       )}
     </form>
   );
 }
+
+const styles = stylex.create({
+  form: {
+    display: "grid",
+    gap: "1.5rem",
+  },
+  sectionLabel: {
+    marginBottom: "0.5rem",
+  },
+  colorOptions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.75rem",
+  },
+  colorButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    paddingInline: "0.75rem",
+    paddingBlock: "0.5rem",
+    fontSize: "0.75rem",
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+    transitionProperty: "border-color",
+    transitionDuration: "150ms",
+    transitionTimingFunction: "ease",
+  },
+  colorButtonActive: {
+    borderColor: tokens.ink,
+  },
+  colorButtonInactive: {
+    borderColor: tokens.ink20,
+    ":hover": {
+      borderColor: tokens.ink40,
+    },
+  },
+  colorSwatch: {
+    display: "inline-block",
+    height: "1rem",
+    width: "1rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+  },
+  sizeLabelRow: {
+    marginBottom: "0.5rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  recommendedCopy: {
+    textTransform: "none",
+    letterSpacing: 0,
+    color: tokens.ink60,
+  },
+  recommendedSize: {
+    color: tokens.burgundy,
+  },
+  sizeOptions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+  },
+  sizeButton: {
+    width: "3.5rem",
+    paddingBlock: "0.75rem",
+    fontSize: "0.75rem",
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+    borderWidth: "1px",
+    borderStyle: "solid",
+  },
+  sizeButtonActive: {
+    backgroundColor: tokens.ink,
+    color: tokens.bone,
+    borderColor: tokens.ink,
+  },
+  sizeButtonAvailable: {
+    borderColor: tokens.ink20,
+    color: tokens.ink,
+    ":hover": {
+      borderColor: tokens.ink,
+    },
+  },
+  sizeButtonUnavailable: {
+    borderColor: tokens.ink20,
+    color: tokens.ink65,
+    textDecoration: "line-through",
+  },
+  sizeButtonRecommended: {
+    outline: `1px solid ${tokens.burgundy}`,
+  },
+  quantityRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+  },
+  quantityStepper: {
+    display: "flex",
+    alignItems: "center",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+  },
+  stepperButton: {
+    height: "2.75rem",
+    width: "2.75rem",
+    fontSize: "1.125rem",
+    color: tokens.ink,
+    backgroundColor: "transparent",
+    border: 0,
+    ":hover": {
+      backgroundColor: tokens.bone200,
+    },
+  },
+  qtyValue: {
+    width: "2.5rem",
+    textAlign: "center",
+    fontSize: "0.875rem",
+    fontVariantNumeric: "tabular-nums",
+  },
+  total: {
+    fontSize: "0.875rem",
+    fontVariantNumeric: "tabular-nums",
+  },
+  addRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+  },
+  addButton: {
+    flex: 1,
+  },
+  sku: {
+    fontSize: "11px",
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: tokens.ink65,
+  },
+});

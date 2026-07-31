@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import * as stylex from "@stylexjs/stylex";
 import { getCart, getCartSummary, getCartTotals } from "@/lib/cart";
 import { getSession } from "@/lib/session";
 import { checkoutAction } from "@/server/actions/checkout";
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 export default async function CheckoutPage() {
   const cart = await getCart();
@@ -21,16 +24,18 @@ export default async function CheckoutPage() {
   );
 
   return (
-    <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">
-      <div className="md:col-span-7">
-        <div className="eyebrow mb-2">Checkout</div>
-        <h1 className="display-lg mb-8">Final steps.</h1>
+    <section {...stylex.props(styles.container)}>
+      <div {...stylex.props(styles.leftColumn)}>
+        <div {...stylex.props(commonStyles.eyebrow, styles.topEyebrow)}>Checkout</div>
+        <h1 {...stylex.props(commonStyles.displayLg, styles.pageTitle)}>Final steps.</h1>
 
-        <form action={checkoutAction} className="space-y-12">
+        <form action={checkoutAction} {...stylex.props(styles.form)}>
           <section>
-            <h2 className="eyebrow mb-4">01 — Contact</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
+            <h2 {...stylex.props(commonStyles.eyebrow, styles.sectionTitle)}>
+              01 — Contact
+            </h2>
+            <div {...stylex.props(styles.twoColGrid)}>
+              <div {...stylex.props(styles.spanTwo)}>
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -44,13 +49,15 @@ export default async function CheckoutPage() {
           </section>
 
           <section>
-            <h2 className="eyebrow mb-4">02 — Shipping</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
+            <h2 {...stylex.props(commonStyles.eyebrow, styles.sectionTitle)}>
+              02 — Shipping
+            </h2>
+            <div {...stylex.props(styles.twoColGrid)}>
+              <div {...stylex.props(styles.spanTwo)}>
                 <Label htmlFor="line1">Street address</Label>
                 <Input id="line1" name="line1" required />
               </div>
-              <div className="md:col-span-2">
+              <div {...stylex.props(styles.spanTwo)}>
                 <Label htmlFor="line2">Apartment, suite (optional)</Label>
                 <Input id="line2" name="line2" />
               </div>
@@ -74,13 +81,15 @@ export default async function CheckoutPage() {
           </section>
 
           <section>
-            <h2 className="eyebrow mb-4">03 — Payment</h2>
-            <p className="mb-4 text-xs text-ink-60">
+            <h2 {...stylex.props(commonStyles.eyebrow, styles.sectionTitle)}>
+              03 — Payment
+            </h2>
+            <p {...stylex.props(styles.paymentNote)}>
               Demo checkout only. No charge is made. Any card number with 12+
               digits is accepted.
             </p>
-            <div className="grid gap-4 md:grid-cols-6">
-              <div className="md:col-span-6">
+            <div {...stylex.props(styles.sixColGrid)}>
+              <div {...stylex.props(styles.spanSix)}>
                 <Label htmlFor="cardNumber">Card number</Label>
                 <Input
                   id="cardNumber"
@@ -90,7 +99,7 @@ export default async function CheckoutPage() {
                   defaultValue="4242424242424242"
                 />
               </div>
-              <div className="md:col-span-3">
+              <div {...stylex.props(styles.spanThree)}>
                 <Label htmlFor="cardExpiry">Expiry</Label>
                 <Input
                   id="cardExpiry"
@@ -100,27 +109,36 @@ export default async function CheckoutPage() {
                   defaultValue="12/29"
                 />
               </div>
-              <div className="md:col-span-3">
+              <div {...stylex.props(styles.spanThree)}>
                 <Label htmlFor="cardCvc">CVC</Label>
-                <Input id="cardCvc" name="cardCvc" placeholder="123" required defaultValue="123" />
+                <Input
+                  id="cardCvc"
+                  name="cardCvc"
+                  placeholder="123"
+                  required
+                  defaultValue="123"
+                />
               </div>
             </div>
           </section>
 
-          <Button type="submit" size="lg" className="w-full">
+          <Button type="submit" size="lg" sx={styles.submitButton}>
             Place order — {formatPrice(totals.totalCents)}
           </Button>
         </form>
       </div>
 
-      <aside className="md:col-span-5">
-        <div className="sticky top-24 border border-ink-20 bg-bone-50 p-6">
-          <div className="eyebrow mb-6">Order</div>
-          <ul className="divide-y divide-ink-20">
+      <aside {...stylex.props(styles.rightColumn)}>
+        <div {...stylex.props(styles.orderCard)}>
+          <div {...stylex.props(commonStyles.eyebrow, styles.orderEyebrow)}>Order</div>
+          <ul {...stylex.props(styles.orderItems)}>
             {cart.lines.map((line) => (
-              <li key={line.id} className="flex gap-3 py-4">
+              <li key={line.id} {...stylex.props(styles.orderItem)}>
                 <div
-                  className="product-tile-gradient relative aspect-square w-16 flex-shrink-0 border border-ink-20"
+                  {...stylex.props(
+                    styles.orderTile,
+                    commonStyles.productTileGradient,
+                  )}
                   style={
                     {
                       ["--tile-a" as string]: line.product.basePalette.a,
@@ -128,60 +146,215 @@ export default async function CheckoutPage() {
                     } as React.CSSProperties
                   }
                 />
-                <div className="flex flex-1 justify-between">
+                <div {...stylex.props(styles.itemRow)}>
                   <div>
-                    <div className="text-sm font-medium">{line.product.name}</div>
-                    <div className="text-xs text-ink-60">
+                    <div {...stylex.props(styles.itemName)}>{line.product.name}</div>
+                    <div {...stylex.props(styles.itemMeta)}>
                       {line.variant.color} / {line.variant.size.toUpperCase()} · Qty {line.quantity}
                     </div>
                   </div>
-                  <div className="text-sm tabular-nums">
+                  <div {...stylex.props(styles.itemPrice)}>
                     {formatPrice(line.lineTotalCents)}
                   </div>
                 </div>
               </li>
             ))}
           </ul>
-          <dl className="mt-6 space-y-2 text-sm">
-            <div className="flex justify-between">
+          <dl {...stylex.props(styles.totals)}>
+            <div {...stylex.props(styles.rowBetween)}>
               <dt>Subtotal</dt>
-              <dd className="tabular-nums">{formatPrice(cart.subtotalCents)}</dd>
+              <dd {...stylex.props(styles.tabularNums)}>
+                {formatPrice(cart.subtotalCents)}
+              </dd>
             </div>
             {totals.discountCents > 0 && (
-              <div className="flex justify-between text-burgundy">
+              <div {...stylex.props(styles.rowBetween, styles.discountRow)}>
                 <dt>Discount{summary.promoCode ? ` (${summary.promoCode})` : ""}</dt>
-                <dd className="tabular-nums">
+                <dd {...stylex.props(styles.tabularNums)}>
                   −{formatPrice(totals.discountCents)}
                 </dd>
               </div>
             )}
-            <div className="flex justify-between">
+            <div {...stylex.props(styles.rowBetween)}>
               <dt>Shipping</dt>
-              <dd className="tabular-nums">
+              <dd {...stylex.props(styles.tabularNums)}>
                 {totals.shippingCents === 0
                   ? "Complimentary"
                   : formatPrice(totals.shippingCents)}
               </dd>
             </div>
-            <div className="flex justify-between">
+            <div {...stylex.props(styles.rowBetween)}>
               <dt>Tax</dt>
-              <dd className="tabular-nums">{formatPrice(totals.taxCents)}</dd>
+              <dd {...stylex.props(styles.tabularNums)}>{formatPrice(totals.taxCents)}</dd>
             </div>
           </dl>
           {summary.promoCode && (
-            <p className="mt-4 text-xs text-ink-60">
+            <p {...stylex.props(styles.promoText)}>
               Promo {summary.promoCode} applied.{" "}
-              <Link href="/cart" className="underline hover:text-ink">
+              <Link href="/cart" {...stylex.props(styles.promoLink)}>
                 Change in bag
               </Link>
             </p>
           )}
-          <div className="mt-4 border-t border-ink-20 pt-4 flex justify-between font-medium">
+          <div {...stylex.props(styles.totalRow)}>
             <span>Total</span>
-            <span className="tabular-nums">{formatPrice(totals.totalCents)}</span>
+            <span {...stylex.props(styles.tabularNums)}>
+              {formatPrice(totals.totalCents)}
+            </span>
           </div>
         </div>
       </aside>
     </section>
   );
 }
+
+const styles = stylex.create({
+  container: {
+    marginInline: "auto",
+    maxWidth: "1400px",
+    display: "grid",
+    gap: "3rem",
+    paddingInline: "1.5rem",
+    paddingBlock: "4rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+    },
+  },
+  leftColumn: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 7 / span 7",
+    },
+  },
+  topEyebrow: { marginBottom: "0.5rem" },
+  pageTitle: { marginBottom: "2rem" },
+  form: {
+    display: "grid",
+    gap: "3rem",
+  },
+  sectionTitle: { marginBottom: "1rem" },
+  twoColGrid: {
+    display: "grid",
+    gap: "1rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+  },
+  spanTwo: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 2 / span 2",
+    },
+  },
+  paymentNote: {
+    marginBottom: "1rem",
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  sixColGrid: {
+    display: "grid",
+    gap: "1rem",
+    "@media (min-width: 768px)": {
+      gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+    },
+  },
+  spanSix: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 6 / span 6",
+    },
+  },
+  spanThree: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 3 / span 3",
+    },
+  },
+  submitButton: { width: "100%" },
+  rightColumn: {
+    "@media (min-width: 768px)": {
+      gridColumn: "span 5 / span 5",
+    },
+  },
+  orderCard: {
+    position: "sticky",
+    top: "6rem",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    padding: "1.5rem",
+  },
+  orderEyebrow: { marginBottom: "1.5rem" },
+  orderItems: {
+    margin: 0,
+    padding: 0,
+    listStyle: "none",
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+  },
+  orderItem: {
+    display: "flex",
+    gap: "0.75rem",
+    paddingBlock: "1rem",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.ink20,
+  },
+  orderTile: {
+    position: "relative",
+    aspectRatio: "1 / 1",
+    width: "4rem",
+    flexShrink: 0,
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+  },
+  itemRow: {
+    display: "flex",
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  itemName: {
+    fontSize: "0.875rem",
+    fontWeight: 500,
+  },
+  itemMeta: {
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  itemPrice: {
+    fontSize: "0.875rem",
+    fontVariantNumeric: "tabular-nums",
+  },
+  totals: {
+    marginTop: "1.5rem",
+    display: "grid",
+    gap: "0.5rem",
+    fontSize: "0.875rem",
+  },
+  rowBetween: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
+  tabularNums: {
+    fontVariantNumeric: "tabular-nums",
+  },
+  discountRow: { color: tokens.burgundy },
+  promoText: {
+    marginTop: "1rem",
+    fontSize: "0.75rem",
+    color: tokens.ink60,
+  },
+  promoLink: {
+    textDecoration: "underline",
+    ":hover": { color: tokens.ink },
+  },
+  totalRow: {
+    marginTop: "1rem",
+    paddingTop: "1rem",
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: tokens.ink20,
+    display: "flex",
+    justifyContent: "space-between",
+    fontWeight: 500,
+  },
+});

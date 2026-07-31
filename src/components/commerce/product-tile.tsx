@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import * as stylex from "@stylexjs/stylex";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/db/schema";
-import { cn } from "@/lib/utils";
+import { commonStyles } from "@/styles/common.stylex";
+import { tokens } from "@/styles/tokens.stylex";
 
 type TileProduct = Pick<
   Product,
@@ -12,13 +14,13 @@ type TileProduct = Pick<
 export function ProductTile({
   product,
   eyebrow,
-  className,
+  sx,
   large = false,
   priority = false,
 }: {
   product: TileProduct;
   eyebrow?: string;
-  className?: string;
+  sx?: stylex.StyleXStyles;
   large?: boolean;
   priority?: boolean;
 }) {
@@ -29,15 +31,12 @@ export function ProductTile({
     : product.name;
 
   return (
-    <Link
-      href={`/p/${product.slug}`}
-      className={cn("group block", className)}
-    >
+    <Link href={`/p/${product.slug}`} {...stylex.props(styles.root, sx)}>
       <div
-        className={cn(
-          "relative overflow-hidden border border-ink-20 bg-bone-50 transition-transform group-hover:scale-[1.01]",
-          large ? "aspect-[3/4]" : "aspect-[4/5]",
-          !hasImage && "product-tile-gradient",
+        {...stylex.props(
+          styles.mediaBase,
+          large ? styles.mediaLarge : styles.mediaDefault,
+          !hasImage && commonStyles.productTileGradient,
         )}
         style={
           !hasImage
@@ -55,27 +54,96 @@ export function ProductTile({
             fill
             sizes={large ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
             priority={priority}
-            className="object-cover"
+            {...stylex.props(styles.image)}
           />
         ) : (
-          <div className="absolute inset-0 flex items-end p-5">
-            <span className="bg-bone/90 px-2.5 py-1 text-xs font-medium tracking-[0.18em] uppercase text-ink">
+          <div {...stylex.props(styles.noImageOverlay)}>
+            <span {...stylex.props(styles.noImageLabel)}>
               {eyebrow ?? product.brandLine}
             </span>
           </div>
         )}
       </div>
-      <div className="mt-3 flex items-start justify-between gap-4">
+      <div {...stylex.props(styles.copyRow)}>
         <div>
-          <div className="text-sm font-medium text-ink">{product.name}</div>
+          <div {...stylex.props(styles.name)}>{product.name}</div>
           {product.subtitle && (
-            <div className="mt-1 text-xs text-ink-65">{product.subtitle}</div>
+            <div {...stylex.props(styles.subtitle)}>{product.subtitle}</div>
           )}
         </div>
-        <div className="text-sm font-medium tabular-nums text-ink">
+        <div {...stylex.props(styles.price)}>
           {formatPrice(product.priceCents)}
         </div>
       </div>
     </Link>
   );
 }
+
+const styles = stylex.create({
+  root: {
+    display: "block",
+  },
+  mediaBase: {
+    position: "relative",
+    overflow: "hidden",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: tokens.ink20,
+    backgroundColor: tokens.bone50,
+    transitionProperty: "transform",
+    transitionDuration: "150ms",
+    transitionTimingFunction: "ease",
+    ":hover": {
+      transform: "scale(1.01)",
+    },
+  },
+  mediaDefault: {
+    aspectRatio: "4 / 5",
+  },
+  mediaLarge: {
+    aspectRatio: "3 / 4",
+  },
+  image: {
+    objectFit: "cover",
+  },
+  noImageOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "flex-end",
+    padding: "1.25rem",
+  },
+  noImageLabel: {
+    backgroundColor: "rgba(245, 241, 232, 0.9)",
+    paddingInline: "0.625rem",
+    paddingBlock: "0.25rem",
+    fontSize: "0.75rem",
+    fontWeight: 500,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: tokens.ink,
+  },
+  copyRow: {
+    marginTop: "0.75rem",
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: "1rem",
+  },
+  name: {
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    color: tokens.ink,
+  },
+  subtitle: {
+    marginTop: "0.25rem",
+    fontSize: "0.75rem",
+    color: tokens.ink65,
+  },
+  price: {
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    fontVariantNumeric: "tabular-nums",
+    color: tokens.ink,
+  },
+});
