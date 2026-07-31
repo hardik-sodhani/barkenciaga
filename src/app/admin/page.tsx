@@ -1,14 +1,24 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { db } from "@/db";
-import { orders, products, productVariants, categories } from "@/db/schema";
+import {
+  orders,
+  products,
+  productVariants,
+  categories,
+  promoCodes,
+} from "@/db/schema";
 import { ensureDbReady } from "@/db/bootstrap";
 import { getSession } from "@/lib/session";
 import {
   updateProductAction,
   updateVariantInventoryAction,
 } from "@/server/actions/products";
+import {
+  createPromoAction,
+  deactivatePromoAction,
+} from "@/server/actions/promo";
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,11 +30,12 @@ export default async function AdminPage() {
   }
   await ensureDbReady();
 
-  const [prods, variants, cats, recentOrders] = await Promise.all([
+  const [prods, variants, cats, recentOrders, promos] = await Promise.all([
     db.select().from(products),
     db.select().from(productVariants),
     db.select().from(categories),
     db.select().from(orders).orderBy(desc(orders.createdAt)).limit(20),
+    db.select().from(promoCodes).orderBy(desc(promoCodes.createdAt)),
   ]);
 
   const variantsByProduct = new Map<string, typeof variants>();
@@ -79,6 +90,139 @@ export default async function AdminPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="mt-16">
+        <h2 className="font-display text-3xl mb-6">Promo codes</h2>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.7fr)]">
+          <div>
+            {promos.length === 0 ? (
+              <div className="border border-dashed border-ink-20 p-8 text-sm text-ink-60">
+                No promo codes yet.
+              </div>
+            ) : (
+              <ul className="divide-y divide-ink-20 border-y border-ink-20">
+                {promos.map((promo) => (
+                  <li
+                    key={promo.id}
+                    className="grid gap-3 py-4 text-sm sm:grid-cols-[1fr_auto_auto] sm:items-center"
+                  >
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium tracking-wider">{promo.code}</span>
+                        <span className="eyebrow">
+                          {promo.active ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-xs text-ink-60">
+                        {promo.kind === "percent"
+                          ? `${promo.valueInt}% off`
+                          : `${formatPrice(promo.valueInt)} off`}
+                        {" · "}
+                        minimum {formatPrice(promo.minSubtotalCents)}
+                        {" · "}
+                        {promo.redemptionsCount}
+                        {promo.maxRedemptions === null
+                          ? " redemptions"
+                          : ` / ${promo.maxRedemptions} redemptions`}
+                      </div>
+                    </div>
+                    <div className="text-xs text-ink-60">
+                      {new Date(promo.startsAt).toLocaleDateString()} —{" "}
+                      {promo.endsAt
+                        ? new Date(promo.endsAt).toLocaleDateString()
+                        : "No expiry"}
+                    </div>
+                    {promo.active ? (
+                      <form action={deactivatePromoAction}>
+                        <input type="hidden" name="id" value={promo.id} />
+                        <Button type="submit" size="sm" variant="danger">
+                          Deactivate
+                        </Button>
+                      </form>
+                    ) : (
+                      <span className="text-xs text-ink-60">—</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <form action={createPromoAction} className="space-y-3 border border-ink-20 bg-bone-50 p-5">
+            <div className="eyebrow mb-4">Create promo</div>
+            <div>
+              <Label htmlFor="promo-code">Code</Label>
+              <Input
+                id="promo-code"
+                name="code"
+                placeholder="WOOF10"
+                className="uppercase"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="promo-kind">Kind</Label>
+                <select
+                  id="promo-kind"
+                  name="kind"
+                  defaultValue="percent"
+                  className="h-11 w-full border border-ink-20 bg-transparent px-3 text-sm"
+                >
+                  <option value="percent">Percent</option>
+                  <option value="fixed">Fixed cents</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="promo-value">Value (% or cents)</Label>
+                <Input id="promo-value" type="number" name="valueInt" min="1" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="promo-minimum">Minimum subtotal (cents)</Label>
+                <Input
+                  id="promo-minimum"
+                  type="number"
+                  name="minSubtotalCents"
+                  min="0"
+                  defaultValue="0"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="promo-maximum">Max redemptions</Label>
+                <Input
+                  id="promo-maximum"
+                  type="number"
+                  name="maxRedemptions"
+                  min="1"
+                  placeholder="Unlimited"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="promo-starts">Starts</Label>
+                <Input
+                  id="promo-starts"
+                  type="datetime-local"
+                  name="startsAt"
+                  defaultValue={new Date().toISOString().slice(0, 16)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="promo-ends">Ends (optional)</Label>
+                <Input id="promo-ends" type="datetime-local" name="endsAt" />
+              </div>
+            </div>
+            <Button type="submit" size="sm">
+              Create promo
+            </Button>
+          </form>
+        </div>
       </section>
 
       <section className="mt-16">

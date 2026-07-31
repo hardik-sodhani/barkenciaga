@@ -4,12 +4,19 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { orders, orderItems } from "@/db/schema";
-import { getCart, clearCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
-import { getSession } from "@/lib/session";
+import {
+  orders,
+  orderItems,
+  promoCodes,
+  promoRedemptions,
+} from "@/db/schema";
+import { getCart, clearCart, getCartTotals } from "@/lib/cart";
+import { getSession, setPromoCodeId } from "@/lib/session";
 import { getActiveDog } from "@/lib/dogs";
 import { ensureDbReady } from "@/db/bootstrap";
+import { validatePromo } from "@/lib/promos";
 
 const checkoutSchema = z.object({
   email: z.email(),
@@ -48,9 +55,22 @@ export async function checkoutAction(formData: FormData) {
   const dog = await getActiveDog();
 
   const subtotalCents = cart.subtotalCents;
-  const shippingCents = shippingCentsFor(subtotalCents);
-  const taxCents = taxCentsFor(subtotalCents + shippingCents);
-  const totalCents = subtotalCents + shippingCents + taxCents;
+  const promoResult = session.promoCodeId
+    ? await validatePromo({
+        promoId: session.promoCodeId,
+        userId: session.userId,
+        subtotalCents,
+      })
+    : null;
+  if (promoResult && !promoResult.ok) {
+    throw new Error(
+      `Applied promo is no longer valid (${promoResult.reason.replaceAll("_", " ")})`,
+    );
+  }
+  const totals = getCartTotals(
+    subtotalCents,
+    promoResult?.ok ? promoResult.discountCents : 0,
+  );
 
   const orderId = `ord_${nanoid(10)}`;
 
@@ -61,9 +81,11 @@ export async function checkoutAction(formData: FormData) {
       status: "paid",
       email: parsed.email,
       subtotalCents,
-      shippingCents,
-      taxCents,
-      totalCents,
+      shippingCents: totals.shippingCents,
+      taxCents: totals.taxCents,
+      promoCode: promoResult?.ok ? promoResult.promo.code : null,
+      discountCents: totals.discountCents,
+      totalCents: totals.totalCents,
       shippingAddress: {
         line1: parsed.line1,
         line2: parsed.line2,
@@ -87,9 +109,25 @@ export async function checkoutAction(formData: FormData) {
         quantity: l.quantity,
       })),
     );
+
+    if (promoResult?.ok) {
+      await tx.insert(promoRedemptions).values({
+        id: `pr_${nanoid(10)}`,
+        promoId: promoResult.promo.id,
+        userId: session.userId,
+        orderId,
+      });
+      await tx
+        .update(promoCodes)
+        .set({
+          redemptionsCount: sql`${promoCodes.redemptionsCount} + 1`,
+        })
+        .where(eq(promoCodes.id, promoResult.promo.id));
+    }
   });
 
   await clearCart();
+  await setPromoCodeId(null);
   console.log(`[barkenciaga] order ${orderId} confirmed for ${parsed.email}`);
 
   revalidatePath("/cart");

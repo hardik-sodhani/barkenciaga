@@ -1,14 +1,22 @@
 import Link from "next/link";
-import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
+import { getCart, getCartSummary, getCartTotals } from "@/lib/cart";
 import { CartLines } from "@/components/commerce/cart-lines";
 import { formatPrice } from "@/lib/utils";
 import { clearCartAction } from "@/server/actions/cart";
+import {
+  applyPromoAction,
+  removePromoAction,
+} from "@/server/actions/promo";
+import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
 
 export default async function CartPage() {
   const cart = await getCart();
-  const shipping = shippingCentsFor(cart.subtotalCents);
-  const tax = taxCentsFor(cart.subtotalCents);
-  const total = cart.subtotalCents + shipping + tax;
+  const summary = await getCartSummary(cart);
+  const totals = getCartTotals(
+    cart.subtotalCents,
+    summary.discountCents,
+  );
 
   return (
     <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">
@@ -36,21 +44,67 @@ export default async function CartPage() {
               <dt>Subtotal</dt>
               <dd className="tabular-nums">{formatPrice(cart.subtotalCents)}</dd>
             </div>
+            {totals.discountCents > 0 && (
+              <div className="flex justify-between text-burgundy">
+                <dt>Discount{summary.promoCode ? ` (${summary.promoCode})` : ""}</dt>
+                <dd className="tabular-nums">
+                  −{formatPrice(totals.discountCents)}
+                </dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt>Shipping</dt>
               <dd className="tabular-nums">
-                {shipping === 0 ? "Complimentary" : formatPrice(shipping)}
+                {totals.shippingCents === 0
+                  ? "Complimentary"
+                  : formatPrice(totals.shippingCents)}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt>Tax (est.)</dt>
-              <dd className="tabular-nums">{formatPrice(tax)}</dd>
+              <dd className="tabular-nums">{formatPrice(totals.taxCents)}</dd>
             </div>
           </dl>
           <div className="mt-6 border-t border-ink-20 pt-4 flex justify-between font-medium">
             <span>Total</span>
-            <span className="tabular-nums">{formatPrice(total)}</span>
+            <span className="tabular-nums">{formatPrice(totals.totalCents)}</span>
           </div>
+          {cart.lines.length > 0 && (
+            <div className="mt-6 border-t border-ink-20 pt-5">
+              {summary.promoCode ? (
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="eyebrow">Promo applied</div>
+                    <div className="mt-1 text-sm font-medium">{summary.promoCode}</div>
+                  </div>
+                  <form action={removePromoAction}>
+                    <button
+                      type="submit"
+                      className="text-[10px] tracking-[0.2em] uppercase text-ink-60 hover:text-burgundy"
+                    >
+                      Remove
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <form action={applyPromoAction} className="space-y-2">
+                  <Label htmlFor="promo-code">Promo code</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="promo-code"
+                      name="code"
+                      placeholder="WOOF10"
+                      className="uppercase"
+                      required
+                    />
+                    <Button type="submit" variant="outline">
+                      Apply
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
           {cart.lines.length > 0 ? (
             <Link
               href="/checkout"
