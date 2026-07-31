@@ -177,3 +177,12 @@ button {
   background: var(--chartreuse);
   color: var(--ink);
 }
+
+@keyframes gallery-fade {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}

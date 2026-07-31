@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { getProductBySlug } from "@/lib/products";
 import { getActiveDog, recommendSizeForDog } from "@/lib/dogs";
 import { VariantSelector } from "@/components/commerce/variant-selector";
+import { ProductGallery } from "@/components/commerce/product-gallery";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -44,34 +44,13 @@ export default async function ProductPage({
 
       <section className="mx-auto grid max-w-[1400px] gap-10 px-6 pb-20 md:grid-cols-12">
         <div className="md:col-span-7">
-          {product.imagePath ? (
-            <div className="relative aspect-[4/5] overflow-hidden border border-ink-20 bg-bone-50">
-              <Image
-                src={product.imagePath}
-                alt={product.subtitle ? `${product.name}, ${product.subtitle}` : product.name}
-                fill
-                sizes="(min-width: 1024px) 55vw, 100vw"
-                priority
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div
-              className="product-tile-gradient relative aspect-[4/5] border border-ink-20"
-              style={
-                {
-                  ["--tile-a" as string]: product.basePalette.a,
-                  ["--tile-b" as string]: product.basePalette.b,
-                } as React.CSSProperties
-              }
-            >
-              <div className="absolute inset-0 flex items-end p-10">
-                <span className="bg-bone/90 px-3 py-1.5 text-xs font-medium tracking-[0.18em] uppercase text-ink">
-                  {product.brandLine} — {product.category?.name}
-                </span>
-              </div>
-            </div>
-          )}
+          <ProductGallery
+            images={product.images}
+            productName={product.name}
+            palette={product.basePalette}
+            brandLine={product.brandLine}
+            categoryName={product.category?.name}
+          />
 
           <div className="mt-6 grid grid-cols-4 gap-3">
             {product.variants.slice(0, 4).map((v) => (

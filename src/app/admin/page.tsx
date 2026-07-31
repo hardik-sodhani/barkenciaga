@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { desc } from "drizzle-orm";
+import { asc, desc } from "drizzle-orm";
 import { db } from "@/db";
 import {
   orders,
   products,
+  productImages,
   productVariants,
   categories,
   promoCodes,
@@ -19,6 +20,7 @@ import {
   createPromoAction,
   deactivatePromoAction,
 } from "@/server/actions/promo";
+import { ProductImageManager } from "@/components/admin/product-image-manager";
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,9 +32,10 @@ export default async function AdminPage() {
   }
   await ensureDbReady();
 
-  const [prods, variants, cats, recentOrders, promos] = await Promise.all([
+  const [prods, variants, images, cats, recentOrders, promos] = await Promise.all([
     db.select().from(products),
     db.select().from(productVariants),
+    db.select().from(productImages).orderBy(asc(productImages.position)),
     db.select().from(categories),
     db.select().from(orders).orderBy(desc(orders.createdAt)).limit(20),
     db.select().from(promoCodes).orderBy(desc(promoCodes.createdAt)),
@@ -44,6 +47,13 @@ export default async function AdminPage() {
       variantsByProduct.set(v.productId, []);
     }
     variantsByProduct.get(v.productId)!.push(v);
+  }
+  const imagesByProduct = new Map<string, typeof images>();
+  for (const img of images) {
+    if (!imagesByProduct.has(img.productId)) {
+      imagesByProduct.set(img.productId, []);
+    }
+    imagesByProduct.get(img.productId)!.push(img);
   }
   const categoriesById = new Map(cats.map((c) => [c.id, c]));
 
@@ -230,6 +240,7 @@ export default async function AdminPage() {
         <div className="space-y-6">
           {prods.map((p) => {
             const vs = variantsByProduct.get(p.id) ?? [];
+            const imgs = imagesByProduct.get(p.id) ?? [];
             return (
               <details key={p.id} className="border border-ink-20 bg-bone-50 p-5">
                 <summary className="flex cursor-pointer items-center justify-between">
@@ -237,7 +248,7 @@ export default async function AdminPage() {
                     <div className="font-display text-xl">{p.name}</div>
                     <div className="text-xs text-ink-60">
                       {categoriesById.get(p.categoryId)?.name} · {vs.length} variants ·{" "}
-                      {formatPrice(p.priceCents)}
+                      {imgs.length} images · {formatPrice(p.priceCents)}
                     </div>
                   </div>
                   <Link
@@ -247,7 +258,7 @@ export default async function AdminPage() {
                     View PDP →
                   </Link>
                 </summary>
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
+                <div className="mt-6 grid gap-6 lg:grid-cols-3">
                   <form action={updateProductAction} className="space-y-3">
                     <div className="eyebrow mb-2">Product details</div>
                     <input type="hidden" name="id" value={p.id} />
@@ -319,6 +330,8 @@ export default async function AdminPage() {
                       ))}
                     </ul>
                   </div>
+
+                  <ProductImageManager productId={p.id} images={imgs} />
                 </div>
               </details>
             );
