@@ -29,7 +29,7 @@ const headers = bypassSecret
   : undefined;
 
 const routes = [
-  { path: "/", contains: "Barkenciaga", expectsImage: true },
+  { path: "/", containsAll: ["Barkenciaga", "Limited quantities"], expectsImage: true },
   { path: "/c/couture", contains: "Couture", expectsImage: true },
   { path: "/c/accessories", contains: "Accessories", expectsImage: true },
   { path: "/c/eyewear", contains: "Eyewear", expectsImage: true },
@@ -53,11 +53,17 @@ for (const r of routes) {
       continue;
     }
     const body = await res.text();
-    if (r.contains && !body.includes(r.contains)) {
-      console.error(`  FAIL  content missing "${r.contains}"  ${r.path}`);
-      failures++;
-      continue;
+    const needles = r.containsAll ?? (r.contains ? [r.contains] : []);
+    let contentFailed = false;
+    for (const needle of needles) {
+      if (!body.includes(needle)) {
+        console.error(`  FAIL  content missing "${needle}"  ${r.path}`);
+        failures++;
+        contentFailed = true;
+        break;
+      }
     }
+    if (contentFailed) continue;
     if (body.includes("text-ink-40")) {
       console.error(`  FAIL  a11y regression: text-ink-40 found in rendered HTML  ${r.path}`);
       failures++;

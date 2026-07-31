@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getFeaturedCollections, getAllCategories } from "@/lib/products";
+import { getLowStockProductIds, LOW_STOCK_EYEBROW } from "@/lib/inventory";
 import { ProductTile } from "@/components/commerce/product-tile";
 
 export default async function HomePage() {
@@ -11,6 +12,16 @@ export default async function HomePage() {
   const hero = collections.find((c) => c.slug === "autumn-woofer-26");
   const blackTie = collections.find((c) => c.slug === "black-tie");
   const commuter = collections.find((c) => c.slug === "city-commuter");
+
+  const productIds = [
+    ...new Set([
+      ...(hero?.products.slice(0, 4).map((p) => p.id) ?? []),
+      ...(hero?.products.slice(0, 8).map((p) => p.id) ?? []),
+      ...(blackTie?.products.slice(0, 4).map((p) => p.id) ?? []),
+      ...(commuter?.products.slice(0, 4).map((p) => p.id) ?? []),
+    ]),
+  ];
+  const lowStock = await getLowStockProductIds(productIds);
 
   return (
     <>
@@ -46,7 +57,12 @@ export default async function HomePage() {
           </div>
           <div className="md:col-span-5 grid grid-cols-2 gap-4">
             {hero?.products.slice(0, 4).map((p) => (
-              <ProductTile key={p.id} product={p} priority />
+              <ProductTile
+                key={p.id}
+                product={p}
+                priority
+                eyebrow={lowStock.has(p.id) ? LOW_STOCK_EYEBROW : undefined}
+              />
             ))}
           </div>
         </div>
@@ -87,7 +103,11 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {hero.products.slice(0, 8).map((p) => (
-              <ProductTile key={p.id} product={p} />
+              <ProductTile
+                key={p.id}
+                product={p}
+                eyebrow={lowStock.has(p.id) ? LOW_STOCK_EYEBROW : undefined}
+              />
             ))}
           </div>
         </section>
@@ -103,7 +123,11 @@ export default async function HomePage() {
               <p className="mt-3 max-w-md text-sm text-ink-60">{col.tagline}</p>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {col.products.slice(0, 4).map((p) => (
-                  <ProductTile key={p.id} product={p} />
+                  <ProductTile
+                    key={p.id}
+                    product={p}
+                    eyebrow={lowStock.has(p.id) ? LOW_STOCK_EYEBROW : undefined}
+                  />
                 ))}
               </div>
               <Link
