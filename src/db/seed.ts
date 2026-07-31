@@ -4,6 +4,7 @@ import {
   collections as collectionsTable,
   collectionProducts,
   products as productsTable,
+  productImages as productImagesTable,
   productVariants,
   users as usersTable,
   dogs as dogsTable,
@@ -77,11 +78,14 @@ export async function seedIfEmpty() {
     );
 
     const productIdBySlug = new Map<string, string>();
+    const primaryPathBySlug = new Map<string, string>();
     for (const p of products) {
       const category = categories.find((c) => c.slug === p.categorySlug);
       if (!category) throw new Error(`Missing category ${p.categorySlug}`);
       const productId = `prod_${nanoid(10)}`;
+      const imagePath = p.imagePath ?? `/products/${p.slug}.webp`;
       productIdBySlug.set(p.slug, productId);
+      primaryPathBySlug.set(p.slug, imagePath);
 
       await tx.insert(productsTable).values({
         id: productId,
@@ -93,7 +97,7 @@ export async function seedIfEmpty() {
         brandLine: "Barkenciaga",
         priceCents: p.priceCents,
         basePalette: p.palette,
-        imagePath: p.imagePath ?? `/products/${p.slug}.webp`,
+        imagePath,
         editorialCopy: p.editorialCopy,
         careCopy: p.careCopy,
       });
@@ -107,6 +111,30 @@ export async function seedIfEmpty() {
           colorHex: v.colorHex,
           sku: `BRK-${p.slug.slice(0, 6).toUpperCase()}-${v.size.toUpperCase()}-${v.color.replace(/\s+/g, "").slice(0, 4).toUpperCase()}`,
           inventory: v.inventory,
+        })),
+      );
+    }
+
+    // Editorial gallery: primary + up to 3 related shots so PDP demos multi-image UX.
+    const angleLabels = ["Front", "Back", "Detail", "On dog"] as const;
+    const allPaths = products.map((p) => primaryPathBySlug.get(p.slug)!);
+    for (let i = 0; i < products.length; i++) {
+      const p = products[i]!;
+      const productId = productIdBySlug.get(p.slug)!;
+      const primary = primaryPathBySlug.get(p.slug)!;
+      const related = [
+        primary,
+        allPaths[(i + 1) % allPaths.length]!,
+        allPaths[(i + 2) % allPaths.length]!,
+        allPaths[(i + 3) % allPaths.length]!,
+      ];
+      await tx.insert(productImagesTable).values(
+        related.map((path, position) => ({
+          id: `img_${nanoid(10)}`,
+          productId,
+          path,
+          alt: `${p.name} — ${angleLabels[position]}`,
+          position,
         })),
       );
     }

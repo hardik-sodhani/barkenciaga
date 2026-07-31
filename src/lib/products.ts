@@ -1,8 +1,16 @@
 import "server-only";
 import { db } from "@/db";
-import { categories, collections, collectionProducts, products, productVariants } from "@/db/schema";
+import {
+  categories,
+  collections,
+  collectionProducts,
+  productImages,
+  products,
+  productVariants,
+} from "@/db/schema";
 import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { ensureDbReady } from "@/db/bootstrap";
+import { resolveGalleryImages } from "@/lib/product-images";
 
 export type ProductWithVariants = Awaited<ReturnType<typeof getProductBySlug>>;
 
@@ -59,7 +67,15 @@ export async function getProductBySlug(slug: string) {
     .where(eq(productVariants.productId, product.id))
     .orderBy(asc(productVariants.size), asc(productVariants.color));
 
-  return { ...product, category, variants };
+  const imageRows = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, product.id))
+    .orderBy(asc(productImages.position));
+
+  const images = resolveGalleryImages(imageRows, product);
+
+  return { ...product, category, variants, images };
 }
 
 export async function getFeaturedCollections() {
