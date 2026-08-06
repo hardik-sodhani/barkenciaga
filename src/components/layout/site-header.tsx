@@ -21,8 +21,8 @@ export function SiteHeader({
   activeDog: Dog | null;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-20 bg-bone/95 backdrop-blur">
-      <div className="mx-auto flex h-[var(--header-h)] max-w-[1400px] items-center gap-6 px-6">
+    <header className="sticky top-0 z-40 border-b border-ink-20 bg-bone/95 backdrop-blur pt-[env(safe-area-inset-top)]">
+      <div className="mx-auto flex h-[var(--header-h)] max-w-[1400px] items-center gap-6 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))]">
         <Link href="/" className="font-display text-2xl tracking-tight">
           Barkenciaga
         </Link>

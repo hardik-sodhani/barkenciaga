@@ -51,7 +51,7 @@ export function PdpStickyAddBar() {
       role="region"
       aria-label="Add to bag"
     >
-      <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-3">
+      <div className="mx-auto flex max-w-[1400px] items-center gap-4 py-3 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))]">
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-ink">{productName}</p>
           <div className="flex items-center gap-2 text-xs text-ink-60">
