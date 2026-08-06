@@ -85,7 +85,11 @@ export async function checkoutAction(formData: FormData) {
   }
 
   const shippingCents = shippingCentsFor(subtotalCents);
-  const taxCents = taxCentsFor(subtotalCents + shippingCents);
+  // Tax the post-discount merchandise + shipping (preview pages tax post-discount
+  // merchandise only — BRK-20 documents the remaining shipping-in-tax-base gap).
+  const taxCents = taxCentsFor(
+    Math.max(0, subtotalCents - discountCents) + shippingCents,
+  );
   const totalCents = Math.max(
     0,
     subtotalCents - discountCents + shippingCents + taxCents,
