@@ -31,25 +31,31 @@ describe("taxCentsFor", () => {
 });
 
 describe("checkout preview totals", () => {
-  function previewTotalCents(subtotalCents: number) {
+  /** Same math as cart/checkout pages and checkoutAction after BRK-20. */
+  function orderTotalCents(subtotalCents: number) {
     const shipping = shippingCentsFor(subtotalCents);
     const tax = taxCentsFor(subtotalCents);
     return subtotalCents + shipping + tax;
   }
 
-  function persistedTotalCents(subtotalCents: number) {
-    const shipping = shippingCentsFor(subtotalCents);
-    const tax = taxCentsFor(subtotalCents + shipping);
-    return subtotalCents + shipping + tax;
-  }
-
   it("matches cart and checkout page preview math", () => {
-    expect(previewTotalCents(15000)).toBe(15000 + 1200 + 1088);
+    expect(orderTotalCents(15000)).toBe(15000 + 1200 + 1088);
   });
 
-  // BRK-20: checkoutAction taxes subtotal+shipping while preview taxes subtotal only.
-  it.fails("persisted order tax matches checkout preview (BRK-20)", () => {
+  // BRK-20: charged total must match checkout preview when shipping applies.
+  it("persisted order tax matches checkout preview when shipping applies (BRK-20)", () => {
     const subtotal = 15000;
-    expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
+    const shipping = shippingCentsFor(subtotal);
+    expect(shipping).toBe(1200);
+    expect(taxCentsFor(subtotal)).toBe(1088);
+    expect(orderTotalCents(subtotal)).toBe(17288);
+    // Previously checkoutAction taxed subtotal+shipping (1175), overcharging by 87¢.
+    expect(taxCentsFor(subtotal + shipping)).not.toBe(taxCentsFor(subtotal));
+  });
+
+  it("preview and charged totals still match under free shipping", () => {
+    const subtotal = 25000;
+    expect(shippingCentsFor(subtotal)).toBe(0);
+    expect(orderTotalCents(subtotal)).toBe(25000 + taxCentsFor(subtotal));
   });
 });
