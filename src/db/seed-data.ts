@@ -691,3 +691,67 @@ export const demoDogs: Array<{
     weightKg: 26,
   },
 ];
+
+export type SeedPromo = {
+  id: string;
+  code: string;
+  kind: "percent" | "fixed";
+  valueInt: number;
+  minSubtotalCents: number;
+  maxRedemptions: number | null;
+  redemptionsCount: number;
+  startsAt: Date;
+  endsAt: Date | null;
+  active: boolean;
+};
+
+export const demoPromos: SeedPromo[] = [
+  {
+    id: "promo_woofer20",
+    code: "WOOFER20",
+    kind: "percent",
+    valueInt: 20,
+    minSubtotalCents: 0,
+    maxRedemptions: null,
+    redemptionsCount: 0,
+    startsAt: new Date("2024-01-01T00:00:00.000Z"),
+    endsAt: new Date("2030-12-31T23:59:59.000Z"),
+    active: true,
+  },
+  {
+    id: "promo_bark10",
+    code: "BARK10",
+    kind: "fixed",
+    valueInt: 1000,
+    minSubtotalCents: 5000,
+    maxRedemptions: null,
+    redemptionsCount: 0,
+    startsAt: new Date("2024-01-01T00:00:00.000Z"),
+    endsAt: new Date("2030-12-31T23:59:59.000Z"),
+    active: true,
+  },
+  {
+    id: "promo_launch1",
+    code: "LAUNCH1",
+    kind: "percent",
+    valueInt: 15,
+    minSubtotalCents: 0,
+    maxRedemptions: 1,
+    redemptionsCount: 0,
+    startsAt: new Date("2024-01-01T00:00:00.000Z"),
+    endsAt: new Date("2030-12-31T23:59:59.000Z"),
+    active: true,
+  },
+  {
+    id: "promo_expired",
+    code: "EXPIRED",
+    kind: "percent",
+    valueInt: 50,
+    minSubtotalCents: 0,
+    maxRedemptions: null,
+    redemptionsCount: 0,
+    startsAt: new Date("2020-01-01T00:00:00.000Z"),
+    endsAt: new Date("2020-12-31T23:59:59.000Z"),
+    active: true,
+  },
+];
