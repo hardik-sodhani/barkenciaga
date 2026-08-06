@@ -1,0 +1,30 @@
+---
+description: Implement BRK tickets fresh from main; never restore closed PR work
+alwaysApply: true
+---
+
+# Fresh BRK demo implementations
+
+When implementing or discussing BRK-* work in Barkenciaga:
+
+## Source of truth
+
+- Current `main` and the Jira ticket (acceptance criteria, description)
+- In-repo demo docs on `main`: `DEMO_SCRIPTS.md`, `TECH_DEBT.md`, seeded teaching bugs
+
+## Do not restore prior implementations
+
+- Do not fetch closed PR refs (`git fetch origin pull/<n>/head`, `refs/pull/*`)
+- Do not checkout, cherry-pick, merge, or diff against commits from closed PRs or deleted branches
+- Do not use `gh pr view`, `gh pr diff`, or GitHub PR pages to copy prior BRK solution code
+- Do not pull implementation details from old Cursor plans or prior agent sessions
+
+Known closed PRs (BRK-1, BRK-2, BRK-4, BRK-6, BRK-10, etc.) are **discarded demo history**, not templates.
+
+## Workflow
+
+1. Confirm you are on up-to-date `main`
+2. Create a new branch for the ticket
+3. Implement from Jira + existing `main` patterns only
+
+Only restore a specific closed PR if the user explicitly requests it by PR number or commit SHA.
