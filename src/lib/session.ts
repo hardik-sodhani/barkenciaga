@@ -14,6 +14,8 @@ export type SessionData = {
   userRole?: "customer" | "admin";
   activeDogId?: string;
   cartId?: string;
+  /** Applied promo_codes.id; only one promo at a time (no stacking). */
+  promoCodeId?: string;
 };
 
 export type BarkenciagaSession = {
@@ -23,6 +25,7 @@ export type BarkenciagaSession = {
   userRole: "customer" | "admin" | null;
   activeDogId: string | null;
   cartId: string | null;
+  promoCodeId: string | null;
 };
 
 const sessionPassword =
@@ -54,6 +57,7 @@ export async function getSession(): Promise<BarkenciagaSession> {
     userRole: s.userRole ?? null,
     activeDogId: s.activeDogId ?? null,
     cartId: s.cartId ?? null,
+    promoCodeId: s.promoCodeId ?? null,
   };
 }
 

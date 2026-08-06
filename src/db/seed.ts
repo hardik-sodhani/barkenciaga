@@ -7,6 +7,7 @@ import {
   productVariants,
   users as usersTable,
   dogs as dogsTable,
+  promoCodes as promoCodesTable,
 } from "./schema";
 import {
   categories,
@@ -14,6 +15,7 @@ import {
   products,
   demoUsers,
   demoDogs,
+  demoPromos,
 } from "./seed-data";
 import { nanoid } from "nanoid";
 
@@ -95,9 +97,23 @@ export async function seedIfEmpty() {
 
     await tx.insert(usersTable).values(demoUsers);
     await tx.insert(dogsTable).values(demoDogs);
+    await tx.insert(promoCodesTable).values(
+      demoPromos.map((p) => ({
+        id: p.id,
+        code: p.code,
+        kind: p.kind,
+        valueInt: p.valueInt,
+        minSubtotalCents: p.minSubtotalCents,
+        maxRedemptions: p.maxRedemptions,
+        redemptionsCount: p.redemptionsCount,
+        startsAt: p.startsAt,
+        endsAt: p.endsAt,
+        active: p.active,
+      })),
+    );
   });
 
   console.log(
-    `[barkenciaga] seeded ${categories.length} categories, ${products.length} products, ${collections.length} collections`,
+    `[barkenciaga] seeded ${categories.length} categories, ${products.length} products, ${collections.length} collections, ${demoPromos.length} promos`,
   );
 }

@@ -2,16 +2,36 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { orders, products, productVariants, categories } from "@/db/schema";
+import {
+  orders,
+  products,
+  productVariants,
+  categories,
+  promoCodes,
+} from "@/db/schema";
 import { ensureDbReady } from "@/db/bootstrap";
 import { getSession } from "@/lib/session";
 import {
   updateProductAction,
   updateVariantInventoryAction,
 } from "@/server/actions/products";
+import {
+  createPromoAction,
+  deactivatePromoAction,
+} from "@/server/actions/promo";
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+function toDatetimeLocalValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function formatPromoValue(kind: "percent" | "fixed", valueInt: number): string {
+  if (kind === "percent") return `${valueInt}%`;
+  return formatPrice(valueInt);
+}
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -20,12 +40,15 @@ export default async function AdminPage() {
   }
   await ensureDbReady();
 
-  const [prods, variants, cats, recentOrders] = await Promise.all([
+  const [prods, variants, cats, recentOrders, promos] = await Promise.all([
     db.select().from(products),
     db.select().from(productVariants),
     db.select().from(categories),
     db.select().from(orders).orderBy(desc(orders.createdAt)).limit(20),
+    db.select().from(promoCodes).orderBy(desc(promoCodes.createdAt)),
   ]);
+
+  const defaultStartsAt = toDatetimeLocalValue(new Date());
 
   const variantsByProduct = new Map<string, typeof variants>();
   for (const v of variants) {
@@ -79,6 +102,126 @@ export default async function AdminPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="mt-16">
+        <h2 className="font-display text-3xl mb-6">Promo codes</h2>
+
+        {promos.length === 0 ? (
+          <div className="border border-dashed border-ink-20 p-8 text-sm text-ink-60 mb-8">
+            No promo codes yet.
+          </div>
+        ) : (
+          <ul className="divide-y divide-ink-20 border-y border-ink-20 mb-8">
+            {promos.map((promo) => (
+              <li
+                key={promo.id}
+                className="grid grid-cols-[1fr_120px_100px_120px_1fr_auto] gap-4 py-3 text-sm items-center"
+              >
+                <div>
+                  <div className="font-medium">{promo.code}</div>
+                  <div className="text-xs text-ink-60">
+                    {formatPromoValue(promo.kind, promo.valueInt)} · min{" "}
+                    {formatPrice(promo.minSubtotalCents)}
+                  </div>
+                </div>
+                <div className="text-xs text-ink-60">
+                  {promo.redemptionsCount} /{" "}
+                  {promo.maxRedemptions ?? "∞"}
+                </div>
+                <div className="eyebrow">{promo.active ? "Active" : "Inactive"}</div>
+                <div className="text-xs text-ink-60">
+                  {new Date(promo.startsAt).toLocaleDateString()}
+                  {promo.endsAt
+                    ? ` – ${new Date(promo.endsAt).toLocaleDateString()}`
+                    : " – open"}
+                </div>
+                <div />
+                {promo.active ? (
+                  <form action={deactivatePromoAction}>
+                    <input type="hidden" name="id" value={promo.id} />
+                    <button
+                      type="submit"
+                      className="text-[11px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
+                    >
+                      Deactivate
+                    </button>
+                  </form>
+                ) : (
+                  <span className="text-[11px] tracking-[0.2em] uppercase text-ink-65">
+                    —
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form
+          action={createPromoAction}
+          className="border border-ink-20 bg-bone-50 p-5 space-y-4"
+        >
+          <div className="eyebrow mb-2">Create promo</div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label htmlFor="promo-code">Code</Label>
+              <Input id="promo-code" name="code" required />
+            </div>
+            <div>
+              <Label htmlFor="promo-kind">Kind</Label>
+              <select
+                id="promo-kind"
+                name="kind"
+                defaultValue="percent"
+                className="w-full border border-ink-20 bg-transparent px-3 py-2 text-sm"
+              >
+                <option value="percent">Percent</option>
+                <option value="fixed">Fixed</option>
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="promo-value">Value</Label>
+              <Input
+                id="promo-value"
+                type="number"
+                name="valueInt"
+                min={1}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="promo-min">Min subtotal (cents)</Label>
+              <Input
+                id="promo-min"
+                type="number"
+                name="minSubtotalCents"
+                min={0}
+                defaultValue={0}
+              />
+            </div>
+            <div>
+              <Label htmlFor="promo-max">Max redemptions (optional)</Label>
+              <Input id="promo-max" type="number" name="maxRedemptions" min={1} />
+            </div>
+            <div>
+              <Label htmlFor="promo-starts">Starts at</Label>
+              <Input
+                id="promo-starts"
+                type="datetime-local"
+                name="startsAt"
+                defaultValue={defaultStartsAt}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="promo-ends">Ends at (optional)</Label>
+              <Input id="promo-ends" type="datetime-local" name="endsAt" />
+            </div>
+          </div>
+          <Button type="submit" size="sm">
+            Create promo
+          </Button>
+        </form>
       </section>
 
       <section className="mt-16">

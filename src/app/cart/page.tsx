@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
 import { CartLines } from "@/components/commerce/cart-lines";
+import { PromoCodeForm } from "@/components/commerce/promo-code-form";
 import { formatPrice } from "@/lib/utils";
 import { clearCartAction } from "@/server/actions/cart";
 
 export default async function CartPage() {
   const cart = await getCart();
   const shipping = shippingCentsFor(cart.subtotalCents);
-  const tax = taxCentsFor(cart.subtotalCents);
-  const total = cart.subtotalCents + shipping + tax;
+  const tax = taxCentsFor(Math.max(0, cart.subtotalCents - cart.discountCents));
+  const total = Math.max(
+    0,
+    cart.subtotalCents - cart.discountCents + shipping + tax,
+  );
 
   return (
     <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">
@@ -31,11 +35,20 @@ export default async function CartPage() {
       <aside className="md:col-span-4">
         <div className="sticky top-24 border border-ink-20 bg-bone-50 p-6">
           <div className="eyebrow mb-6">Summary</div>
+          {cart.lines.length > 0 && (
+            <PromoCodeForm appliedCode={cart.appliedPromo?.code ?? null} />
+          )}
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
               <dd className="tabular-nums">{formatPrice(cart.subtotalCents)}</dd>
             </div>
+            {cart.discountCents > 0 && (
+              <div className="flex justify-between text-burgundy">
+                <dt>Discount{cart.appliedPromo ? ` (${cart.appliedPromo.code})` : ""}</dt>
+                <dd className="tabular-nums">−{formatPrice(cart.discountCents)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt>Shipping</dt>
               <dd className="tabular-nums">

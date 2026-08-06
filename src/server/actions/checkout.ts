@@ -4,12 +4,19 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { orders, orderItems } from "@/db/schema";
+import { orders, orderItems, promoCodes, promoRedemptions } from "@/db/schema";
 import { getCart, clearCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
-import { getSession } from "@/lib/session";
+import { getRawSession, getSession } from "@/lib/session";
 import { getActiveDog } from "@/lib/dogs";
 import { ensureDbReady } from "@/db/bootstrap";
+import {
+  getPromoById,
+  promoFailureMessage,
+  userHasRedeemedPromo,
+  validatePromo,
+} from "@/lib/promos";
 
 const checkoutSchema = z.object({
   email: z.email(),
@@ -48,9 +55,41 @@ export async function checkoutAction(formData: FormData) {
   const dog = await getActiveDog();
 
   const subtotalCents = cart.subtotalCents;
+  let discountCents = 0;
+  let promoCodeSnapshot: string | null = null;
+  let promoIdForRedemption: string | null = null;
+
+  if (session.promoCodeId) {
+    const promo = await getPromoById(session.promoCodeId);
+    const alreadyRedeemedByUser =
+      promo && session.userId
+        ? await userHasRedeemedPromo(promo.id, session.userId)
+        : false;
+    const validation = validatePromo({
+      promo,
+      userId: session.userId,
+      subtotalCents,
+      alreadyRedeemedByUser,
+    });
+
+    if (!validation.ok) {
+      const raw = await getRawSession();
+      delete raw.promoCodeId;
+      await raw.save();
+      throw new Error(promoFailureMessage(validation.reason));
+    }
+
+    discountCents = validation.discountCents;
+    promoCodeSnapshot = validation.promo.code;
+    promoIdForRedemption = validation.promo.id;
+  }
+
   const shippingCents = shippingCentsFor(subtotalCents);
   const taxCents = taxCentsFor(subtotalCents + shippingCents);
-  const totalCents = subtotalCents + shippingCents + taxCents;
+  const totalCents = Math.max(
+    0,
+    subtotalCents - discountCents + shippingCents + taxCents,
+  );
 
   const orderId = `ord_${nanoid(10)}`;
 
@@ -61,6 +100,8 @@ export async function checkoutAction(formData: FormData) {
       status: "paid",
       email: parsed.email,
       subtotalCents,
+      promoCode: promoCodeSnapshot,
+      discountCents,
       shippingCents,
       taxCents,
       totalCents,
@@ -87,12 +128,31 @@ export async function checkoutAction(formData: FormData) {
         quantity: l.quantity,
       })),
     );
+
+    if (promoIdForRedemption && promoCodeSnapshot) {
+      await tx.insert(promoRedemptions).values({
+        id: `pr_${nanoid(10)}`,
+        promoId: promoIdForRedemption,
+        userId: session.userId ?? null,
+        orderId,
+      });
+      await tx
+        .update(promoCodes)
+        .set({ redemptionsCount: sql`${promoCodes.redemptionsCount} + 1` })
+        .where(eq(promoCodes.id, promoIdForRedemption));
+    }
   });
+
+  const raw = await getRawSession();
+  delete raw.promoCodeId;
+  await raw.save();
 
   await clearCart();
   console.log(`[barkenciaga] order ${orderId} confirmed for ${parsed.email}`);
 
   revalidatePath("/cart");
+  revalidatePath("/checkout");
   revalidatePath("/account");
+  revalidatePath("/admin");
   redirect(`/orders/${orderId}`);
 }
