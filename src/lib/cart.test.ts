@@ -31,25 +31,38 @@ describe("taxCentsFor", () => {
 });
 
 describe("checkout preview totals", () => {
-  function previewTotalCents(subtotalCents: number) {
+  // Shared formula used by cart page, checkout page, and checkoutAction.
+  function orderTotalCents(subtotalCents: number) {
     const shipping = shippingCentsFor(subtotalCents);
     const tax = taxCentsFor(subtotalCents);
     return subtotalCents + shipping + tax;
   }
 
-  function persistedTotalCents(subtotalCents: number) {
-    const shipping = shippingCentsFor(subtotalCents);
-    const tax = taxCentsFor(subtotalCents + shipping);
-    return subtotalCents + shipping + tax;
-  }
-
   it("matches cart and checkout page preview math", () => {
-    expect(previewTotalCents(15000)).toBe(15000 + 1200 + 1088);
+    expect(orderTotalCents(15000)).toBe(15000 + 1200 + 1088);
   });
 
-  // BRK-20: checkoutAction taxes subtotal+shipping while preview taxes subtotal only.
-  it.fails("persisted order tax matches checkout preview (BRK-20)", () => {
-    const subtotal = 15000;
-    expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
+  // BRK-20: charged total must equal checkout preview when shipping fee applies.
+  it("persisted order tax matches checkout preview when shipping applies (BRK-20)", () => {
+    const subtotal = 15000; // $150 — below $250 free-shipping threshold
+    const shipping = shippingCentsFor(subtotal);
+    expect(shipping).toBe(1200);
+
+    const previewTax = taxCentsFor(subtotal);
+    const previewTotal = subtotal + shipping + previewTax;
+
+    // checkoutAction must tax subtotal only (not subtotal + shipping).
+    const persistedTax = taxCentsFor(subtotal);
+    const persistedTotal = subtotal + shipping + persistedTax;
+
+    expect(persistedTax).toBe(previewTax);
+    expect(persistedTotal).toBe(previewTotal);
+    expect(persistedTotal).toBe(orderTotalCents(subtotal));
+  });
+
+  it("persisted and preview totals still match with free shipping", () => {
+    const subtotal = 25000;
+    expect(shippingCentsFor(subtotal)).toBe(0);
+    expect(orderTotalCents(subtotal)).toBe(25000 + taxCentsFor(subtotal));
   });
 });
