@@ -1,78 +1,37 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { ProductVariant } from "@/db/schema";
 import { cn, formatPrice } from "@/lib/utils";
-import { addToCartAction } from "@/server/actions/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  useVariantSelection,
+  SIZE_LABEL,
+} from "@/components/commerce/variant-selection-context";
 
-type Variant = Pick<
-  ProductVariant,
-  "id" | "size" | "color" | "colorHex" | "inventory" | "sku"
->;
+export function VariantSelector() {
+  const {
+    recommendedSize,
+    activeDogName,
+    colors,
+    color,
+    setColor,
+    size,
+    setSize,
+    qty,
+    setQty,
+    availableSizes,
+    priceCents,
+    activeVariant,
+    inventory,
+    isSoldOut,
+    pending,
+    addToCart,
+    addButtonRef,
+  } = useVariantSelection();
 
-const SIZE_LABEL: Record<Variant["size"], string> = {
-  xs: "XS",
-  s: "S",
-  m: "M",
-  l: "L",
-  xl: "XL",
-};
-
-export function VariantSelector({
-  variants,
-  priceCents,
-  recommendedSize,
-  activeDogName,
-}: {
-  variants: Variant[];
-  priceCents: number;
-  recommendedSize?: Variant["size"] | null;
-  activeDogName?: string | null;
-}) {
-  const colors = useMemo(() => {
-    const map = new Map<string, { color: string; colorHex: string }>();
-    for (const v of variants) {
-      if (!map.has(v.color)) map.set(v.color, { color: v.color, colorHex: v.colorHex });
-    }
-    return Array.from(map.values());
-  }, [variants]);
-
-  const sizesForColor = (color: string) =>
-    Array.from(new Set(variants.filter((v) => v.color === color).map((v) => v.size)));
-
-  const [color, setColor] = useState(colors[0]?.color ?? "");
-  const availableSizes = useMemo(() => sizesForColor(color), [color, variants]);
-  const [size, setSize] = useState<Variant["size"] | null>(
-    recommendedSize && availableSizes.includes(recommendedSize)
-      ? recommendedSize
-      : availableSizes[0] ?? null,
-  );
-  const [qty, setQty] = useState(1);
-  const [pending, setPending] = useState(false);
-
-  const activeVariant = variants.find(
-    (v) => v.color === color && v.size === size,
-  );
-  const inventory = activeVariant?.inventory ?? 0;
-  const isSoldOut = !activeVariant || inventory === 0;
-
-  // DEMO-TODO: wire React's useOptimistic() here so the header cart count
-  // increments immediately instead of waiting for the server action to
-  // complete. See TECH_DEBT.md item 1.
   async function onAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!activeVariant || isSoldOut) return;
-    const fd = new FormData();
-    fd.set("variantId", activeVariant.id);
-    fd.set("quantity", String(qty));
-    setPending(true);
-    try {
-      await addToCartAction(fd);
-    } finally {
-      setPending(false);
-    }
+    await addToCart();
   }
 
   return (
@@ -84,15 +43,7 @@ export function VariantSelector({
             <button
               key={c.color}
               type="button"
-              onClick={() => {
-                setColor(c.color);
-                const next = sizesForColor(c.color);
-                setSize(
-                  recommendedSize && next.includes(recommendedSize)
-                    ? recommendedSize
-                    : next[0] ?? null,
-                );
-              }}
+              onClick={() => setColor(c.color)}
               className={cn(
                 "flex items-center gap-2 border px-3 py-2 text-xs tracking-widest uppercase transition-colors",
                 color === c.color
@@ -176,7 +127,7 @@ export function VariantSelector({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div ref={addButtonRef} className="flex items-center gap-3">
         <Button type="submit" size="lg" disabled={isSoldOut || pending} className="flex-1">
           {pending ? "Adding..." : isSoldOut ? "Sold out" : "Add to bag"}
         </Button>

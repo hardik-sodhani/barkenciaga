@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -33,6 +33,10 @@ export const metadata: Metadata = {
   },
   description:
     "Couture, accessories, eyewear, and footwear for the discerning dog. Autumn/Woofer '26 now available.",
+};
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({

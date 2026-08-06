@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getProductBySlug } from "@/lib/products";
 import { getActiveDog, recommendSizeForDog } from "@/lib/dogs";
-import { VariantSelector } from "@/components/commerce/variant-selector";
+import { PdpPurchasePanel } from "@/components/commerce/pdp-purchase-panel";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -42,7 +42,7 @@ export default async function ProductPage({
         <span className="text-ink">{product.name}</span>
       </div>
 
-      <section className="mx-auto grid max-w-[1400px] gap-10 px-6 pb-20 md:grid-cols-12">
+      <section className="mx-auto grid max-w-[1400px] gap-10 px-6 pb-28 lg:pb-20 md:grid-cols-12">
         <div className="md:col-span-7">
           {product.imagePath ? (
             <div className="relative aspect-[4/5] overflow-hidden border border-ink-20 bg-bone-50">
@@ -111,7 +111,8 @@ export default async function ProductPage({
             </div>
           )}
 
-          <VariantSelector
+          <PdpPurchasePanel
+            productName={product.name}
             variants={product.variants}
             priceCents={product.priceCents}
             recommendedSize={recommended ?? null}
