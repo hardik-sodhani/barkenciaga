@@ -31,32 +31,36 @@ describe("taxCentsFor", () => {
 });
 
 describe("checkout preview totals", () => {
-  // Mirrors cart page, checkout page, and checkoutAction total math.
-  function orderTotalCents(subtotalCents: number) {
+  /** Cart + checkout page order summary. */
+  function previewTotalCents(subtotalCents: number) {
+    const shipping = shippingCentsFor(subtotalCents);
+    const tax = taxCentsFor(subtotalCents);
+    return subtotalCents + shipping + tax;
+  }
+
+  /** checkoutAction persisted/charged total (must stay in lockstep with preview). */
+  function persistedTotalCents(subtotalCents: number) {
     const shipping = shippingCentsFor(subtotalCents);
     const tax = taxCentsFor(subtotalCents);
     return subtotalCents + shipping + tax;
   }
 
   it("matches cart and checkout page preview math", () => {
-    expect(orderTotalCents(15000)).toBe(15000 + 1200 + 1088);
+    expect(previewTotalCents(15000)).toBe(15000 + 1200 + 1088);
   });
 
-  // BRK-20: charged/persisted totals must match checkout preview when shipping applies.
-  it("persisted order tax matches checkout preview when shipping applies (BRK-20)", () => {
+  // BRK-20 regression: shipping fee must not inflate tax on the charged order.
+  it("persisted order total matches checkout preview when shipping applies", () => {
     const subtotal = 15000;
-    const shipping = shippingCentsFor(subtotal);
-    expect(shipping).toBe(1200);
-
-    const previewTax = taxCentsFor(subtotal);
-    const persistedTax = taxCentsFor(subtotal); // checkoutAction must not tax shipping
-    expect(persistedTax).toBe(previewTax);
-    expect(orderTotalCents(subtotal)).toBe(subtotal + shipping + previewTax);
+    expect(shippingCentsFor(subtotal)).toBe(1200);
+    expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
+    // Taxing shipping would overcharge by round(1200 * 0.0725) = 87 cents.
+    expect(persistedTotalCents(subtotal)).toBe(15000 + 1200 + 1088);
   });
 
   it("preview and charge stay aligned when shipping is waived", () => {
     const subtotal = 25000;
     expect(shippingCentsFor(subtotal)).toBe(0);
-    expect(orderTotalCents(subtotal)).toBe(subtotal + taxCentsFor(subtotal));
+    expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
   });
 });
