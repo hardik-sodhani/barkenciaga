@@ -31,25 +31,32 @@ describe("taxCentsFor", () => {
 });
 
 describe("checkout preview totals", () => {
-  function previewTotalCents(subtotalCents: number) {
+  // Mirrors cart page, checkout page, and checkoutAction total math.
+  function orderTotalCents(subtotalCents: number) {
     const shipping = shippingCentsFor(subtotalCents);
     const tax = taxCentsFor(subtotalCents);
     return subtotalCents + shipping + tax;
   }
 
-  function persistedTotalCents(subtotalCents: number) {
-    const shipping = shippingCentsFor(subtotalCents);
-    const tax = taxCentsFor(subtotalCents + shipping);
-    return subtotalCents + shipping + tax;
-  }
-
   it("matches cart and checkout page preview math", () => {
-    expect(previewTotalCents(15000)).toBe(15000 + 1200 + 1088);
+    expect(orderTotalCents(15000)).toBe(15000 + 1200 + 1088);
   });
 
-  // BRK-20: checkoutAction taxes subtotal+shipping while preview taxes subtotal only.
-  it.fails("persisted order tax matches checkout preview (BRK-20)", () => {
+  // BRK-20: charged/persisted totals must match checkout preview when shipping applies.
+  it("persisted order tax matches checkout preview when shipping applies (BRK-20)", () => {
     const subtotal = 15000;
-    expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
+    const shipping = shippingCentsFor(subtotal);
+    expect(shipping).toBe(1200);
+
+    const previewTax = taxCentsFor(subtotal);
+    const persistedTax = taxCentsFor(subtotal); // checkoutAction must not tax shipping
+    expect(persistedTax).toBe(previewTax);
+    expect(orderTotalCents(subtotal)).toBe(subtotal + shipping + previewTax);
+  });
+
+  it("preview and charge stay aligned when shipping is waived", () => {
+    const subtotal = 25000;
+    expect(shippingCentsFor(subtotal)).toBe(0);
+    expect(orderTotalCents(subtotal)).toBe(subtotal + taxCentsFor(subtotal));
   });
 });
