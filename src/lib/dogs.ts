@@ -59,11 +59,12 @@ export function recommendSizeForDog(
   const order: Array<"xs" | "s" | "m" | "l" | "xl"> = ["xs", "s", "m", "l", "xl"];
   const idx = order.indexOf(dog.sizeBucket);
   if (idx < 0) return null;
+  // Prefer sizing up over down when the dog's exact size is unavailable.
   for (let d = 1; d < order.length; d++) {
-    const down = order[idx - d];
-    if (down && availableSizes.includes(down)) return down;
     const up = order[idx + d];
     if (up && availableSizes.includes(up)) return up;
+    const down = order[idx - d];
+    if (down && availableSizes.includes(down)) return down;
   }
   return null;
 }

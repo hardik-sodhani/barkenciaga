@@ -21,8 +21,7 @@ describe("recommendSizeForDog", () => {
     expect(recommendSizeForDog({ sizeBucket: "m" }, [])).toBe(null);
   });
 
-  // BRK-17: fit finder currently prefers sizing down before up.
-  it.fails("prefers sizing up over down when both are available (BRK-17)", () => {
+  it("prefers sizing up over down when both are available (BRK-17)", () => {
     expect(recommendSizeForDog({ sizeBucket: "m" }, ["s", "l"])).toBe("l");
   });
 });
