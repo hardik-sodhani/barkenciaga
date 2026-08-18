@@ -49,14 +49,23 @@ export function ProductTile({
         }
       >
         {hasImage ? (
-          <Image
-            src={product.imagePath!}
-            alt={alt}
-            fill
-            sizes={large ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
-            priority={priority}
-            className="object-cover"
-          />
+          <>
+            <Image
+              src={product.imagePath!}
+              alt={alt}
+              fill
+              sizes={large ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
+              priority={priority}
+              className="object-cover"
+            />
+            {eyebrow && (
+              <div className="absolute inset-x-0 bottom-0 flex items-end p-5">
+                <span className="bg-bone/90 px-2.5 py-1 text-xs font-medium tracking-[0.18em] uppercase text-ink">
+                  {eyebrow}
+                </span>
+              </div>
+            )}
+          </>
         ) : (
           <div className="absolute inset-0 flex items-end p-5">
             <span className="bg-bone/90 px-2.5 py-1 text-xs font-medium tracking-[0.18em] uppercase text-ink">

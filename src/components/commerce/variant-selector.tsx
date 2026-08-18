@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { ProductVariant } from "@/db/schema";
 import { cn, formatPrice } from "@/lib/utils";
+import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
 import { addToCartAction } from "@/server/actions/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -181,8 +182,10 @@ export function VariantSelector({
           {pending ? "Adding..." : isSoldOut ? "Sold out" : "Add to bag"}
         </Button>
         {activeVariant && (
-          <Badge tone={inventory < 6 ? "burgundy" : "bone"}>
-            {inventory < 6 ? `Only ${inventory} left` : `${inventory} in stock`}
+          <Badge tone={inventory < LOW_STOCK_THRESHOLD ? "burgundy" : "bone"}>
+            {inventory < LOW_STOCK_THRESHOLD
+              ? `Only ${inventory} left`
+              : `${inventory} in stock`}
           </Badge>
         )}
       </div>

@@ -29,7 +29,7 @@ const headers = bypassSecret
   : undefined;
 
 const routes = [
-  { path: "/", contains: "Barkenciaga", expectsImage: true },
+  { path: "/", contains: "Barkenciaga", alsoContains: "Limited quantities", expectsImage: true },
   { path: "/c/couture", contains: "Couture", expectsImage: true },
   { path: "/c/accessories", contains: "Accessories", expectsImage: true },
   { path: "/c/eyewear", contains: "Eyewear", expectsImage: true },
@@ -55,6 +55,11 @@ for (const r of routes) {
     const body = await res.text();
     if (r.contains && !body.includes(r.contains)) {
       console.error(`  FAIL  content missing "${r.contains}"  ${r.path}`);
+      failures++;
+      continue;
+    }
+    if (r.alsoContains && !body.includes(r.alsoContains)) {
+      console.error(`  FAIL  content missing "${r.alsoContains}"  ${r.path}`);
       failures++;
       continue;
     }

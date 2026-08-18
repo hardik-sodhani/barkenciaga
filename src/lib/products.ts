@@ -1,8 +1,9 @@
 import "server-only";
 import { db } from "@/db";
 import { categories, collections, collectionProducts, products, productVariants } from "@/db/schema";
-import { asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lt, sql } from "drizzle-orm";
 import { ensureDbReady } from "@/db/bootstrap";
+import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
 
 export type ProductWithVariants = Awaited<ReturnType<typeof getProductBySlug>>;
 
@@ -130,6 +131,23 @@ export async function searchProducts(q: string) {
         OR lower(${products.description}) LIKE ${needle}`,
     )
     .limit(20);
+}
+
+export async function getLowStockProductIds(productIds: string[]): Promise<Set<string>> {
+  await ensureDbReady();
+  if (productIds.length === 0) return new Set();
+
+  const rows = await db
+    .select({ productId: productVariants.productId })
+    .from(productVariants)
+    .where(
+      and(
+        inArray(productVariants.productId, productIds),
+        lt(productVariants.inventory, LOW_STOCK_THRESHOLD),
+      ),
+    );
+
+  return new Set(rows.map((r) => r.productId));
 }
 
 export async function getVariantWithProduct(variantId: string) {
