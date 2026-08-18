@@ -37,9 +37,10 @@ describe("checkout preview totals", () => {
     return subtotalCents + shipping + tax;
   }
 
+  /** Mirrors checkoutAction: tax subtotal only (not subtotal + shipping). */
   function persistedTotalCents(subtotalCents: number) {
     const shipping = shippingCentsFor(subtotalCents);
-    const tax = taxCentsFor(subtotalCents + shipping);
+    const tax = taxCentsFor(subtotalCents);
     return subtotalCents + shipping + tax;
   }
 
@@ -47,9 +48,13 @@ describe("checkout preview totals", () => {
     expect(previewTotalCents(15000)).toBe(15000 + 1200 + 1088);
   });
 
-  // BRK-20: checkoutAction taxes subtotal+shipping while preview taxes subtotal only.
-  it.fails("persisted order tax matches checkout preview (BRK-20)", () => {
+  // BRK-20: charged total must match checkout preview when shipping fee applies.
+  it("persisted order tax matches checkout preview (BRK-20)", () => {
     const subtotal = 15000;
     expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
+    // Taxing shipping ($12) would overcharge by ~87¢ — guard against regression.
+    expect(taxCentsFor(subtotal + shippingCentsFor(subtotal))).toBe(
+      taxCentsFor(subtotal) + 87,
+    );
   });
 });
