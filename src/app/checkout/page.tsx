@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
+import { getCart, cartTotalsFor } from "@/lib/cart";
 import { getSession } from "@/lib/session";
 import { checkoutAction } from "@/server/actions/checkout";
 import { formatPrice } from "@/lib/utils";
@@ -13,9 +13,8 @@ export default async function CheckoutPage() {
   }
 
   const session = await getSession();
-  const shipping = shippingCentsFor(cart.subtotalCents);
-  const tax = taxCentsFor(cart.subtotalCents);
-  const total = cart.subtotalCents + shipping + tax;
+  const { shippingCents: shipping, taxCents: tax, totalCents: total } =
+    cartTotalsFor(cart.subtotalCents);
 
   return (
     <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">

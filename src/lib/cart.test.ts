@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { shippingCentsFor, taxCentsFor } from "@/lib/cart";
+import { cartTotalsFor, shippingCentsFor, taxCentsFor } from "@/lib/cart";
 
 vi.mock("@/db", () => ({ db: {} }));
 vi.mock("@/db/bootstrap", () => ({ ensureDbReady: vi.fn() }));
@@ -30,26 +30,20 @@ describe("taxCentsFor", () => {
   });
 });
 
-describe("checkout preview totals", () => {
-  function previewTotalCents(subtotalCents: number) {
-    const shipping = shippingCentsFor(subtotalCents);
-    const tax = taxCentsFor(subtotalCents);
-    return subtotalCents + shipping + tax;
-  }
-
-  function persistedTotalCents(subtotalCents: number) {
-    const shipping = shippingCentsFor(subtotalCents);
-    const tax = taxCentsFor(subtotalCents + shipping);
-    return subtotalCents + shipping + tax;
-  }
-
-  it("matches cart and checkout page preview math", () => {
-    expect(previewTotalCents(15000)).toBe(15000 + 1200 + 1088);
+describe("cartTotalsFor", () => {
+  it("taxes merchandise subtotal only when shipping applies (BRK-20)", () => {
+    expect(cartTotalsFor(15000)).toEqual({
+      shippingCents: 1200,
+      taxCents: 1088,
+      totalCents: 17288,
+    });
   });
 
-  // BRK-20: checkoutAction taxes subtotal+shipping while preview taxes subtotal only.
-  it.fails("persisted order tax matches checkout preview (BRK-20)", () => {
-    const subtotal = 15000;
-    expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
+  it("matches preview and persisted totals at the free-shipping threshold", () => {
+    expect(cartTotalsFor(25000)).toEqual({
+      shippingCents: 0,
+      taxCents: 1812,
+      totalCents: 26812,
+    });
   });
 });

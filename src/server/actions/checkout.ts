@@ -6,7 +6,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { db } from "@/db";
 import { orders, orderItems } from "@/db/schema";
-import { getCart, clearCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
+import { getCart, clearCart, cartTotalsFor } from "@/lib/cart";
 import { getSession } from "@/lib/session";
 import { getActiveDog } from "@/lib/dogs";
 import { ensureDbReady } from "@/db/bootstrap";
@@ -48,9 +48,7 @@ export async function checkoutAction(formData: FormData) {
   const dog = await getActiveDog();
 
   const subtotalCents = cart.subtotalCents;
-  const shippingCents = shippingCentsFor(subtotalCents);
-  const taxCents = taxCentsFor(subtotalCents + shippingCents);
-  const totalCents = subtotalCents + shippingCents + taxCents;
+  const { shippingCents, taxCents, totalCents } = cartTotalsFor(subtotalCents);
 
   const orderId = `ord_${nanoid(10)}`;
 

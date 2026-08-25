@@ -170,3 +170,13 @@ export function shippingCentsFor(subtotalCents: number) {
 export function taxCentsFor(subtotalCents: number) {
   return Math.round(subtotalCents * 0.0725);
 }
+
+export function cartTotalsFor(subtotalCents: number) {
+  const shippingCents = shippingCentsFor(subtotalCents);
+  const taxCents = taxCentsFor(subtotalCents);
+  return {
+    shippingCents,
+    taxCents,
+    totalCents: subtotalCents + shippingCents + taxCents,
+  };
+}
