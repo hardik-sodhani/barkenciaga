@@ -49,7 +49,8 @@ export async function checkoutAction(formData: FormData) {
 
   const subtotalCents = cart.subtotalCents;
   const shippingCents = shippingCentsFor(subtotalCents);
-  const taxCents = taxCentsFor(subtotalCents + shippingCents);
+  // Match cart/checkout preview: tax is computed on merchandise subtotal only.
+  const taxCents = taxCentsFor(subtotalCents);
   const totalCents = subtotalCents + shippingCents + taxCents;
 
   const orderId = `ord_${nanoid(10)}`;
