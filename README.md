@@ -2,7 +2,7 @@
 
 > High fashion. For dogs.
 
-A Cursor enablement / demo surface shaped as an enterprise-grade e-commerce site. Built with Next.js 16 (App Router, Server Actions), Drizzle ORM, and PGlite (in-process Postgres), so it runs locally with zero external services.
+A Cursor enablement / demo surface shaped as an enterprise-grade e-commerce site. Built with Next.js 16 (App Router, Server Actions), Drizzle ORM, and PGlite (in-process Postgres), so it runs locally with zero external services. Agent work in this repo uses the pstack Cursor plugin.
 
 ## Quickstart
 
@@ -33,6 +33,7 @@ The seed populates two users. No passwords:
 | Validation | Zod |
 | Icons | lucide-react |
 | Fonts | Inter, Cormorant Garamond, JetBrains Mono |
+| Agents | pstack (`/poteto-mode`) |
 
 ### Swapping PGlite for Neon Postgres
 
@@ -53,6 +54,12 @@ pnpm drizzle-kit migrate
 ```
 
 Remove the PGlite bootstrap flow in `src/db/bootstrap.ts` and keep `seedIfEmpty()` if you want the same seed in production.
+
+## Agent workflow
+
+Install the pstack Cursor plugin with `/add-plugin pstack`. Run `/setup-pstack` once to map model roles.
+
+Start non-trivial work with `/poteto-mode`. That skill picks a playbook and runs the rest of pstack as the steps need them. It verifies the change on the running app.
 
 ## Project layout
 
