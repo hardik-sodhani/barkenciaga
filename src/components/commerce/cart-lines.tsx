@@ -80,7 +80,7 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
                 <button
                   type="submit"
                   name="quantity"
-                  value={line.quantity + 1}
+                  value={line.quantity - 1}
                   className="h-9 w-9 hover:bg-bone-200"
                   aria-label="Decrease"
                 >
@@ -90,7 +90,8 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
                 <button
                   type="submit"
                   name="quantity"
-                  value={line.quantity - 1}
+                  value={line.quantity + 1}
+                  disabled={line.quantity >= line.variant.inventory}
                   className="h-9 w-9 hover:bg-bone-200"
                   aria-label="Increase"
                 >

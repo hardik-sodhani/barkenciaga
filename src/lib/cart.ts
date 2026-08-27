@@ -5,6 +5,10 @@ import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { ensureCartId, getSession, readCartId } from "./session";
 import { ensureDbReady } from "@/db/bootstrap";
+import {
+  addCartItemWithInventoryGuard,
+  setCartItemQuantityWithInventoryGuard,
+} from "@/lib/cart-inventory";
 
 export type CartLine = {
   id: string;
@@ -119,39 +123,29 @@ export async function addToCart(variantId: string, quantity = 1) {
   const cartId = await ensureCartId();
   await ensureCartRow(cartId);
 
-  const [existing] = await db
-    .select()
-    .from(cartItems)
-    .where(and(eq(cartItems.cartId, cartId), eq(cartItems.variantId, variantId)));
-
-  if (existing) {
-    await db
-      .update(cartItems)
-      .set({ quantity: existing.quantity + quantity })
-      .where(eq(cartItems.id, existing.id));
-    return;
-  }
-
-  await db.insert(cartItems).values({
-    id: `ci_${nanoid(10)}`,
-    cartId,
-    variantId,
-    quantity,
-  });
+  await addCartItemWithInventoryGuard(cartId, variantId, quantity);
 }
 
 export async function updateCartItemQuantity(itemId: string, quantity: number) {
   await ensureDbReady();
+  const cartId = await readCartId();
+  if (!cartId) return;
   if (quantity <= 0) {
-    await db.delete(cartItems).where(eq(cartItems.id, itemId));
+    await db
+      .delete(cartItems)
+      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cartId)));
     return;
   }
-  await db.update(cartItems).set({ quantity }).where(eq(cartItems.id, itemId));
+  await setCartItemQuantityWithInventoryGuard(cartId, itemId, quantity);
 }
 
 export async function removeCartItem(itemId: string) {
   await ensureDbReady();
-  await db.delete(cartItems).where(eq(cartItems.id, itemId));
+  const cartId = await readCartId();
+  if (!cartId) return;
+  await db
+    .delete(cartItems)
+    .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cartId)));
 }
 
 export async function clearCart() {

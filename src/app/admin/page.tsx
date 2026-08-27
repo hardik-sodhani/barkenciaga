@@ -1,17 +1,17 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, products, productVariants, categories } from "@/db/schema";
 import { ensureDbReady } from "@/db/bootstrap";
 import { getSession } from "@/lib/session";
 import {
   updateProductAction,
-  updateVariantInventoryAction,
 } from "@/server/actions/products";
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { InventoryForm } from "@/components/admin/inventory-form";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -156,26 +156,11 @@ export default async function AdminPage() {
                             {v.size.toUpperCase()} / {v.color}
                             <div className="text-[11px] text-ink-65">{v.sku}</div>
                           </div>
-                          <form action={updateVariantInventoryAction} className="flex items-center gap-2">
-                            <input type="hidden" name="id" value={v.id} />
-                            <input
-                              type="hidden"
-                              name="expectedVersion"
-                              value={v.inventoryVersion}
-                            />
-                            <input
-                              type="number"
-                              name="inventory"
-                              defaultValue={v.inventory}
-                              className="w-20 border border-ink-20 bg-transparent px-2 py-1 text-sm text-right"
-                            />
-                            <button
-                              type="submit"
-                              className="text-[10px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
-                            >
-                              Save
-                            </button>
-                          </form>
+                          <InventoryForm
+                            variantId={v.id}
+                            inventory={v.inventory}
+                            inventoryVersion={v.inventoryVersion}
+                          />
                         </li>
                       ))}
                     </ul>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { ProductVariant } from "@/db/schema";
 import { cn, formatPrice } from "@/lib/utils";
 import { addToCartAction } from "@/server/actions/cart";
@@ -39,11 +39,23 @@ export function VariantSelector({
     return Array.from(map.values());
   }, [variants]);
 
-  const sizesForColor = (color: string) =>
-    Array.from(new Set(variants.filter((v) => v.color === color).map((v) => v.size)));
+  const sizesForColor = useCallback(
+    (selectedColor: string) =>
+      Array.from(
+        new Set(
+          variants
+            .filter((variant) => variant.color === selectedColor)
+            .map((variant) => variant.size),
+        ),
+      ),
+    [variants],
+  );
 
   const [color, setColor] = useState(colors[0]?.color ?? "");
-  const availableSizes = useMemo(() => sizesForColor(color), [color, variants]);
+  const availableSizes = useMemo(
+    () => sizesForColor(color),
+    [color, sizesForColor],
+  );
   const [size, setSize] = useState<Variant["size"] | null>(
     recommendedSize && availableSizes.includes(recommendedSize)
       ? recommendedSize
@@ -51,6 +63,7 @@ export function VariantSelector({
   );
   const [qty, setQty] = useState(1);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const activeVariant = variants.find(
     (v) => v.color === color && v.size === size,
@@ -68,8 +81,10 @@ export function VariantSelector({
     fd.set("variantId", activeVariant.id);
     fd.set("quantity", String(qty));
     setPending(true);
+    setError(null);
     try {
-      await addToCartAction(fd);
+      const result = await addToCartAction(fd);
+      setError(result.error);
     } finally {
       setPending(false);
     }
@@ -86,6 +101,7 @@ export function VariantSelector({
               type="button"
               onClick={() => {
                 setColor(c.color);
+                setError(null);
                 const next = sizesForColor(c.color);
                 setSize(
                   recommendedSize && next.includes(recommendedSize)
@@ -135,7 +151,10 @@ export function VariantSelector({
                 key={s}
                 type="button"
                 disabled={!available}
-                onClick={() => setSize(s)}
+                onClick={() => {
+                  setSize(s);
+                  setError(null);
+                }}
                 className={cn(
                   "w-14 py-3 text-xs tracking-widest uppercase border",
                   size === s
@@ -166,7 +185,9 @@ export function VariantSelector({
           <button
             type="button"
             className="h-11 w-11 text-lg text-ink hover:bg-bone-200"
-            onClick={() => setQty((q) => Math.min(10, q + 1))}
+            onClick={() =>
+              setQty((q) => Math.min(10, inventory || 1, q + 1))
+            }
           >
             +
           </button>
@@ -186,6 +207,11 @@ export function VariantSelector({
           </Badge>
         )}
       </div>
+      {error && (
+        <p role="alert" className="text-sm text-burgundy">
+          {error}
+        </p>
+      )}
       {activeVariant && (
         <div className="text-[11px] tracking-[0.18em] uppercase text-ink-65">
           SKU {activeVariant.sku}

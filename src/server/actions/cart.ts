@@ -8,24 +8,29 @@ import {
   removeCartItem,
   clearCart as clearCartLib,
 } from "@/lib/cart";
+import { CartInventoryError } from "@/lib/cart-inventory";
 
 const addSchema = z.object({
   variantId: z.string().min(1),
   quantity: z.coerce.number().int().min(1).max(10).default(1),
 });
 
-// DEMO-TODO: inventory is not decremented or checked here. A race on the last
-// unit can leave inventory < 0. Wrap this in a transaction, lock the variant
-// row, and surface a friendly error when the variant is already gone. See
-// TECH_DEBT.md item 5.
 export async function addToCartAction(formData: FormData) {
   const parsed = addSchema.parse({
     variantId: formData.get("variantId"),
     quantity: formData.get("quantity") ?? 1,
   });
-  await addToCartLib(parsed.variantId, parsed.quantity);
+  try {
+    await addToCartLib(parsed.variantId, parsed.quantity);
+  } catch (error) {
+    if (error instanceof CartInventoryError) {
+      return { error: error.message };
+    }
+    throw error;
+  }
   revalidatePath("/cart");
   revalidatePath("/");
+  return { error: null };
 }
 
 const updateSchema = z.object({
