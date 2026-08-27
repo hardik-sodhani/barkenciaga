@@ -14,6 +14,8 @@ export type SessionData = {
   userRole?: "customer" | "admin";
   activeDogId?: string;
   cartId?: string;
+  checkoutIdempotencyKey?: string;
+  checkoutCartId?: string;
 };
 
 export type BarkenciagaSession = {
@@ -77,6 +79,34 @@ export async function ensureCartId(): Promise<string> {
     await s.save();
   }
   return s.cartId;
+}
+
+export async function readCheckoutIdempotencyKey(
+  cartId: string,
+): Promise<string | null> {
+  const s = await getRawSession();
+  if (s.checkoutCartId !== cartId || !s.checkoutIdempotencyKey) return null;
+  return s.checkoutIdempotencyKey;
+}
+
+export async function ensureCheckoutIdempotencyKey(
+  cartId: string,
+): Promise<string> {
+  const s = await getRawSession();
+  if (s.checkoutIdempotencyKey && s.checkoutCartId === cartId) {
+    return s.checkoutIdempotencyKey;
+  }
+  s.checkoutIdempotencyKey = `checkout_${nanoid(24)}`;
+  s.checkoutCartId = cartId;
+  await s.save();
+  return s.checkoutIdempotencyKey;
+}
+
+export async function clearCheckoutIdempotencyKey() {
+  const s = await getRawSession();
+  delete s.checkoutIdempotencyKey;
+  delete s.checkoutCartId;
+  await s.save();
 }
 
 export async function signInAs(email: string) {

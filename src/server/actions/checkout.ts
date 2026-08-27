@@ -4,7 +4,12 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { CheckoutError, placeOrder } from "@/lib/checkout";
-import { getSession, readCartId } from "@/lib/session";
+import {
+  clearCheckoutIdempotencyKey,
+  ensureCheckoutIdempotencyKey,
+  getSession,
+  readCartId,
+} from "@/lib/session";
 import { getActiveDog } from "@/lib/dogs";
 import { ensureDbReady } from "@/db/bootstrap";
 
@@ -21,6 +26,10 @@ const checkoutSchema = z.object({
   cardCvc: z.string().min(3).max(4),
   idempotencyKey: z.string().min(16).max(100),
 });
+
+export async function ensureCheckoutIdempotencyKeyAction(cartId: string) {
+  return ensureCheckoutIdempotencyKey(cartId);
+}
 
 export async function checkoutAction(formData: FormData) {
   await ensureDbReady();
@@ -39,13 +48,16 @@ export async function checkoutAction(formData: FormData) {
   });
 
   const cartId = await readCartId();
-  if (!cartId) throw new CheckoutError("EMPTY_CART", "Your bag is empty.");
+  if (!cartId) {
+    throw new CheckoutError("EMPTY_CART", "Your bag is empty.");
+  }
+  const idempotencyKey = await ensureCheckoutIdempotencyKey(cartId);
   const session = await getSession();
   const dog = await getActiveDog();
 
   const result = await placeOrder({
     cartId,
-    idempotencyKey: parsed.idempotencyKey,
+    idempotencyKey,
     userId: session.userId,
     email: parsed.email,
     shippingAddress: {
@@ -64,6 +76,7 @@ export async function checkoutAction(formData: FormData) {
     `[barkenciaga] order ${result.orderId} ${result.replayed ? "replayed" : "confirmed"} for ${parsed.email}`,
   );
 
+  await clearCheckoutIdempotencyKey();
   revalidatePath("/cart");
   revalidatePath("/account");
   redirect(`/orders/${result.orderId}`);

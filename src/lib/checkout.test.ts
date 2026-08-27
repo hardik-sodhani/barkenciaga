@@ -239,6 +239,21 @@ describe("placeOrder", () => {
     expect(await testDb.select().from(orderItems)).toHaveLength(1);
   });
 
+  it("does not create duplicate orders for overlapping checkout keys", async () => {
+    await addCart("cart_dual_key", [["variant_m", 1]]);
+
+    const results = await Promise.all([
+      placeOrder(input("cart_dual_key", "checkout_key_a"), testDb),
+      placeOrder(input("cart_dual_key", "checkout_key_b"), testDb),
+    ]);
+
+    expect(new Set(results.map((result) => result.orderId)).size).toBe(1);
+    expect(results.filter((result) => result.replayed)).toHaveLength(1);
+    expect(results.filter((result) => !result.replayed)).toHaveLength(1);
+    expect(await inventoryFor("variant_m")).toBe(0);
+    expect(await testDb.select().from(orders)).toHaveLength(1);
+  });
+
   it("reserves overlapping multi-line carts without deadlocking", async () => {
     await testDb
       .update(productVariants)

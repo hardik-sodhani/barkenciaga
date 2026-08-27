@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, gte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/db";
 import {
@@ -49,7 +49,24 @@ export type CheckoutResult = {
   replayed: boolean;
 };
 
-type CheckoutDatabase = typeof db;
+type CheckoutDatabase =
+  | typeof db
+  | Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+async function findExistingOrderForCart(
+  database: CheckoutDatabase,
+  cartId: string,
+): Promise<CheckoutResult | null> {
+  const [existing] = await database
+    .select({ id: orders.id })
+    .from(orders)
+    .where(eq(orders.sourceCartId, cartId))
+    .orderBy(desc(orders.createdAt))
+    .limit(1);
+
+  if (!existing) return null;
+  return { orderId: existing.id, replayed: true };
+}
 
 async function findExistingOrder(
   database: CheckoutDatabase,
@@ -96,11 +113,20 @@ export async function placeOrder(
   );
   if (replay) return replay;
 
+  const replayByCart = await findExistingOrderForCart(database, input.cartId);
+  if (replayByCart) return replayByCart;
+
   authorizePayment(input.cardNumber);
 
   const orderId = `ord_${nanoid(10)}`;
   try {
     return await database.transaction(async (tx) => {
+      await tx
+        .select({ id: cartItems.id })
+        .from(cartItems)
+        .where(eq(cartItems.cartId, input.cartId))
+        .for("update");
+
       const lines = await tx
         .select({
           cartItemId: cartItems.id,
@@ -123,6 +149,8 @@ export async function placeOrder(
         .orderBy(asc(productVariants.id));
 
       if (lines.length === 0) {
+        const existing = await findExistingOrderForCart(tx, input.cartId);
+        if (existing) return existing;
         throw new CheckoutError("EMPTY_CART", "Your bag is empty.");
       }
 
@@ -189,11 +217,12 @@ export async function placeOrder(
       return { orderId, replayed: false };
     });
   } catch (error) {
-    const existing = await findExistingOrder(
-      database,
-      input.idempotencyKey,
-      input.cartId,
-    );
+    const existing =
+      (await findExistingOrder(
+        database,
+        input.idempotencyKey,
+        input.cartId,
+      )) ?? (await findExistingOrderForCart(database, input.cartId));
     if (existing) return existing;
     throw error;
   }
