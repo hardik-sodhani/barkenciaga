@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { products, productVariants } from "@/db/schema";
 import { requireAdmin } from "@/lib/session";
+import { setInventory } from "@/lib/inventory";
 
 const productUpdateSchema = z.object({
   id: z.string().min(1),
@@ -44,31 +45,38 @@ const variantInventorySchema = z.object({
   expectedVersion: z.coerce.number().int().min(0),
 });
 
-export async function updateVariantInventoryAction(formData: FormData) {
+export type InventoryUpdateState = {
+  status?: "saved" | "error";
+  message?: string;
+};
+
+export async function updateVariantInventoryAction(
+  _previousState: InventoryUpdateState,
+  formData: FormData,
+): Promise<InventoryUpdateState> {
   await requireAdmin();
-  const parsed = variantInventorySchema.parse({
+  const parsed = variantInventorySchema.safeParse({
     id: formData.get("id"),
     inventory: formData.get("inventory"),
     expectedVersion: formData.get("expectedVersion"),
   });
-  const updated = await db
-    .update(productVariants)
-    .set({
-      inventory: parsed.inventory,
-      inventoryVersion: sql`${productVariants.inventoryVersion} + 1`,
-    })
-    .where(
-      and(
-        eq(productVariants.id, parsed.id),
-        eq(productVariants.inventoryVersion, parsed.expectedVersion),
-      ),
-    )
-    .returning({ id: productVariants.id });
-  if (updated.length === 0) {
-    throw new Error("Inventory changed since this page loaded. Refresh and try again.");
+  if (!parsed.success) {
+    return { status: "error", message: "Enter a valid inventory quantity." };
+  }
+  const updated = await setInventory(
+    parsed.data.id,
+    parsed.data.inventory,
+    parsed.data.expectedVersion,
+  );
+  if (!updated) {
+    return {
+      status: "error",
+      message: "Inventory changed while you were editing. Refresh before retrying.",
+    };
   }
   revalidatePath("/admin");
   revalidatePath(`/p/[slug]`, "page");
+  return { status: "saved", message: "Inventory saved." };
 }
 
 const newVariantSchema = z.object({

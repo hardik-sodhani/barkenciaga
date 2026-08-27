@@ -24,16 +24,25 @@ const checkoutSchema = z.object({
   cardNumber: z.string().min(12).max(30),
   cardExpiry: z.string().min(4).max(10),
   cardCvc: z.string().min(3).max(4),
-  idempotencyKey: z.string().min(16).max(100),
 });
 
 export async function ensureCheckoutIdempotencyKeyAction(cartId: string) {
   return ensureCheckoutIdempotencyKey(cartId);
 }
 
-export async function checkoutAction(formData: FormData) {
+export type CheckoutState = {
+  error?: {
+    code: "INVALID_DETAILS" | CheckoutError["code"];
+    message: string;
+  };
+};
+
+export async function checkoutAction(
+  _previousState: CheckoutState,
+  formData: FormData,
+): Promise<CheckoutState> {
   await ensureDbReady();
-  const parsed = checkoutSchema.parse({
+  const parsed = checkoutSchema.safeParse({
     email: formData.get("email"),
     line1: formData.get("line1"),
     line2: formData.get("line2") || undefined,
@@ -44,36 +53,51 @@ export async function checkoutAction(formData: FormData) {
     cardNumber: formData.get("cardNumber"),
     cardExpiry: formData.get("cardExpiry"),
     cardCvc: formData.get("cardCvc"),
-    idempotencyKey: formData.get("idempotencyKey"),
   });
+  if (!parsed.success) {
+    return {
+      error: {
+        code: "INVALID_DETAILS",
+        message: "Check your contact, shipping, and payment details and try again.",
+      },
+    };
+  }
 
   const cartId = await readCartId();
   if (!cartId) {
-    throw new CheckoutError("EMPTY_CART", "Your bag is empty.");
+    return { error: { code: "EMPTY_CART", message: "Your bag is empty." } };
   }
   const idempotencyKey = await ensureCheckoutIdempotencyKey(cartId);
   const session = await getSession();
   const dog = await getActiveDog();
 
-  const result = await placeOrder({
-    cartId,
-    idempotencyKey,
-    userId: session.userId,
-    email: parsed.email,
-    shippingAddress: {
-        line1: parsed.line1,
-        line2: parsed.line2,
-        city: parsed.city,
-        region: parsed.region,
-        postalCode: parsed.postalCode,
-        country: parsed.country,
-    },
-    dogName: dog?.name ?? null,
-    cardNumber: parsed.cardNumber,
-  });
+  let result;
+  try {
+    result = await placeOrder({
+      cartId,
+      idempotencyKey,
+      userId: session.userId,
+      email: parsed.data.email,
+      shippingAddress: {
+        line1: parsed.data.line1,
+        line2: parsed.data.line2,
+        city: parsed.data.city,
+        region: parsed.data.region,
+        postalCode: parsed.data.postalCode,
+        country: parsed.data.country,
+      },
+      dogName: dog?.name ?? null,
+      cardNumber: parsed.data.cardNumber,
+    });
+  } catch (error) {
+    if (error instanceof CheckoutError) {
+      return { error: { code: error.code, message: error.message } };
+    }
+    throw error;
+  }
 
   console.log(
-    `[barkenciaga] order ${result.orderId} ${result.replayed ? "replayed" : "confirmed"} for ${parsed.email}`,
+    `[barkenciaga] order ${result.orderId} ${result.replayed ? "replayed" : "confirmed"} for ${parsed.data.email}`,
   );
 
   await clearCheckoutIdempotencyKey();

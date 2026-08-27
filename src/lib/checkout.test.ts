@@ -13,6 +13,8 @@ import {
   productVariants,
 } from "@/db/schema";
 import { CheckoutError, placeOrder, type CheckoutInput } from "@/lib/checkout";
+import { setInventory } from "@/lib/inventory";
+import { addCartItemWithInventoryGuard } from "@/lib/cart-inventory";
 
 vi.mock("@/db", () => ({ db: {} }));
 vi.mock("@/db/bootstrap", () => ({ ensureDbReady: vi.fn() }));
@@ -327,5 +329,46 @@ describe("placeOrder", () => {
     expect(await inventoryFor("variant_m")).toBe(1);
     expect(await testDb.select().from(orders)).toHaveLength(0);
     expect(await testDb.select().from(cartItems)).toHaveLength(1);
+  });
+
+  it("rejects a stale admin inventory overwrite after checkout", async () => {
+    await addCart("cart_admin_race", [["variant_m", 1]]);
+
+    await placeOrder(
+      input("cart_admin_race", "checkout_admin_consistency"),
+      testDb,
+    );
+    const staleUpdate = await setInventory("variant_m", 9, 0, testDb);
+
+    expect(staleUpdate).toBeNull();
+    expect(await inventoryFor("variant_m")).toBe(0);
+  });
+});
+
+describe("cart inventory guards", () => {
+  it("does not let concurrent additions exceed available inventory", async () => {
+    await addCart("cart_concurrent_add", []);
+
+    const results = await Promise.allSettled([
+      addCartItemWithInventoryGuard(
+        "cart_concurrent_add",
+        "variant_m",
+        1,
+        testDb,
+      ),
+      addCartItemWithInventoryGuard(
+        "cart_concurrent_add",
+        "variant_m",
+        1,
+        testDb,
+      ),
+    ]);
+
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    expect(results.find((result) => result.status === "rejected")).toMatchObject({
+      reason: expect.objectContaining({ name: "CartInventoryError" }),
+    });
+    const [line] = await testDb.select().from(cartItems);
+    expect(line.quantity).toBe(1);
   });
 });
