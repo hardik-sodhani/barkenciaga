@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { eq } from "drizzle-orm";
@@ -13,6 +13,9 @@ import {
   productVariants,
 } from "@/db/schema";
 import { CheckoutError, placeOrder, type CheckoutInput } from "@/lib/checkout";
+
+vi.mock("@/db", () => ({ db: {} }));
+vi.mock("@/db/bootstrap", () => ({ ensureDbReady: vi.fn() }));
 
 let client: PGlite;
 let testDb: ReturnType<typeof drizzle<typeof schema>>;
@@ -217,6 +220,52 @@ describe("placeOrder", () => {
     expect(await inventoryFor("variant_m")).toBe(0);
     expect(await testDb.select().from(orders)).toHaveLength(1);
     expect(await testDb.select().from(orderItems)).toHaveLength(1);
+  });
+
+  it("replays a concurrent retry with the same idempotency key", async () => {
+    await addCart("cart_double", [["variant_m", 1]]);
+    const checkoutInput = input("cart_double", "checkout_double_submit");
+
+    const results = await Promise.all([
+      placeOrder(checkoutInput, testDb),
+      placeOrder(checkoutInput, testDb),
+    ]);
+
+    expect(new Set(results.map((result) => result.orderId)).size).toBe(1);
+    expect(results.filter((result) => result.replayed)).toHaveLength(1);
+    expect(results.filter((result) => !result.replayed)).toHaveLength(1);
+    expect(await inventoryFor("variant_m")).toBe(0);
+    expect(await testDb.select().from(orders)).toHaveLength(1);
+    expect(await testDb.select().from(orderItems)).toHaveLength(1);
+  });
+
+  it("reserves overlapping multi-line carts without deadlocking", async () => {
+    await testDb
+      .update(productVariants)
+      .set({ inventory: 2 })
+      .where(eq(productVariants.id, "variant_l"));
+    await testDb
+      .update(productVariants)
+      .set({ inventory: 2 })
+      .where(eq(productVariants.id, "variant_m"));
+    await addCart("cart_ab", [
+      ["variant_m", 1],
+      ["variant_l", 1],
+    ]);
+    await addCart("cart_ba", [
+      ["variant_l", 1],
+      ["variant_m", 1],
+    ]);
+
+    const results = await Promise.all([
+      placeOrder(input("cart_ab", "checkout_lock_a"), testDb),
+      placeOrder(input("cart_ba", "checkout_lock_b"), testDb),
+    ]);
+
+    expect(results).toHaveLength(2);
+    expect(await inventoryFor("variant_m")).toBe(0);
+    expect(await inventoryFor("variant_l")).toBe(0);
+    expect(await testDb.select().from(orders)).toHaveLength(2);
   });
 
   it("keeps inventory and the cart intact after a payment failure", async () => {

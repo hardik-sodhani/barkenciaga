@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/db";
 import {
@@ -50,20 +50,6 @@ export type CheckoutResult = {
 };
 
 type CheckoutDatabase = typeof db;
-
-function isUniqueViolation(error: unknown) {
-  if (!error || typeof error !== "object") return false;
-  const candidate = error as {
-    code?: string;
-    cause?: { code?: string };
-    message?: string;
-  };
-  return (
-    candidate.code === "23505" ||
-    candidate.cause?.code === "23505" ||
-    candidate.message?.includes("duplicate key value violates unique constraint")
-  );
-}
 
 async function findExistingOrder(
   database: CheckoutDatabase,
@@ -133,7 +119,8 @@ export async function placeOrder(
           eq(cartItems.variantId, productVariants.id),
         )
         .innerJoin(products, eq(productVariants.productId, products.id))
-        .where(eq(cartItems.cartId, input.cartId));
+        .where(eq(cartItems.cartId, input.cartId))
+        .orderBy(asc(productVariants.id));
 
       if (lines.length === 0) {
         throw new CheckoutError("EMPTY_CART", "Your bag is empty.");
@@ -202,7 +189,6 @@ export async function placeOrder(
       return { orderId, replayed: false };
     });
   } catch (error) {
-    if (!isUniqueViolation(error)) throw error;
     const existing = await findExistingOrder(
       database,
       input.idempotencyKey,
