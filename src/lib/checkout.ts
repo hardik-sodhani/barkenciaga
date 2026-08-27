@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { db } from "@/db";
 import {
   cartItems,
+  carts,
   orderItems,
   orders,
   products,
@@ -118,6 +119,12 @@ export async function placeOrder(
   const orderId = `ord_${nanoid(10)}`;
   try {
     return await database.transaction(async (tx) => {
+      await tx
+        .select({ id: carts.id })
+        .from(carts)
+        .where(eq(carts.id, input.cartId))
+        .for("update");
+
       await tx
         .select({ id: cartItems.id })
         .from(cartItems)
