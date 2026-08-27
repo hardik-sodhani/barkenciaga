@@ -46,7 +46,7 @@ export function InventoryForm({
       >
         {pending ? "Saving" : "Save"}
       </button>
-      {state.message && (
+      {state.message && !pending && (
         <span
           role={state.status === "error" ? "alert" : "status"}
           className={

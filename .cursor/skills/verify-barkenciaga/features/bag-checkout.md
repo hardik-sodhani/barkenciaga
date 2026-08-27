@@ -34,6 +34,7 @@ Preconditions:
 
 - Guest cart is the iron-session cookie `barkenciaga_session`. `fetch.sh` without that cookie always sees an empty bag — use the browser (or replay the cookie) for add-to-bag proof.
 - Checkout GET with an empty cart **redirects to `/cart`** (follow or `redirect: manual`).
-- Demo payment accepts any card number with 12+ digits; no charge is made.
+- Demo payment makes no charge. Card `4000000000000002` exercises the
+  recoverable decline state; other valid 12+ digit demo numbers succeed.
 - `Empty bag` is a server action. Do not run it on an adopted instance unless restoring state is part of the task.
 - Header count updates after the server action finishes (no optimistic increment; `DEMO-TODO`).
