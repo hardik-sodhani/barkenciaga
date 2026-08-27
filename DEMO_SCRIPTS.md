@@ -129,6 +129,6 @@ Good showcase of multi-step refactors with invariants.
 
 ## Closing beats
 
-Always end a session at `/showroom` to set up the next flow, or jump to an open ticket from the Sample tickets list.
+Always end a session at `/showroom` to set up the next flow, or pick an open ticket from Jira (or another project tool).
 
 If a demo has 3 minutes to spare, grep for `DEMO-TODO` in the repo and pick the first one &mdash; these are real, small asks (accessibility, empty state, microcopy) that Cursor can close end-to-end quickly.

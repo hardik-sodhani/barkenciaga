@@ -27,8 +27,8 @@ describe("category size filter contract", () => {
     return rows.filter((row) => !allowed.has(row.id));
   }
 
-  // BRK-18: getProductsForCategory inverts membership and excludes matching products.
-  it.fails("category filter includes products with the selected size (BRK-18)", () => {
+  // getProductsForCategory inverts membership and excludes matching products.
+  it.fails("category filter includes products with the selected size", () => {
     const filtered = buggyCategoryFilter(products, ["p1"]);
     expect(filtered.map((p) => p.id)).toEqual(["p1"]);
   });

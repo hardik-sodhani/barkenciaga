@@ -79,7 +79,7 @@ DEMO_SCRIPTS.md        - Canned flows for enablement sessions
 
 ## The demo loop
 
-`/showroom` is the presenter&rsquo;s home base &mdash; it lists canned flows, sample tickets, and direct jumps into key routes. Start there when running an enablement session.
+`/showroom` is the presenter&rsquo;s home base &mdash; it lists canned flows and direct jumps into key routes. Start there when running an enablement session. Pull tickets from Jira (or another project tool), never from in-repo copy.
 
 See [`DEMO_SCRIPTS.md`](DEMO_SCRIPTS.md) for turn-by-turn scripts.
 
