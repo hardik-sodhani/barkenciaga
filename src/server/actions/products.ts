@@ -48,6 +48,7 @@ const variantInventorySchema = z.object({
 export type InventoryUpdateState = {
   status?: "saved" | "error";
   message?: string;
+  inventoryVersion?: number;
 };
 
 export async function updateVariantInventoryAction(
@@ -76,7 +77,11 @@ export async function updateVariantInventoryAction(
   }
   revalidatePath("/admin");
   revalidatePath(`/p/[slug]`, "page");
-  return { status: "saved", message: "Inventory saved." };
+  return {
+    status: "saved",
+    message: "Inventory saved.",
+    inventoryVersion: updated.inventoryVersion,
+  };
 }
 
 const newVariantSchema = z.object({

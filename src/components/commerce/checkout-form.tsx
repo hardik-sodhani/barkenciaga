@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   checkoutAction,
   type CheckoutState,
@@ -26,6 +26,24 @@ export function CheckoutForm({
     checkoutAction,
     initialState,
   );
+  const [fields, setFields] = useState({
+    email: defaultEmail,
+    line1: "",
+    line2: "",
+    city: "",
+    region: "",
+    postalCode: "",
+    country: "US",
+    cardNumber: "4242424242424242",
+    cardExpiry: "12/29",
+    cardCvc: "123",
+  });
+  const updateField = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFields((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
+  };
   const cartError =
     state.error?.code === "SOLD_OUT" || state.error?.code === "EMPTY_CART";
 
@@ -58,7 +76,8 @@ export function CheckoutForm({
               id="email"
               type="email"
               name="email"
-              defaultValue={defaultEmail}
+              value={fields.email}
+              onChange={updateField}
               required
             />
           </div>
@@ -70,27 +89,62 @@ export function CheckoutForm({
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
             <Label htmlFor="line1">Street address</Label>
-            <Input id="line1" name="line1" required />
+            <Input
+              id="line1"
+              name="line1"
+              value={fields.line1}
+              onChange={updateField}
+              required
+            />
           </div>
           <div className="md:col-span-2">
             <Label htmlFor="line2">Apartment, suite (optional)</Label>
-            <Input id="line2" name="line2" />
+            <Input
+              id="line2"
+              name="line2"
+              value={fields.line2}
+              onChange={updateField}
+            />
           </div>
           <div>
             <Label htmlFor="city">City</Label>
-            <Input id="city" name="city" required />
+            <Input
+              id="city"
+              name="city"
+              value={fields.city}
+              onChange={updateField}
+              required
+            />
           </div>
           <div>
             <Label htmlFor="region">State / Region</Label>
-            <Input id="region" name="region" required />
+            <Input
+              id="region"
+              name="region"
+              value={fields.region}
+              onChange={updateField}
+              required
+            />
           </div>
           <div>
             <Label htmlFor="postalCode">Postal code</Label>
-            <Input id="postalCode" name="postalCode" required />
+            <Input
+              id="postalCode"
+              name="postalCode"
+              value={fields.postalCode}
+              onChange={updateField}
+              required
+            />
           </div>
           <div>
             <Label htmlFor="country">Country</Label>
-            <Input id="country" name="country" defaultValue="US" required />
+            <Input
+              id="country"
+              name="country"
+              value={fields.country}
+              onChange={updateField}
+              required
+            />
           </div>
         </div>
       </section>
@@ -109,7 +163,8 @@ export function CheckoutForm({
               name="cardNumber"
               placeholder="4242 4242 4242 4242"
               required
-              defaultValue="4242424242424242"
+              value={fields.cardNumber}
+              onChange={updateField}
             />
           </div>
           <div className="md:col-span-3">
@@ -119,7 +174,8 @@ export function CheckoutForm({
               name="cardExpiry"
               placeholder="12/29"
               required
-              defaultValue="12/29"
+              value={fields.cardExpiry}
+              onChange={updateField}
             />
           </div>
           <div className="md:col-span-3">
@@ -129,7 +185,8 @@ export function CheckoutForm({
               name="cardCvc"
               placeholder="123"
               required
-              defaultValue="123"
+              value={fields.cardCvc}
+              onChange={updateField}
             />
           </div>
         </div>
