@@ -2,7 +2,6 @@ import "server-only";
 import { db } from "@/db";
 import { carts, cartItems, productVariants, products } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { ensureCartId, getSession, readCartId } from "./session";
 import { ensureDbReady } from "@/db/bootstrap";
 import {

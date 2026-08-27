@@ -37,6 +37,7 @@ const input = (cartId: string, idempotencyKey: string): CheckoutInput => ({
 
 async function addCart(cartId: string, items: Array<[string, number]>) {
   await testDb.insert(carts).values({ id: cartId });
+  if (items.length === 0) return;
   await testDb.insert(cartItems).values(
     items.map(([variantId, quantity], index) => ({
       id: `${cartId}_item_${index}`,
