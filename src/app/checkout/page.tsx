@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { nanoid } from "nanoid";
 import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
 import { getSession } from "@/lib/session";
 import { checkoutAction } from "@/server/actions/checkout";
@@ -16,6 +17,7 @@ export default async function CheckoutPage() {
   const shipping = shippingCentsFor(cart.subtotalCents);
   const tax = taxCentsFor(cart.subtotalCents);
   const total = cart.subtotalCents + shipping + tax;
+  const idempotencyKey = `checkout_${nanoid(24)}`;
 
   return (
     <section className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:grid-cols-12">
@@ -24,6 +26,7 @@ export default async function CheckoutPage() {
         <h1 className="display-lg mb-8">Final steps.</h1>
 
         <form action={checkoutAction} className="space-y-12">
+          <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
           <section>
             <h2 className="eyebrow mb-4">01 — Contact</h2>
             <div className="grid gap-4 md:grid-cols-2">

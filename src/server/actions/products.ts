@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { products, productVariants } from "@/db/schema";
 import { requireAdmin } from "@/lib/session";
@@ -41,6 +41,7 @@ export async function updateProductAction(formData: FormData) {
 const variantInventorySchema = z.object({
   id: z.string().min(1),
   inventory: z.coerce.number().int().min(0).max(9999),
+  expectedVersion: z.coerce.number().int().min(0),
 });
 
 export async function updateVariantInventoryAction(formData: FormData) {
@@ -48,12 +49,26 @@ export async function updateVariantInventoryAction(formData: FormData) {
   const parsed = variantInventorySchema.parse({
     id: formData.get("id"),
     inventory: formData.get("inventory"),
+    expectedVersion: formData.get("expectedVersion"),
   });
-  await db
+  const updated = await db
     .update(productVariants)
-    .set({ inventory: parsed.inventory })
-    .where(eq(productVariants.id, parsed.id));
+    .set({
+      inventory: parsed.inventory,
+      inventoryVersion: sql`${productVariants.inventoryVersion} + 1`,
+    })
+    .where(
+      and(
+        eq(productVariants.id, parsed.id),
+        eq(productVariants.inventoryVersion, parsed.expectedVersion),
+      ),
+    )
+    .returning({ id: productVariants.id });
+  if (updated.length === 0) {
+    throw new Error("Inventory changed since this page loaded. Refresh and try again.");
+  }
   revalidatePath("/admin");
+  revalidatePath(`/p/[slug]`, "page");
 }
 
 const newVariantSchema = z.object({

@@ -3,11 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { nanoid } from "nanoid";
-import { db } from "@/db";
-import { orders, orderItems } from "@/db/schema";
-import { getCart, clearCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
-import { getSession } from "@/lib/session";
+import { CheckoutError, placeOrder } from "@/lib/checkout";
+import { getSession, readCartId } from "@/lib/session";
 import { getActiveDog } from "@/lib/dogs";
 import { ensureDbReady } from "@/db/bootstrap";
 
@@ -22,6 +19,7 @@ const checkoutSchema = z.object({
   cardNumber: z.string().min(12).max(30),
   cardExpiry: z.string().min(4).max(10),
   cardCvc: z.string().min(3).max(4),
+  idempotencyKey: z.string().min(16).max(100),
 });
 
 export async function checkoutAction(formData: FormData) {
@@ -37,62 +35,36 @@ export async function checkoutAction(formData: FormData) {
     cardNumber: formData.get("cardNumber"),
     cardExpiry: formData.get("cardExpiry"),
     cardCvc: formData.get("cardCvc"),
+    idempotencyKey: formData.get("idempotencyKey"),
   });
 
-  const cart = await getCart();
-  if (cart.lines.length === 0) {
-    throw new Error("Cart is empty");
-  }
-
+  const cartId = await readCartId();
+  if (!cartId) throw new CheckoutError("EMPTY_CART", "Your bag is empty.");
   const session = await getSession();
   const dog = await getActiveDog();
 
-  const subtotalCents = cart.subtotalCents;
-  const shippingCents = shippingCentsFor(subtotalCents);
-  const taxCents = taxCentsFor(subtotalCents + shippingCents);
-  const totalCents = subtotalCents + shippingCents + taxCents;
-
-  const orderId = `ord_${nanoid(10)}`;
-
-  await db.transaction(async (tx) => {
-    await tx.insert(orders).values({
-      id: orderId,
-      userId: session.userId ?? null,
-      status: "paid",
-      email: parsed.email,
-      subtotalCents,
-      shippingCents,
-      taxCents,
-      totalCents,
-      shippingAddress: {
+  const result = await placeOrder({
+    cartId,
+    idempotencyKey: parsed.idempotencyKey,
+    userId: session.userId,
+    email: parsed.email,
+    shippingAddress: {
         line1: parsed.line1,
         line2: parsed.line2,
         city: parsed.city,
         region: parsed.region,
         postalCode: parsed.postalCode,
         country: parsed.country,
-      },
-      dogName: dog?.name ?? null,
-    });
-
-    await tx.insert(orderItems).values(
-      cart.lines.map((l) => ({
-        id: `oi_${nanoid(10)}`,
-        orderId,
-        variantId: l.variantId,
-        productName: l.product.name,
-        productSlug: l.product.slug,
-        variantLabel: `${l.variant.size.toUpperCase()} / ${l.variant.color}`,
-        unitPriceCents: l.unitPriceCents,
-        quantity: l.quantity,
-      })),
-    );
+    },
+    dogName: dog?.name ?? null,
+    cardNumber: parsed.cardNumber,
   });
 
-  await clearCart();
-  console.log(`[barkenciaga] order ${orderId} confirmed for ${parsed.email}`);
+  console.log(
+    `[barkenciaga] order ${result.orderId} ${result.replayed ? "replayed" : "confirmed"} for ${parsed.email}`,
+  );
 
   revalidatePath("/cart");
   revalidatePath("/account");
-  redirect(`/orders/${orderId}`);
+  redirect(`/orders/${result.orderId}`);
 }

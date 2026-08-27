@@ -96,6 +96,7 @@ export const productVariants = pgTable(
     colorHex: text("color_hex").notNull(),
     sku: text("sku").notNull().unique(),
     inventory: integer("inventory").notNull().default(0),
+    inventoryVersion: integer("inventory_version").notNull().default(0),
   },
   (t) => [
     index("variants_product_idx").on(t.productId),
@@ -191,9 +192,14 @@ export const orders = pgTable(
       country: string;
     }>(),
     dogName: text("dog_name"),
+    idempotencyKey: text("idempotency_key"),
+    sourceCartId: text("source_cart_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("orders_user_idx").on(t.userId)],
+  (t) => [
+    index("orders_user_idx").on(t.userId),
+    uniqueIndex("orders_idempotency_key_idx").on(t.idempotencyKey),
+  ],
 );
 
 export const orderItems = pgTable(

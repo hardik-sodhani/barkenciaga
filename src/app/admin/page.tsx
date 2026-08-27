@@ -159,6 +159,11 @@ export default async function AdminPage() {
                           <form action={updateVariantInventoryAction} className="flex items-center gap-2">
                             <input type="hidden" name="id" value={v.id} />
                             <input
+                              type="hidden"
+                              name="expectedVersion"
+                              value={v.inventoryVersion}
+                            />
+                            <input
                               type="number"
                               name="inventory"
                               defaultValue={v.inventory}
