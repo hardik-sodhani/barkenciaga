@@ -18,8 +18,8 @@ When implementing or discussing BRK-* work in Barkenciaga:
 - Do not checkout, cherry-pick, merge, or diff against commits from closed PRs or deleted branches
 - Do not use `gh pr view`, `gh pr diff`, or GitHub PR pages to copy prior BRK solution code
 - Do not pull implementation details from old Cursor plans or prior agent sessions
-
-Known closed PRs (BRK-1, BRK-2, BRK-4, BRK-6, BRK-10, etc.) are **discarded demo history**, not templates.
+- Closed demo PRs are discarded history, not templates
+- Do not copy issue keys, titles, or acceptance criteria into the repo — those live in Jira (or another project tool)
 
 ## Workflow
 

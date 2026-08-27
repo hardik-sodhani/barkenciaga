@@ -47,8 +47,8 @@ describe("checkout preview totals", () => {
     expect(previewTotalCents(15000)).toBe(15000 + 1200 + 1088);
   });
 
-  // BRK-20: checkoutAction taxes subtotal+shipping while preview taxes subtotal only.
-  it.fails("persisted order tax matches checkout preview (BRK-20)", () => {
+  // checkoutAction taxes subtotal+shipping while preview taxes subtotal only.
+  it.fails("persisted order tax matches checkout preview", () => {
     const subtotal = 15000;
     expect(persistedTotalCents(subtotal)).toBe(previewTotalCents(subtotal));
   });

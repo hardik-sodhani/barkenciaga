@@ -50,24 +50,6 @@ const DEMO_FLOWS = [
   },
 ];
 
-const SAMPLE_TICKETS = [
-  {
-    id: "BRK-14",
-    title: "Add 'Saved for later' to PDP",
-    body: "Shoppers need to bookmark pieces before they're ready to buy. Add a wishlist: heart button on PDP, stored server-side, listed under /account/wishlist.",
-  },
-  {
-    id: "BRK-22",
-    title: "Breed-specific size charts",
-    body: "Luna's owner asked for a French Bulldog-specific chart on the PDP. Surface the dog's measurements alongside variant sizing, and recommend a size range rather than a single pick.",
-  },
-  {
-    id: "BRK-31",
-    title: "Low-stock banner on homepage hero products",
-    body: "When a hero product has <6 of any variant, show a 'Limited quantities' eyebrow on the product tile.",
-  },
-];
-
 export default async function ShowroomPage() {
   const categories = await getAllCategories();
 
@@ -77,8 +59,8 @@ export default async function ShowroomPage() {
       <h1 className="display-xl">Showroom.</h1>
       <p className="mt-4 max-w-2xl text-sm text-ink-60">
         Barkenciaga is a demo surface for Cursor enablement sessions. This page
-        gives presenters a single index of canned flows, sample tickets, and
-        known good demo starting points.
+        gives presenters a single index of canned flows and known good demo
+        starting points. Pull live work from Jira (or another project tool).
       </p>
 
       <section className="mt-16">
@@ -93,25 +75,6 @@ export default async function ShowroomPage() {
             </div>
           ))}
         </div>
-      </section>
-
-      <section className="mt-16">
-        <h2 className="font-display text-3xl mb-6">Sample tickets</h2>
-        <p className="mb-6 max-w-2xl text-sm text-ink-60">
-          Drop these into a Linear/Jira integration, or paste directly into
-          Cursor as a task. Each ticket is sized for a 5-15 minute live demo.
-        </p>
-        <ul className="divide-y divide-ink-20 border-y border-ink-20">
-          {SAMPLE_TICKETS.map((t) => (
-            <li key={t.id} className="grid gap-4 py-5 md:grid-cols-[120px_1fr]">
-              <div className="font-mono text-xs text-ink-60">{t.id}</div>
-              <div>
-                <div className="font-medium">{t.title}</div>
-                <div className="mt-1 text-sm text-ink-60">{t.body}</div>
-              </div>
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section className="mt-16 grid gap-6 md:grid-cols-4">
