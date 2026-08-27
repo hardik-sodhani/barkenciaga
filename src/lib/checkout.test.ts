@@ -373,6 +373,29 @@ describe("cart inventory guards", () => {
     expect(line.quantity).toBe(1);
   });
 
+  it("does not deadlock concurrent add and quantity update on the same cart", async () => {
+    await addCart("cart_lock_order", [["variant_m", 1]]);
+    await testDb
+      .update(productVariants)
+      .set({ inventory: 5 })
+      .where(eq(productVariants.id, "variant_m"));
+    const [line] = await testDb.select().from(cartItems);
+
+    await Promise.all([
+      addCartItemWithInventoryGuard("cart_lock_order", "variant_m", 1, testDb),
+      setCartItemQuantityWithInventoryGuard(
+        "cart_lock_order",
+        line.id,
+        2,
+        testDb,
+      ),
+    ]);
+
+    const [updated] = await testDb.select().from(cartItems);
+    expect(updated.quantity).toBeGreaterThanOrEqual(2);
+    expect(updated.quantity).toBeLessThanOrEqual(3);
+  });
+
   it("allows a new checkout after a prior order on the same cart id", async () => {
     await addCart("cart_rebuy", [["variant_m", 1]]);
     await placeOrder(input("cart_rebuy", "checkout_first"), testDb);

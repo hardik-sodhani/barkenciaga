@@ -2,7 +2,7 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/db";
-import { cartItems, productVariants } from "@/db/schema";
+import { cartItems, carts, productVariants } from "@/db/schema";
 
 export class CartInventoryError extends Error {
   constructor(message: string) {
@@ -18,6 +18,12 @@ export async function addCartItemWithInventoryGuard(
   database: typeof db = db,
 ) {
   await database.transaction(async (tx) => {
+    await tx
+      .select({ id: carts.id })
+      .from(carts)
+      .where(eq(carts.id, cartId))
+      .for("update");
+
     const [variant] = await tx
       .select({ inventory: productVariants.inventory })
       .from(productVariants)
@@ -67,27 +73,27 @@ export async function setCartItemQuantityWithInventoryGuard(
   database: typeof db = db,
 ) {
   await database.transaction(async (tx) => {
-    const [itemPeek] = await tx
+    await tx
+      .select({ id: carts.id })
+      .from(carts)
+      .where(eq(carts.id, cartId))
+      .for("update");
+
+    const [item] = await tx
       .select({
         variantId: cartItems.variantId,
         quantity: cartItems.quantity,
       })
       .from(cartItems)
-      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cartId)));
-    if (!itemPeek) return;
+      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cartId)))
+      .for("update");
+    if (!item) return;
 
     const [variant] = await tx
       .select({ inventory: productVariants.inventory })
       .from(productVariants)
-      .where(eq(productVariants.id, itemPeek.variantId))
+      .where(eq(productVariants.id, item.variantId))
       .for("update");
-
-    const [item] = await tx
-      .select({ quantity: cartItems.quantity })
-      .from(cartItems)
-      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cartId)))
-      .for("update");
-    if (!item) return;
 
     if (quantity > item.quantity && (!variant || quantity > variant.inventory)) {
       throw new CartInventoryError(
