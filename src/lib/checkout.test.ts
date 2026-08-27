@@ -14,7 +14,7 @@ import {
 } from "@/db/schema";
 import { CheckoutError, placeOrder, type CheckoutInput } from "@/lib/checkout";
 import { setInventory } from "@/lib/inventory";
-import { addCartItemWithInventoryGuard } from "@/lib/cart-inventory";
+import { addCartItemWithInventoryGuard, setCartItemQuantityWithInventoryGuard } from "@/lib/cart-inventory";
 
 vi.mock("@/db", () => ({ db: {} }));
 vi.mock("@/db/bootstrap", () => ({ ensureDbReady: vi.fn() }));
@@ -371,5 +371,31 @@ describe("cart inventory guards", () => {
     });
     const [line] = await testDb.select().from(cartItems);
     expect(line.quantity).toBe(1);
+  });
+
+  it("allows decreasing quantity when the cart line exceeds stock", async () => {
+    await addCart("cart_oversold", [["variant_m", 1]]);
+    const [line] = await testDb.select().from(cartItems);
+    await testDb
+      .update(cartItems)
+      .set({ quantity: 5 })
+      .where(eq(cartItems.id, line.id));
+    await testDb
+      .update(productVariants)
+      .set({ inventory: 2 })
+      .where(eq(productVariants.id, "variant_m"));
+
+    await setCartItemQuantityWithInventoryGuard(
+      "cart_oversold",
+      line.id,
+      4,
+      testDb,
+    );
+
+    const [updated] = await testDb
+      .select()
+      .from(cartItems)
+      .where(eq(cartItems.id, line.id));
+    expect(updated.quantity).toBe(4);
   });
 });
