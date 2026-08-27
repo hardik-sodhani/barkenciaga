@@ -56,6 +56,9 @@ export function InventoryForm({
           }
         >
           {state.message}
+          {state.status === "saved" && state.inventoryVersion
+            ? ` Revision ${state.inventoryVersion}.`
+            : ""}
         </span>
       )}
     </form>
