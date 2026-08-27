@@ -52,6 +52,10 @@ declare global {
 // re-register listeners (which would risk leaking hooks on repeated resets).
 function registerShutdownHooks() {
   if (globalThis.__barkenciagaShutdownHooked) return;
+  // Vitest sends SIGTERM on teardown; closing the app PGlite client then races
+  // WASM shutdown and surfaces as an unhandled RuntimeError: Aborted(). Tests
+  // inject their own in-memory PGlite instances, so skip hooks here.
+  if (process.env.VITEST) return;
   globalThis.__barkenciagaShutdownHooked = true;
 
   let closing = false;
@@ -125,14 +129,15 @@ export async function resetDbHard(): Promise<void> {
   initDb();
 }
 
-initDb();
+if (!process.env.VITEST) {
+  initDb();
+}
 
 // Exported as a Proxy so `resetDbHard()` can swap the underlying client
 // without invalidating `import { db } from "./index"` bindings elsewhere.
 export const db = new Proxy({} as DbType, {
   get(_target, prop, receiver) {
-    const current = globalThis.__barkenciagaDb;
-    if (!current) throw new Error("Barkenciaga db not initialized");
+    const current = globalThis.__barkenciagaDb ?? initDb();
     return Reflect.get(current as object, prop, receiver);
   },
 }) as DbType;
