@@ -254,6 +254,29 @@ describe("placeOrder", () => {
     expect(await testDb.select().from(orders)).toHaveLength(1);
   });
 
+  it("allows a new checkout after a prior order on the same cart id", async () => {
+    await addCart("cart_rebuy", [["variant_m", 1]]);
+    await placeOrder(input("cart_rebuy", "checkout_first"), testDb);
+    await testDb
+      .update(productVariants)
+      .set({ inventory: 1 })
+      .where(eq(productVariants.id, "variant_m"));
+    await testDb.insert(cartItems).values({
+      id: "ci_rebuy",
+      cartId: "cart_rebuy",
+      variantId: "variant_m",
+      quantity: 1,
+    });
+
+    const result = await placeOrder(
+      input("cart_rebuy", "checkout_second"),
+      testDb,
+    );
+
+    expect(result.replayed).toBe(false);
+    expect(await testDb.select().from(orders)).toHaveLength(2);
+  });
+
   it("reserves overlapping multi-line carts without deadlocking", async () => {
     await testDb
       .update(productVariants)

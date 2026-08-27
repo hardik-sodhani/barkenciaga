@@ -113,9 +113,6 @@ export async function placeOrder(
   );
   if (replay) return replay;
 
-  const replayByCart = await findExistingOrderForCart(database, input.cartId);
-  if (replayByCart) return replayByCart;
-
   authorizePayment(input.cardNumber);
 
   const orderId = `ord_${nanoid(10)}`;
