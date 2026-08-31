@@ -14,7 +14,7 @@ export default async function HomePage() {
   const commuter = collections.find((c) => c.slug === "city-commuter");
 
   return (
-    <>
+    <div className="min-h-screen bg-[red]">
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-ink-20">
         <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-5 py-7 md:min-h-[820px] md:grid-cols-12 md:gap-12 md:px-12 md:py-12">
@@ -147,6 +147,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
