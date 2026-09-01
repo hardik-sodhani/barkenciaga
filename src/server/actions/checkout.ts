@@ -49,7 +49,7 @@ export async function checkoutAction(formData: FormData) {
 
   const subtotalCents = cart.subtotalCents;
   const shippingCents = shippingCentsFor(subtotalCents);
-  const taxCents = taxCentsFor(subtotalCents + shippingCents);
+  const taxCents = taxCentsFor(subtotalCents);
   const totalCents = subtotalCents + shippingCents + taxCents;
 
   const orderId = `ord_${nanoid(10)}`;
