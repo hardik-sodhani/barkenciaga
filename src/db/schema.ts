@@ -84,6 +84,20 @@ export const products = pgTable(
   (t) => [index("products_category_idx").on(t.categoryId)],
 );
 
+export const productImages = pgTable(
+  "product_images",
+  {
+    id: text("id").primaryKey(),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    alt: text("alt").notNull(),
+    position: integer("position").notNull().default(0),
+  },
+  (t) => [index("product_images_product_position_idx").on(t.productId, t.position)],
+);
+
 export const productVariants = pgTable(
   "product_variants",
   {
@@ -230,8 +244,16 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.categoryId],
     references: [categories.id],
   }),
+  images: many(productImages),
   variants: many(productVariants),
   collectionProducts: many(collectionProducts),
+}));
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, {
+    fields: [productImages.productId],
+    references: [products.id],
+  }),
 }));
 
 export const productVariantsRelations = relations(productVariants, ({ one }) => ({
@@ -291,6 +313,7 @@ export type User = typeof users.$inferSelect;
 export type Dog = typeof dogs.$inferSelect;
 export type DogInsert = typeof dogs.$inferInsert;
 export type Product = typeof products.$inferSelect;
+export type ProductImage = typeof productImages.$inferSelect;
 export type ProductVariant = typeof productVariants.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Collection = typeof collections.$inferSelect;

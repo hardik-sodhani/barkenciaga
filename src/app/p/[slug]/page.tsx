@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { getProductBySlug } from "@/lib/products";
 import { getActiveDog, recommendSizeForDog } from "@/lib/dogs";
+import { ProductGallery } from "@/components/commerce/product-gallery";
 import { VariantSelector } from "@/components/commerce/variant-selector";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -44,17 +44,8 @@ export default async function ProductPage({
 
       <section className="mx-auto grid max-w-[1400px] gap-10 px-6 pb-20 md:grid-cols-12">
         <div className="md:col-span-7">
-          {product.imagePath ? (
-            <div className="relative aspect-[4/5] overflow-hidden border border-ink-20 bg-bone-50">
-              <Image
-                src={product.imagePath}
-                alt={product.subtitle ? `${product.name}, ${product.subtitle}` : product.name}
-                fill
-                sizes="(min-width: 1024px) 55vw, 100vw"
-                priority
-                className="object-cover"
-              />
-            </div>
+          {product.images.length > 0 ? (
+            <ProductGallery images={product.images} productName={product.name} />
           ) : (
             <div
               className="product-tile-gradient relative aspect-[4/5] border border-ink-20"

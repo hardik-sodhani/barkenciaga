@@ -4,6 +4,7 @@ import {
   collections as collectionsTable,
   collectionProducts,
   products as productsTable,
+  productImages,
   productVariants,
   users as usersTable,
   dogs as dogsTable,
@@ -51,6 +52,7 @@ export async function seedIfEmpty() {
       const productId = `prod_${nanoid(10)}`;
       productIdBySlug.set(p.slug, productId);
 
+      const imagePath = p.imagePath ?? `/products/${p.slug}.webp`;
       await tx.insert(productsTable).values({
         id: productId,
         slug: p.slug,
@@ -61,10 +63,38 @@ export async function seedIfEmpty() {
         brandLine: "Barkenciaga",
         priceCents: p.priceCents,
         basePalette: p.palette,
-        imagePath: p.imagePath ?? `/products/${p.slug}.webp`,
+        imagePath,
         editorialCopy: p.editorialCopy,
         careCopy: p.careCopy,
       });
+
+      await tx.insert(productImages).values({
+        id: `img_${nanoid(10)}`,
+        productId,
+        path: imagePath,
+        alt: p.subtitle ? `${p.name}, ${p.subtitle}` : p.name,
+        position: 0,
+      });
+
+      // Extra gallery angles for a couple of hero pieces so the PDP demo has N>1 images.
+      if (p.slug === "monogram-quilted-coat") {
+        await tx.insert(productImages).values([
+          {
+            id: `img_${nanoid(10)}`,
+            productId,
+            path: "/products/tartan-trench.webp",
+            alt: `${p.name} back view`,
+            position: 1,
+          },
+          {
+            id: `img_${nanoid(10)}`,
+            productId,
+            path: "/products/tech-parka.webp",
+            alt: `${p.name} detail`,
+            position: 2,
+          },
+        ]);
+      }
 
       await tx.insert(productVariants).values(
         p.variants.map((v) => ({

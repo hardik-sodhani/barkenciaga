@@ -144,6 +144,15 @@ h4 {
     linear-gradient(135deg, var(--tile-a, #cec3a8) 0%, var(--tile-b, #8a7f62) 100%);
 }
 
+@keyframes gallery-fade {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .kbd {
   font-family: var(--font-mono);
   font-size: 0.7rem;
