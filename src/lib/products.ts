@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/db";
-import { categories, collections, collectionProducts, products, productVariants } from "@/db/schema";
+import { categories, collections, collectionProducts, productImages, products, productVariants } from "@/db/schema";
 import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { ensureDbReady } from "@/db/bootstrap";
 
@@ -59,7 +59,13 @@ export async function getProductBySlug(slug: string) {
     .where(eq(productVariants.productId, product.id))
     .orderBy(asc(productVariants.size), asc(productVariants.color));
 
-  return { ...product, category, variants };
+  const images = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, product.id))
+    .orderBy(asc(productImages.position), asc(productImages.id));
+
+  return { ...product, category, images, variants };
 }
 
 export async function getFeaturedCollections() {

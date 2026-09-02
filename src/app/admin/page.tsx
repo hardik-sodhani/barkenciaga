@@ -1,8 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc } from "drizzle-orm";
 import { db } from "@/db";
-import { orders, products, productVariants, categories } from "@/db/schema";
+import {
+  categories,
+  orders,
+  productImages,
+  products,
+  productVariants,
+} from "@/db/schema";
 import { ensureDbReady } from "@/db/bootstrap";
 import { getSession } from "@/lib/session";
 import {
@@ -12,6 +18,7 @@ import {
 import { formatPrice } from "@/lib/utils";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ProductImageManager } from "@/components/admin/product-image-manager";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -20,9 +27,13 @@ export default async function AdminPage() {
   }
   await ensureDbReady();
 
-  const [prods, variants, cats, recentOrders] = await Promise.all([
+  const [prods, variants, images, cats, recentOrders] = await Promise.all([
     db.select().from(products),
     db.select().from(productVariants),
+    db
+      .select()
+      .from(productImages)
+      .orderBy(asc(productImages.position), asc(productImages.id)),
     db.select().from(categories),
     db.select().from(orders).orderBy(desc(orders.createdAt)).limit(20),
   ]);
@@ -33,6 +44,13 @@ export default async function AdminPage() {
       variantsByProduct.set(v.productId, []);
     }
     variantsByProduct.get(v.productId)!.push(v);
+  }
+  const imagesByProduct = new Map<string, typeof images>();
+  for (const image of images) {
+    if (!imagesByProduct.has(image.productId)) {
+      imagesByProduct.set(image.productId, []);
+    }
+    imagesByProduct.get(image.productId)!.push(image);
   }
   const categoriesById = new Map(cats.map((c) => [c.id, c]));
 
@@ -175,6 +193,13 @@ export default async function AdminPage() {
                       ))}
                     </ul>
                   </div>
+                  <ProductImageManager
+                    key={(imagesByProduct.get(p.id) ?? [])
+                      .map((image) => `${image.id}:${image.position}`)
+                      .join("|")}
+                    productId={p.id}
+                    images={imagesByProduct.get(p.id) ?? []}
+                  />
                 </div>
               </details>
             );
