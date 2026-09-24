@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { BarkenciagaSession } from "@/lib/session";
 import type { Dog } from "@/db/schema";
 import { signOutAction } from "@/server/actions/auth";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
@@ -86,12 +87,9 @@ export function SiteHeader({
                 </Link>
               )}
               <form action={signOutAction}>
-                <button
-                  type="submit"
-                  className="text-[11px] tracking-[0.24em] uppercase text-ink-65 hover:text-ink"
-                >
+                <Button type="submit" variant="link" size="inline">
                   Sign out
-                </button>
+                </Button>
               </form>
             </>
           ) : (

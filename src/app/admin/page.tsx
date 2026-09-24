@@ -164,12 +164,9 @@ export default async function AdminPage() {
                               defaultValue={v.inventory}
                               className="w-20 border border-ink-20 bg-transparent px-2 py-1 text-sm text-right"
                             />
-                            <button
-                              type="submit"
-                              className="text-[10px] tracking-[0.2em] uppercase text-ink-60 hover:text-ink"
-                            >
+                            <Button type="submit" variant="link" size="inline">
                               Save
-                            </button>
+                            </Button>
                           </form>
                         </li>
                       ))}

@@ -9,6 +9,7 @@ import { setActiveDogAction } from "@/server/actions/auth";
 import { ensureDbReady } from "@/db/bootstrap";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default async function AccountPage() {
   const session = await getSession();
@@ -80,12 +81,9 @@ export default async function AccountPage() {
                   </div>
                   <form action={setActiveDogAction}>
                     <input type="hidden" name="dogId" value={d.id} />
-                    <button
-                      type="submit"
-                      className="text-[11px] tracking-[0.2em] uppercase hover:text-burgundy"
-                    >
+                    <Button type="submit" variant="linkAccent" size="inline">
                       {session.activeDogId === d.id ? "Active" : "Shop for"}
-                    </button>
+                    </Button>
                   </form>
                 </li>
               ))}

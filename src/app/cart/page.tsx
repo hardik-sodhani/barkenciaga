@@ -3,6 +3,7 @@ import { getCart, shippingCentsFor, taxCentsFor } from "@/lib/cart";
 import { CartLines } from "@/components/commerce/cart-lines";
 import { formatPrice } from "@/lib/utils";
 import { clearCartAction } from "@/server/actions/cart";
+import { Button } from "@/components/ui/button";
 
 export default async function CartPage() {
   const cart = await getCart();
@@ -18,12 +19,9 @@ export default async function CartPage() {
         <CartLines lines={cart.lines} />
         {cart.lines.length > 0 && (
           <form action={clearCartAction} className="mt-6">
-            <button
-              type="submit"
-              className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-burgundy"
-            >
+            <Button type="submit" variant="linkAccent" size="inline">
               Empty bag
-            </button>
+            </Button>
           </form>
         )}
       </div>

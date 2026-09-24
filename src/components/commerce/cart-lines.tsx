@@ -6,6 +6,7 @@ import {
   updateCartItemAction,
   removeCartItemAction,
 } from "@/server/actions/cart";
+import { Button } from "@/components/ui/button";
 
 export function CartLines({ lines }: { lines: CartLine[] }) {
   if (lines.length === 0) {
@@ -77,34 +78,33 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
             <div className="mt-3 flex items-center justify-between">
               <form action={updateCartItemAction} className="flex items-center border border-ink-20">
                 <input type="hidden" name="itemId" value={line.id} />
-                <button
+                <Button
                   type="submit"
                   name="quantity"
                   value={line.quantity + 1}
-                  className="h-9 w-9 hover:bg-bone-200"
+                  variant="ghost"
+                  size="stepper"
                   aria-label="Decrease"
                 >
                   -
-                </button>
+                </Button>
                 <div className="w-8 text-center text-sm tabular-nums">{line.quantity}</div>
-                <button
+                <Button
                   type="submit"
                   name="quantity"
                   value={line.quantity - 1}
-                  className="h-9 w-9 hover:bg-bone-200"
+                  variant="ghost"
+                  size="stepper"
                   aria-label="Increase"
                 >
                   +
-                </button>
+                </Button>
               </form>
               <form action={removeCartItemAction}>
                 <input type="hidden" name="itemId" value={line.id} />
-                <button
-                  type="submit"
-                  className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-burgundy"
-                >
+                <Button type="submit" variant="linkAccent" size="inline">
                   Remove
-                </button>
+                </Button>
               </form>
             </div>
           </div>

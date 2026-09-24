@@ -81,9 +81,13 @@ export function VariantSelector({
         <div className="eyebrow mb-2">Color - {color}</div>
         <div className="flex flex-wrap gap-3">
           {colors.map((c) => (
-            <button
+            <Button
               key={c.color}
               type="button"
+              variant="toggle"
+              size="option"
+              data-state={color === c.color ? "on" : "off"}
+              aria-pressed={color === c.color}
               onClick={() => {
                 setColor(c.color);
                 const next = sizesForColor(c.color);
@@ -93,12 +97,6 @@ export function VariantSelector({
                     : next[0] ?? null,
                 );
               }}
-              className={cn(
-                "flex items-center gap-2 border px-3 py-2 text-xs tracking-widest uppercase transition-colors",
-                color === c.color
-                  ? "border-ink"
-                  : "border-ink-20 hover:border-ink-40",
-              )}
             >
               <span
                 aria-hidden
@@ -106,7 +104,7 @@ export function VariantSelector({
                 style={{ background: c.colorHex }}
               />
               {c.color}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -131,23 +129,22 @@ export function VariantSelector({
           {(["xs", "s", "m", "l", "xl"] as const).map((s) => {
             const available = availableSizes.includes(s);
             return (
-              <button
+              <Button
                 key={s}
                 type="button"
+                variant="toggleSolid"
+                size="option"
                 disabled={!available}
+                data-state={size === s ? "on" : "off"}
+                aria-pressed={size === s}
                 onClick={() => setSize(s)}
                 className={cn(
-                  "w-14 py-3 text-xs tracking-widest uppercase border",
-                  size === s
-                    ? "bg-ink text-bone border-ink"
-                    : available
-                      ? "border-ink-20 text-ink hover:border-ink"
-                      : "border-ink-20 text-ink-65 line-through",
+                  "w-14 px-0",
                   recommendedSize === s && size !== s && "outline outline-1 outline-burgundy",
                 )}
               >
                 {SIZE_LABEL[s]}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -155,21 +152,23 @@ export function VariantSelector({
 
       <div className="flex items-center gap-4">
         <div className="flex items-center border border-ink-20">
-          <button
+          <Button
             type="button"
-            className="h-11 w-11 text-lg text-ink hover:bg-bone-200"
+            variant="ghost"
+            size="stepper"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
           >
             -
-          </button>
+          </Button>
           <div className="w-10 text-center text-sm tabular-nums">{qty}</div>
-          <button
+          <Button
             type="button"
-            className="h-11 w-11 text-lg text-ink hover:bg-bone-200"
+            variant="ghost"
+            size="stepper"
             onClick={() => setQty((q) => Math.min(10, q + 1))}
           >
             +
-          </button>
+          </Button>
         </div>
         <div className="text-sm tabular-nums">
           {formatPrice(priceCents * qty)}

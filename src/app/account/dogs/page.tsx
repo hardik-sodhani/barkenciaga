@@ -5,6 +5,7 @@ import { getDogsForUser } from "@/lib/dogs";
 import { deleteDogAction } from "@/server/actions/dogs";
 import { setActiveDogAction } from "@/server/actions/auth";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const SIZE_LABEL = { xs: "XS", s: "S", m: "M", l: "L", xl: "XL" } as const;
 
@@ -73,23 +74,17 @@ export default async function DogsPage() {
             <div className="mt-6 flex items-center justify-between">
               <form action={setActiveDogAction}>
                 <input type="hidden" name="dogId" value={d.id} />
-                <button
-                  type="submit"
-                  className="text-[11px] tracking-[0.2em] uppercase hover:text-burgundy"
-                >
+                <Button type="submit" variant="linkAccent" size="inline">
                   {session.activeDogId === d.id
                     ? "Currently shopping for"
                     : `Shop for ${d.name}`}
-                </button>
+                </Button>
               </form>
               <form action={deleteDogAction}>
                 <input type="hidden" name="id" value={d.id} />
-                <button
-                  type="submit"
-                  className="text-[11px] tracking-[0.2em] uppercase text-ink-65 hover:text-danger"
-                >
+                <Button type="submit" variant="linkDanger" size="inline">
                   Delete
-                </button>
+                </Button>
               </form>
             </div>
           </li>
